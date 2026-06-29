@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0D2818">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SpinScore">
+  <meta name="description" content="Marcador de Tenis de Mesa con modo torneo">
+  <title>🏓 SpinScore</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ══════════════════════════════
+       PANTALLA: INICIO
+  ══════════════════════════════ -->
+  <div id="screen-home" class="screen active">
+    <div class="home-hero">
+      <div class="home-logo">🏓</div>
+      <div class="orb home-title">SPINSCORE</div>
+      <div class="home-subtitle">Marcador & Torneos</div>
+    </div>
+
+    <div id="install-banner" class="install-banner">
+      <span class="install-icon">📲</span>
+      <div class="install-text">
+        <b>Instalar app</b><br>
+        <span>Menú del navegador → "Añadir a pantalla de inicio"</span>
+      </div>
+      <button onclick="document.getElementById('install-banner').classList.remove('show')" class="install-close">✕</button>
+    </div>
+
+    <div class="home-menu">
+      <button class="menu-card blue" onclick="goTo('screen-quicksetup')">
+        <span class="menu-icon">⚡</span>
+        <div class="menu-card-title">Partido Rápido</div>
+        <div class="menu-card-sub" id="home-cfg-label">3 sets · 11 puntos</div>
+      </button>
+
+      <button class="menu-card gold" onclick="goTo('screen-tournament-setup')">
+        <span class="menu-icon">🏆</span>
+        <div class="menu-card-title">Modo Torneo</div>
+        <div class="menu-card-sub">Todos contra todos · Posiciones en vivo</div>
+      </button>
+
+      <button class="menu-card muted" onclick="goTo('screen-settings')">
+        <span class="menu-icon">⚙️</span>
+        <div>
+          <div class="menu-card-title small">Configuración</div>
+          <div class="menu-card-sub">Sets, puntos y reglas</div>
+        </div>
+      </button>
+    </div>
+
+    <div class="home-footer">SpinScore v1.0 · Reglamento ITTF</div>
+  </div>
+
+  <!-- ══════════════════════════════
+       PANTALLA: PARTIDO RÁPIDO SETUP
+  ══════════════════════════════ -->
+  <div id="screen-quicksetup" class="screen">
+    <div class="header">
+      <button class="btn-back" onclick="goTo('screen-home')">←</button>
+      <div class="header-title">Partido Rápido</div>
+      <div class="header-spacer"></div>
+    </div>
+    <div class="scroll-body">
+      <div class="field">
+        <span class="label blue">Jugador 1</span>
+        <input type="text" id="qs-p1" value="Jugador 1" class="input-blue">
+      </div>
+      <div class="vs-divider">VS</div>
+      <div class="field">
+        <span class="label red">Jugador 2</span>
+        <input type="text" id="qs-p2" value="Jugador 2" class="input-red">
+      </div>
+      <div class="info-box" style="margin-bottom:24px;">
+        Formato: Al mejor de <b id="qs-sets-label" class="highlight">3</b> sets
+        · <b id="qs-pts-label" class="highlight">11</b> puntos por set
+      </div>
+      <button class="btn-primary" onclick="startQuickMatch()">▶ Iniciar Partido</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       PANTALLA: MARCADOR
+  ══════════════════════════════ -->
+  <div id="screen-score" class="screen" style="overflow:hidden;">
+    <div class="header" style="padding:10px 14px;">
+      <button class="btn-back" onclick="confirmBack()">←</button>
+      <div id="score-format-label" class="header-sub">3 sets · 11 pts</div>
+      <button onclick="undoPoint()" class="btn-undo">↩</button>
+    </div>
+
+    <div id="set-dots" class="set-dots-bar"></div>
+
+    <div id="score-area" class="score-area">
+      <!-- Lado Jugador 1 -->
+      <button class="player-side left" id="side-p1" onclick="addPoint(0)">
+        <div class="player-name blue" id="score-p1-name">J1</div>
+        <div class="big-score blue" id="score-p1-pts">0</div>
+        <div class="set-pips" id="pips-p1"></div>
+        <div class="sets-count" id="score-p1-sets">0</div>
+      </button>
+
+      <!-- Lado Jugador 2 -->
+      <button class="player-side" id="side-p2" onclick="addPoint(1)">
+        <div class="player-name red" id="score-p2-name">J2</div>
+        <div class="big-score red" id="score-p2-pts">0</div>
+        <div class="set-pips" id="pips-p2"></div>
+        <div class="sets-count" id="score-p2-sets">0</div>
+      </button>
+    </div>
+
+    <div class="score-hint">Toca el lado del jugador para sumar · ↩ deshacer</div>
+  </div>
+
+  <!-- ══════════════════════════════
+       PANTALLA: VICTORIA
+  ══════════════════════════════ -->
+  <div id="win-screen" class="win-screen">
+    <div class="trophy">🏆</div>
+    <div id="win-name" class="win-name"></div>
+    <div class="win-sub">¡Ganó el partido!</div>
+
+    <div class="win-sets-row">
+      <div class="win-player-col">
+        <div id="win-p1-name" class="blue" style="font-size:13px;font-weight:600;"></div>
+        <div class="orb" id="win-p1-sets" style="font-size:50px;"></div>
+      </div>
+      <div class="win-dash">—</div>
+      <div class="win-player-col">
+        <div id="win-p2-name" class="red" style="font-size:13px;font-weight:600;"></div>
+        <div class="orb" id="win-p2-sets" style="font-size:50px;"></div>
+      </div>
+    </div>
+
+    <div id="win-set-history" class="win-history"></div>
+    <button class="btn-primary" id="win-continue-btn" style="max-width:280px;" onclick="finishMatch()">Continuar</button>
+  </div>
+
+  <!-- ══════════════════════════════
+       PANTALLA: CONFIGURACIÓN
+  ══════════════════════════════ -->
+  <div id="screen-settings" class="screen">
+    <div class="header">
+      <button class="btn-back" onclick="goTo('screen-home')">←</button>
+      <div class="header-title">Configuración</div>
+      <div class="header-spacer"></div>
+    </div>
+    <div class="scroll-body">
+      <span class="section-label">Sets por partido</span>
+      <div class="chip-row" id="chips-sets">
+        <button class="chip" data-val="1" onclick="selectCfg('sets',1)">1</button>
+        <button class="chip selected" data-val="3" onclick="selectCfg('sets',3)">3</button>
+        <button class="chip" data-val="5" onclick="selectCfg('sets',5)">5</button>
+        <button class="chip" data-val="7" onclick="selectCfg('sets',7)">7</button>
+      </div>
+
+      <span class="section-label">Puntos por set</span>
+      <div class="chip-row" id="chips-pts">
+        <button class="chip" data-val="7"  onclick="selectCfg('pts',7)">7</button>
+        <button class="chip selected" data-val="11" onclick="selectCfg('pts',11)">11</button>
+        <button class="chip" data-val="15" onclick="selectCfg('pts',15)">15</button>
+        <button class="chip" data-val="21" onclick="selectCfg('pts',21)">21</button>
+      </div>
+
+      <div class="info-box">
+        <div class="info-box-label">Formato actual</div>
+        <div class="info-box-value">
+          Al mejor de <span id="cfg-display-sets" class="highlight">3</span> sets
+          · <span id="cfg-display-pts" class="highlight">11</span> pts por set
+        </div>
+        <div class="info-box-sub">
+          Gana el set quien llegue primero a los puntos (con 2 de diferencia)
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       PANTALLA: SETUP TORNEO
+  ══════════════════════════════ -->
+  <div id="screen-tournament-setup" class="screen">
+    <div class="header">
+      <button class="btn-back" onclick="goTo('screen-home')">←</button>
+      <div class="header-title">Nuevo Torneo</div>
+      <div class="header-spacer"></div>
+    </div>
+    <div class="scroll-body">
+      <span class="label gold">Nombre del torneo</span>
+      <input type="text" id="t-name" value="Torneo" class="input-gold" style="margin-bottom:20px;">
+
+      <span class="label gold">Jugadores (<span id="player-count">0</span>)</span>
+      <div class="add-player-row">
+        <input type="text" id="t-player-input" placeholder="Nombre del jugador"
+          onkeydown="if(event.key==='Enter')addTPlayer()">
+        <button class="btn-add" onclick="addTPlayer()">+</button>
+      </div>
+
+      <div id="player-list" style="margin-bottom:16px;"></div>
+      <div id="t-match-count" class="info-box" style="display:none;margin-bottom:20px;"></div>
+      <button class="btn-primary" id="btn-start-tournament" onclick="startTournament()" disabled>
+        🏆 Iniciar Torneo
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       PANTALLA: BRACKET TORNEO
+  ══════════════════════════════ -->
+  <div id="screen-tournament-bracket" class="screen">
+    <div class="header">
+      <button class="btn-back" onclick="goTo('screen-tournament-setup')">←</button>
+      <div style="flex:1;text-align:center;">
+        <div class="header-title" id="t-header-name">Torneo</div>
+        <div class="header-sub" id="t-header-progress">0/0 partidos</div>
+      </div>
+      <div class="header-spacer"></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" id="tab-matches" onclick="switchTab('matches')">⚔️ Partidos</button>
+      <button class="tab" id="tab-standings" onclick="switchTab('standings')">🏅 Posiciones</button>
+    </div>
+
+    <div class="scroll-body" id="bracket-content"></div>
+  </div>
+
+</div><!-- #app -->
+
+<div id="toast" class="toast"></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
