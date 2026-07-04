@@ -7,7 +7,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SpinScore">
-  <meta name="description" content="Marcador de Tenis de Mesa con modo torneo">
   <title>SpinScore</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -17,53 +16,60 @@
   <!-- HOME -->
   <div id="screen-home" class="screen active">
     <div class="home-hero">
-      <svg class="home-logo-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="24" cy="24" r="22" stroke="#F5C518" stroke-width="2.5"/>
-        <circle cx="24" cy="24" r="12" stroke="#F5C518" stroke-width="2" stroke-dasharray="4 3"/>
-        <line x1="2" y1="24" x2="46" y2="24" stroke="#F5C518" stroke-width="2"/>
-        <circle cx="36" cy="36" r="6" fill="#4FC3F7" opacity="0.9"/>
+      <!-- Logo minimalista tenis de mesa -->
+      <svg class="home-logo-svg" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Mesa (línea horizontal) -->
+        <line x1="4" y1="38" x2="56" y2="38" stroke="#2A5C3A" stroke-width="3" stroke-linecap="round"/>
+        <!-- Net -->
+        <line x1="30" y1="28" x2="30" y2="38" stroke="#8BAF94" stroke-width="2" stroke-linecap="round"/>
+        <line x1="24" y1="28" x2="36" y2="28" stroke="#8BAF94" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- Paleta -->
+        <ellipse cx="15" cy="22" rx="10" ry="11" transform="rotate(-30 15 22)" fill="#E63946" stroke="#0D2818" stroke-width="1"/>
+        <ellipse cx="14" cy="21" rx="6" ry="7" transform="rotate(-30 14 21)" fill="#C1121F"/>
+        <line x1="22" y1="30" x2="28" y2="40" stroke="#8BAF94" stroke-width="3" stroke-linecap="round"/>
+        <!-- Pelota -->
+        <circle cx="44" cy="18" r="7" fill="#F5C518" stroke="#D4A012" stroke-width="1"/>
+        <path d="M40 14 Q44 18 40 22" stroke="#D4A012" stroke-width="1" fill="none" stroke-linecap="round"/>
+        <path d="M48 14 Q44 18 48 22" stroke="#D4A012" stroke-width="1" fill="none" stroke-linecap="round"/>
       </svg>
       <div class="orb home-title">SPINSCORE</div>
       <div class="home-subtitle">Marcador & Torneos</div>
     </div>
 
     <div id="install-banner" class="install-banner">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="2"><path d="M12 2v13M7 10l5 5 5-5"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
-      <div class="install-text">
-        <b>Instalar app</b><br>
-        <span>Menu del navegador → "Añadir a pantalla de inicio"</span>
-      </div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="2"><path d="M12 2v13M7 10l5 5 5-5"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
+      <div class="install-text"><b>Instalar app</b> · Menu → "Añadir a pantalla de inicio"</div>
       <button onclick="document.getElementById('install-banner').classList.remove('show')" class="install-close">×</button>
     </div>
 
     <div class="home-menu">
       <button class="menu-card blue" onclick="goTo('screen-quicksetup')">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4FC3F7" stroke-width="2" style="margin-bottom:8px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4FC3F7" stroke-width="2" style="margin-bottom:8px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
         <div class="menu-card-title">Partido Rapido</div>
         <div class="menu-card-sub" id="home-cfg-label">3 sets · 11 puntos</div>
       </button>
 
       <button class="menu-card gold" onclick="goTo('screen-tournament-setup')">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="2" style="margin-bottom:8px"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="2" style="margin-bottom:8px"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
         <div class="menu-card-title">Torneo Liga</div>
         <div class="menu-card-sub">Todos contra todos</div>
       </button>
 
       <button class="menu-card green" onclick="goTo('screen-groups-setup')">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" style="margin-bottom:8px"><rect x="2" y="3" width="9" height="8" rx="1"/><rect x="13" y="3" width="9" height="8" rx="1"/><rect x="2" y="13" width="9" height="8" rx="1"/><rect x="13" y="13" width="9" height="8" rx="1"/></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" style="margin-bottom:8px"><rect x="2" y="3" width="9" height="8" rx="1"/><rect x="13" y="3" width="9" height="8" rx="1"/><rect x="2" y="13" width="9" height="8" rx="1"/><rect x="13" y="13" width="9" height="8" rx="1"/></svg>
         <div class="menu-card-title">Torneo por Grupos</div>
         <div class="menu-card-sub">Grupos + Eliminacion · Hasta 32</div>
       </button>
 
       <button class="menu-card muted" onclick="goTo('screen-settings')">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8BAF94" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8BAF94" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         <div>
           <div class="menu-card-title small">Configuracion</div>
           <div class="menu-card-sub">Sets, puntos y reglas</div>
         </div>
       </button>
     </div>
-    <div class="home-footer">SpinScore v2.0 · Reglamento ITTF</div>
+    <div class="home-footer">SpinScore v1.3 · By: JP</div>
   </div>
 
   <!-- QUICK SETUP -->
@@ -74,25 +80,18 @@
       <div class="header-spacer"></div>
     </div>
     <div class="scroll-body">
-      <div class="field">
-        <span class="label blue">Jugador 1</span>
-        <input type="text" id="qs-p1" value="Jugador 1" class="input-blue">
-      </div>
+      <div class="field"><span class="label blue">Jugador 1</span><input type="text" id="qs-p1" value="Jugador 1" class="input-blue"></div>
       <div class="vs-divider">VS</div>
-      <div class="field">
-        <span class="label red">Jugador 2</span>
-        <input type="text" id="qs-p2" value="Jugador 2" class="input-red">
-      </div>
+      <div class="field"><span class="label red">Jugador 2</span><input type="text" id="qs-p2" value="Jugador 2" class="input-red"></div>
       <div class="info-box" style="margin-bottom:24px;">
-        Formato: Al mejor de <b id="qs-sets-label" class="highlight">3</b> sets
-        · <b id="qs-pts-label" class="highlight">11</b> puntos por set
+        Formato: Al mejor de <b id="qs-sets-label" class="highlight">3</b> sets · <b id="qs-pts-label" class="highlight">11</b> puntos por set
       </div>
       <button class="btn-primary" onclick="startQuickMatch()">Iniciar Partido</button>
     </div>
   </div>
 
-  <!-- SCORE SCREEN -->
-  <div id="screen-score" class="screen" style="overflow:hidden;">
+  <!-- SCORE -->
+  <div id="screen-score" class="screen score-screen">
     <div class="header" style="padding:10px 14px;">
       <button class="btn-back" onclick="confirmBack()">←</button>
       <div id="score-format-label" class="header-sub">3 sets · 11 pts</div>
@@ -100,13 +99,13 @@
     </div>
     <div id="set-dots" class="set-dots-bar"></div>
     <div id="score-area" class="score-area">
-      <button class="player-side left" id="side-p1" onclick="addPoint(0)">
+      <button class="player-side left" onclick="addPoint(0)">
         <div class="player-name blue" id="score-p1-name">J1</div>
         <div class="big-score blue" id="score-p1-pts">0</div>
         <div class="set-pips" id="pips-p1"></div>
         <div class="sets-count" id="score-p1-sets">0</div>
       </button>
-      <button class="player-side" id="side-p2" onclick="addPoint(1)">
+      <button class="player-side" onclick="addPoint(1)">
         <div class="player-name red" id="score-p2-name">J2</div>
         <div class="big-score red" id="score-p2-pts">0</div>
         <div class="set-pips" id="pips-p2"></div>
@@ -116,21 +115,15 @@
     <div class="score-hint">Toca el lado del jugador para sumar · ↩ deshacer</div>
   </div>
 
-  <!-- WIN SCREEN -->
+  <!-- WIN -->
   <div id="win-screen" class="win-screen">
-    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="1.5" class="win-trophy"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="1.5" class="win-trophy"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
     <div id="win-name" class="win-name"></div>
     <div class="win-sub">Gano el partido</div>
     <div class="win-sets-row">
-      <div class="win-player-col">
-        <div id="win-p1-name" class="blue" style="font-size:13px;font-weight:600;"></div>
-        <div class="orb" id="win-p1-sets" style="font-size:50px;"></div>
-      </div>
+      <div class="win-player-col"><div id="win-p1-name" class="blue" style="font-size:13px;font-weight:600;"></div><div class="orb" id="win-p1-sets" style="font-size:50px;"></div></div>
       <div class="win-dash">—</div>
-      <div class="win-player-col">
-        <div id="win-p2-name" class="red" style="font-size:13px;font-weight:600;"></div>
-        <div class="orb" id="win-p2-sets" style="font-size:50px;"></div>
-      </div>
+      <div class="win-player-col"><div id="win-p2-name" class="red" style="font-size:13px;font-weight:600;"></div><div class="orb" id="win-p2-sets" style="font-size:50px;"></div></div>
     </div>
     <div id="win-set-history" class="win-history"></div>
     <button class="btn-primary" style="max-width:280px;" onclick="finishMatch()">Continuar</button>
@@ -153,7 +146,7 @@
       </div>
       <span class="section-label">Puntos por set</span>
       <div class="chip-row" id="chips-pts">
-        <button class="chip" data-val="7"  onclick="selectCfg('pts',7)">7</button>
+        <button class="chip" data-val="7" onclick="selectCfg('pts',7)">7</button>
         <button class="chip selected" data-val="11" onclick="selectCfg('pts',11)">11</button>
         <button class="chip" data-val="15" onclick="selectCfg('pts',15)">15</button>
         <button class="chip" data-val="21" onclick="selectCfg('pts',21)">21</button>
@@ -166,7 +159,7 @@
     </div>
   </div>
 
-  <!-- TOURNAMENT SETUP (liga) -->
+  <!-- LIGA SETUP -->
   <div id="screen-tournament-setup" class="screen">
     <div class="header">
       <button class="btn-back" onclick="goTo('screen-home')">←</button>
@@ -174,7 +167,7 @@
       <div class="header-spacer"></div>
     </div>
     <div class="scroll-body">
-      <span class="label gold">Nombre del torneo</span>
+      <span class="label gold">Nombre</span>
       <input type="text" id="t-name" value="Liga" class="input-gold" style="margin-bottom:20px;">
       <span class="label gold">Jugadores (<span id="player-count">0</span>)</span>
       <div class="add-player-row">
@@ -187,7 +180,7 @@
     </div>
   </div>
 
-  <!-- TOURNAMENT BRACKET (liga) -->
+  <!-- LIGA BRACKET -->
   <div id="screen-tournament-bracket" class="screen">
     <div class="header">
       <button class="btn-back" onclick="goTo('screen-tournament-setup')">←</button>
@@ -204,9 +197,7 @@
     <div class="scroll-body" id="bracket-content"></div>
   </div>
 
-  <!-- ═══════════════════════════════════════
-       GRUPOS SETUP
-  ═══════════════════════════════════════ -->
+  <!-- GRUPOS SETUP -->
   <div id="screen-groups-setup" class="screen">
     <div class="header">
       <button class="btn-back" onclick="goTo('screen-home')">←</button>
@@ -216,15 +207,13 @@
     <div class="scroll-body">
       <span class="label green">Nombre del torneo</span>
       <input type="text" id="gt-name" value="Torneo" class="input-green" style="margin-bottom:16px;">
-
-      <span class="label green">Numero de grupos (max 8)</span>
+      <span class="label green">Numero de grupos</span>
       <div class="chip-row" id="chips-groups" style="margin-bottom:20px;">
         <button class="chip" data-val="2" onclick="selectGroups(2)">2</button>
         <button class="chip selected" data-val="4" onclick="selectGroups(4)">4</button>
         <button class="chip" data-val="6" onclick="selectGroups(6)">6</button>
         <button class="chip" data-val="8" onclick="selectGroups(8)">8</button>
       </div>
-
       <span class="label green">Jugadores (<span id="gp-count">0</span> / <span id="gp-max">16</span>)</span>
       <div class="add-player-row">
         <input type="text" id="gp-input" placeholder="Nombre del jugador" onkeydown="if(event.key==='Enter')addGPlayer()">
@@ -236,7 +225,7 @@
     </div>
   </div>
 
-  <!-- GRUPOS PREVIEW (antes de confirmar) -->
+  <!-- GRUPOS PREVIEW -->
   <div id="screen-groups-preview" class="screen">
     <div class="header">
       <button class="btn-back" onclick="goTo('screen-groups-setup')">←</button>
@@ -244,13 +233,11 @@
       <div class="header-spacer"></div>
     </div>
     <div class="scroll-body">
-      <div class="info-box" style="margin-bottom:16px;color:var(--text);">
-        Revisa los grupos. Una vez confirmados no se pueden editar.
-      </div>
+      <div class="info-box" style="margin-bottom:16px;color:var(--text);">Revisa los grupos. Una vez confirmados no se pueden editar.</div>
       <div id="groups-preview-content"></div>
       <div style="display:flex;gap:10px;margin-top:8px;">
         <button class="btn-secondary" onclick="sortearGrupos()" style="flex:1;">Sortear de nuevo</button>
-        <button class="btn-primary" onclick="confirmarGrupos()" style="flex:1;">Confirmar Grupos</button>
+        <button class="btn-primary" onclick="confirmarGrupos()" style="flex:1;">Confirmar</button>
       </div>
     </div>
   </div>
@@ -258,7 +245,7 @@
   <!-- GRUPOS MAIN -->
   <div id="screen-groups-main" class="screen">
     <div class="header">
-      <button class="btn-back" onclick="volverDeGrupos()">←</button>
+      <button class="btn-back" onclick="goTo('screen-home')">←</button>
       <div style="flex:1;text-align:center;">
         <div class="header-title" id="gt-header-name">Torneo</div>
         <div class="header-sub" id="gt-phase-label">Fase de Grupos</div>
@@ -269,17 +256,17 @@
     <div class="scroll-body" id="groups-main-content"></div>
   </div>
 
-  <!-- INGRESO DE RESULTADO -->
+  <!-- INGRESO RESULTADO -->
   <div id="screen-result-entry" class="screen">
     <div class="header">
-      <button class="btn-back" onclick="goTo('screen-groups-main')">←</button>
+      <button class="btn-back" id="result-back-btn" onclick="goTo('screen-groups-main')">←</button>
       <div class="header-title">Ingresar Resultado</div>
       <div class="header-spacer"></div>
     </div>
     <div class="scroll-body">
       <div id="result-match-info" class="result-match-banner"></div>
       <div id="result-sets-container"></div>
-      <button class="btn-add-set" onclick="addSetRow()" id="btn-add-set">+ Agregar set</button>
+      <button class="btn-add-set" onclick="addSetRow()">+ Agregar set</button>
       <div style="height:16px;"></div>
       <button class="btn-primary" onclick="guardarResultado()">Guardar Resultado</button>
     </div>
@@ -291,14 +278,15 @@
       <button class="btn-back" onclick="goTo('screen-groups-main')">←</button>
       <div style="flex:1;text-align:center;">
         <div class="header-title" id="elim-header-name">Torneo</div>
-        <div class="header-sub" id="elim-phase-label">Eliminacion</div>
+        <div class="header-sub" id="elim-phase-label">Fase Eliminatoria</div>
       </div>
       <div class="header-spacer"></div>
     </div>
+    <!-- bracket visual en PC, lista en mobile -->
     <div class="scroll-body" id="elim-content"></div>
   </div>
 
-</div><!-- #app -->
+</div>
 <div id="toast" class="toast"></div>
 <script src="js/app.js"></script>
 </body>
