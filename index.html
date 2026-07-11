@@ -8,67 +8,51 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SpinScore">
   <title>SpinScore</title>
-
-  <!-- Bootstrap 5.3 CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <!-- SpinScore custom theme (sobreescribe Bootstrap) -->
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
 <div id="app">
 
-  <!-- ══════════════════════════════
-       HOME
-  ══════════════════════════════ -->
+  <!-- HOME -->
   <div id="screen-home" class="screen active">
     <div class="text-center pt-5 pb-3 px-4">
-      <svg class="home-logo-svg mb-2" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <line x1="4" y1="38" x2="56" y2="38" stroke="#2A5C3A" stroke-width="3" stroke-linecap="round"/>
-        <line x1="30" y1="28" x2="30" y2="38" stroke="#8BAF94" stroke-width="2" stroke-linecap="round"/>
-        <line x1="24" y1="28" x2="36" y2="28" stroke="#8BAF94" stroke-width="1.5" stroke-linecap="round"/>
-        <ellipse cx="15" cy="22" rx="10" ry="11" transform="rotate(-30 15 22)" fill="#E63946" stroke="#0D2818" stroke-width="1"/>
-        <ellipse cx="14" cy="21" rx="6" ry="7" transform="rotate(-30 14 21)" fill="#C1121F"/>
-        <line x1="22" y1="30" x2="28" y2="40" stroke="#8BAF94" stroke-width="3" stroke-linecap="round"/>
-        <circle cx="44" cy="18" r="7" fill="#F5C518" stroke="#D4A012" stroke-width="1"/>
-        <path d="M40 14 Q44 18 40 22" stroke="#D4A012" stroke-width="1" fill="none" stroke-linecap="round"/>
-        <path d="M48 14 Q44 18 48 22" stroke="#D4A012" stroke-width="1" fill="none" stroke-linecap="round"/>
-      </svg>
-      <div class="orb fs-2 text-accent letter-spacing-2">SPINSCORE</div>
+      <img src="images/Logo.png" class="home-logo-img mb-1" alt="SpinScore" onerror="this.style.display='none';document.getElementById('logo-svg-fallback').style.display='block'">
+      <svg id="logo-svg-fallback" style="display:none;" class="home-logo-svg mb-2" viewBox="0 0 60 60" fill="none"><line x1="4" y1="38" x2="56" y2="38" stroke="#2A5C3A" stroke-width="3" stroke-linecap="round"/><line x1="30" y1="28" x2="30" y2="38" stroke="#8BAF94" stroke-width="2" stroke-linecap="round"/><circle cx="44" cy="18" r="7" fill="#F5C518"/><text x="30" y="50" text-anchor="middle" fill="#F5C518" font-size="8" font-weight="bold">SPINSCORE</text></svg>
       <div class="text-muted-green small mt-1">Marcador &amp; Torneos</div>
     </div>
 
-    <div id="install-banner" class="alert alert-accent mx-3 d-none d-flex align-items-center gap-2 py-2 px-3">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v13M7 10l5 5 5-5"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
+    <div id="install-banner" class="install-banner d-none">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="2"><path d="M12 2v13M7 10l5 5 5-5"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
       <div class="flex-grow-1 small"><b>Instalar app</b> · Menu → "Añadir a pantalla de inicio"</div>
-      <button onclick="document.getElementById('install-banner').classList.add('d-none')" class="btn-close btn-close-white btn-sm"></button>
+      <button onclick="document.getElementById('install-banner').classList.add('d-none')" class="btn-back" style="font-size:18px;">×</button>
     </div>
 
-    <div class="home-menu px-3 py-2 d-flex flex-column gap-3">
+    <div class="home-menu">
       <div class="row g-3">
         <div class="col-12 col-md-6">
-          <button class="menu-card menu-card-blue w-100 text-start" onclick="goTo('screen-quicksetup')">
+          <button class="menu-card menu-card-blue" onclick="goTo('screen-quicksetup')">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4FC3F7" stroke-width="2" class="mb-2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             <div class="fw-bold fs-5">Partido Rapido</div>
             <div class="text-muted-green small mt-1" id="home-cfg-label">3 sets · 11 puntos</div>
           </button>
         </div>
         <div class="col-12 col-md-6">
-          <button class="menu-card menu-card-gold w-100 text-start" onclick="goTo('screen-tournament-setup')">
+          <button class="menu-card menu-card-gold" onclick="goTo('screen-tournament-setup')">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="2" class="mb-2"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
             <div class="fw-bold fs-5">Torneo Liga</div>
             <div class="text-muted-green small mt-1">Todos contra todos</div>
           </button>
         </div>
         <div class="col-12 col-md-6">
-          <button class="menu-card menu-card-green w-100 text-start" onclick="goTo('screen-groups-setup')">
+          <button class="menu-card menu-card-green" onclick="goTo('screen-groups-setup')">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" class="mb-2"><rect x="2" y="3" width="9" height="8" rx="1"/><rect x="13" y="3" width="9" height="8" rx="1"/><rect x="2" y="13" width="9" height="8" rx="1"/><rect x="13" y="13" width="9" height="8" rx="1"/></svg>
             <div class="fw-bold fs-5">Torneo por Grupos</div>
             <div class="text-muted-green small mt-1">Grupos + Eliminacion · Hasta 32</div>
           </button>
         </div>
         <div class="col-12 col-md-6">
-          <button class="menu-card menu-card-muted w-100 text-start d-flex align-items-center gap-3" onclick="goTo('screen-settings')">
+          <button class="menu-card menu-card-muted" onclick="goTo('screen-settings')">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8BAF94" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <div>
               <div class="fw-bold">Configuracion</div>
@@ -78,7 +62,10 @@
         </div>
       </div>
     </div>
-    <div class="text-center py-4 small text-border-green">SpinScore v1.5 · By: JP · Reglamento basado en ITTF</div>
+    <div class="text-center py-4 small text-border-green">
+      SpinScore v1.6 · By: JP ·
+      Reglamento basado en <a href="https://www.ittf.com/sports/rules/" target="_blank" rel="noopener" class="ittf-link">ITTF</a>
+    </div>
   </div>
 
   <!-- QUICK SETUP -->
@@ -90,20 +77,17 @@
     </div>
     <div class="scroll-body">
       <label class="ss-label text-blue">Jugador 1</label>
-      <input type="text" class="form-control ss-input mb-4" id="qs-p1" value="Jugador 1">
+      <input type="text" class="ss-input mb-4" id="qs-p1" value="Jugador 1">
       <div class="text-center text-muted-green fs-5 mb-4">VS</div>
       <label class="ss-label text-red">Jugador 2</label>
-      <input type="text" class="form-control ss-input mb-4" id="qs-p2" value="Jugador 2">
-      <div class="ss-infobox mb-4">
-        Formato: Al mejor de <b id="qs-sets-label" class="text-white">3</b> sets
-        · <b id="qs-pts-label" class="text-white">11</b> puntos por set
-      </div>
+      <input type="text" class="ss-input mb-4" id="qs-p2" value="Jugador 2">
+      <div class="ss-infobox mb-4">Formato: Al mejor de <b id="qs-sets-label" class="text-white">3</b> sets · <b id="qs-pts-label" class="text-white">11</b> puntos por set</div>
       <button class="btn btn-accent w-100 fw-bold py-3" onclick="startQuickMatch()">Iniciar Partido</button>
     </div>
   </div>
 
   <!-- SCORE -->
-  <div id="screen-score" class="screen score-screen">
+  <div id="screen-score" class="screen" style="overflow:hidden;">
     <div class="ss-header" style="padding:10px 14px;">
       <button class="btn-back" onclick="confirmBack()">←</button>
       <div id="score-format-label" class="ss-header-sub">3 sets · 11 pts</div>
@@ -141,6 +125,15 @@
     <button class="btn btn-accent fw-bold px-5 py-3" onclick="finishMatch()">Continuar</button>
   </div>
 
+  <!-- PODIO -->
+  <div id="podio-screen" class="podio-screen">
+    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="1.5" class="mb-3" style="animation:ss-popIn .5s cubic-bezier(.34,1.56,.64,1)"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+    <div class="podio-title">Torneo Finalizado</div>
+    <div class="podio-subtitle" id="podio-tournament-name">Torneo</div>
+    <div id="podio-cards" class="w-100 d-flex flex-column align-items-center mb-4"></div>
+    <button class="btn btn-accent fw-bold px-5 py-3" onclick="cerrarPodio()">Volver al inicio</button>
+  </div>
+
   <!-- SETTINGS -->
   <div id="screen-settings" class="screen">
     <div class="ss-header">
@@ -158,7 +151,7 @@
       </div>
       <div class="ss-section-label">Puntos por set</div>
       <div class="d-flex gap-2 mb-4" id="chips-pts">
-        <button class="btn ss-chip" data-val="7"  onclick="selectCfg('pts',7)">7</button>
+        <button class="btn ss-chip" data-val="7" onclick="selectCfg('pts',7)">7</button>
         <button class="btn ss-chip active" data-val="11" onclick="selectCfg('pts',11)">11</button>
         <button class="btn ss-chip" data-val="15" onclick="selectCfg('pts',15)">15</button>
         <button class="btn ss-chip" data-val="21" onclick="selectCfg('pts',21)">21</button>
@@ -180,10 +173,10 @@
     </div>
     <div class="scroll-body">
       <label class="ss-label text-accent">Nombre</label>
-      <input type="text" class="form-control ss-input mb-4" id="t-name" value="Liga">
+      <input type="text" class="ss-input mb-4" id="t-name" value="Liga">
       <label class="ss-label text-accent">Jugadores (<span id="player-count">0</span>)</label>
       <div class="d-flex gap-2 mb-3">
-        <input type="text" class="form-control ss-input" id="t-player-input" placeholder="Nombre del jugador" onkeydown="if(event.key==='Enter')addTPlayer()">
+        <input type="text" class="ss-input" id="t-player-input" placeholder="Nombre del jugador" onkeydown="if(event.key==='Enter')addTPlayer()">
         <button class="btn btn-accent fw-bold fs-4 px-3" onclick="addTPlayer()">+</button>
       </div>
       <div id="player-list" class="mb-3"></div>
@@ -218,7 +211,7 @@
     </div>
     <div class="scroll-body">
       <label class="ss-label text-green">Nombre del torneo</label>
-      <input type="text" class="form-control ss-input mb-3" id="gt-name" value="Torneo">
+      <input type="text" class="ss-input mb-3" id="gt-name" value="Torneo">
       <label class="ss-label text-green">Numero de grupos</label>
       <div class="d-flex gap-2 mb-4" id="chips-groups">
         <button class="btn ss-chip" data-val="2" onclick="selectGroups(2)">2</button>
@@ -228,7 +221,7 @@
       </div>
       <label class="ss-label text-green">Jugadores (<span id="gp-count">0</span> / <span id="gp-max">16</span>)</label>
       <div class="d-flex gap-2 mb-3">
-        <input type="text" class="form-control ss-input" id="gp-input" placeholder="Nombre del jugador" onkeydown="if(event.key==='Enter')addGPlayer()">
+        <input type="text" class="ss-input" id="gp-input" placeholder="Nombre del jugador" onkeydown="if(event.key==='Enter')addGPlayer()">
         <button class="btn btn-accent fw-bold fs-4 px-3" onclick="addGPlayer()">+</button>
       </div>
       <div id="gp-list" class="mb-3"></div>
@@ -264,7 +257,7 @@
       </div>
       <div style="width:40px;"></div>
     </div>
-    <div class="d-flex border-bottom border-surface overflow-auto" id="groups-tabs" style="flex-shrink:0;white-space:nowrap;"></div>
+    <div class="d-flex border-bottom border-surface overflow-auto" id="groups-tabs" style="flex-shrink:0;"></div>
     <div class="scroll-body" id="groups-main-content"></div>
   </div>
 
@@ -277,8 +270,12 @@
     </div>
     <div class="scroll-body">
       <div id="result-match-info" class="result-match-banner mb-4"></div>
+      <div class="ss-infobox mb-3 small">
+        Ingresa solo los sets jugados. Si gana 2-0 al mejor de 3, pon solo 2 sets.
+      </div>
       <div id="result-sets-container"></div>
-      <button class="btn btn-surface w-100 py-2 mt-1 mb-3 text-muted-green" onclick="addSetRow()">+ Agregar set</button>
+      <button class="btn-add-set" onclick="addSetRow()">+ Agregar set</button>
+      <div style="height:16px;"></div>
       <button class="btn btn-accent w-100 fw-bold py-3" onclick="guardarResultado()">Guardar Resultado</button>
     </div>
   </div>
@@ -289,20 +286,17 @@
       <button class="btn-back" onclick="goTo('screen-groups-main')">←</button>
       <div style="flex:1;text-align:center;">
         <div class="ss-header-title" id="elim-header-name">Torneo</div>
-        <div class="ss-header-sub" id="elim-phase-label">Fase Eliminatoria</div>
+        <div class="ss-header-sub">Fase Eliminatoria</div>
       </div>
       <div style="width:40px;"></div>
     </div>
     <div class="scroll-body" id="elim-content"></div>
   </div>
 
-</div><!-- #app -->
+</div>
+<div id="toast"></div>
 
-<div id="toast" class="ss-toast"></div>
-
-<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<!-- SpinScore modules -->
 <script src="js/core.js"></script>
 <script src="js/match.js"></script>
 <script src="js/liga.js"></script>

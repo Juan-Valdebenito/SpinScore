@@ -1,29 +1,19 @@
-/* ═══════════════════════════════════════════
-   SpinScore v1.4 — core.js
-   Estado global, configuración y navegación
-═══════════════════════════════════════════ */
+/* SpinScore v1.7 — core.js */
 
-// ── CONFIGURACIÓN GLOBAL ──────────────────
-const STATE = {
-  cfg: { sets: 3, pts: 11 },
-};
+const STATE = { cfg: { sets: 3, pts: 11 } };
 
-// ── NAVEGACIÓN ────────────────────────────
 function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
   if (el) el.classList.add('active');
   window.scrollTo(0, 0);
-
-  // Hooks de entrada a cada pantalla
-  if (id === 'screen-home')                 updateHomeLabel();
-  if (id === 'screen-quicksetup')           updateQSLabels();
-  if (id === 'screen-tournament-bracket')   renderBracket();
-  if (id === 'screen-groups-main')          renderGroupsMain();
-  if (id === 'screen-elimination')          renderElimination();
+  if (id === 'screen-home')               updateHomeLabel();
+  if (id === 'screen-quicksetup')         updateQSLabels();
+  if (id === 'screen-tournament-bracket') renderBracket();
+  if (id === 'screen-groups-main')        renderGroupsMain();
+  if (id === 'screen-elimination')        renderElimination();
 }
 
-// ── CONFIGURACIÓN ─────────────────────────
 function updateHomeLabel() {
   const el = document.getElementById('home-cfg-label');
   if (el) el.textContent = `${STATE.cfg.sets} sets · ${STATE.cfg.pts} puntos`;
@@ -32,60 +22,92 @@ function updateHomeLabel() {
 function selectCfg(type, val) {
   if (type === 'sets') {
     STATE.cfg.sets = val;
-    document.querySelectorAll('#chips-sets .chip').forEach(c =>
+    document.querySelectorAll('#chips-sets .ss-chip, #chips-sets .chip').forEach(c =>
       c.classList.toggle('active', +c.dataset.val === val));
-    document.getElementById('cfg-display-sets').textContent = val;
+    const el = document.getElementById('cfg-display-sets');
+    if (el) el.textContent = val;
   } else {
     STATE.cfg.pts = val;
-    document.querySelectorAll('#chips-pts .chip').forEach(c =>
+    document.querySelectorAll('#chips-pts .ss-chip, #chips-pts .chip').forEach(c =>
       c.classList.toggle('active', +c.dataset.val === val));
-    document.getElementById('cfg-display-pts').textContent = val;
+    const el = document.getElementById('cfg-display-pts');
+    if (el) el.textContent = val;
   }
+  updateHomeLabel();
 }
 
-// ── TOAST ─────────────────────────────────
+// Sync chips to match STATE on load (fixes stuck-chip bug)
+function _syncChips() {
+  document.querySelectorAll('#chips-sets .ss-chip, #chips-sets .chip').forEach(c =>
+    c.classList.toggle('active', +c.dataset.val === STATE.cfg.sets));
+  document.querySelectorAll('#chips-pts .ss-chip, #chips-pts .chip').forEach(c =>
+    c.classList.toggle('active', +c.dataset.val === STATE.cfg.pts));
+  document.querySelectorAll('#chips-groups .ss-chip, #chips-groups .chip').forEach(c =>
+    c.classList.toggle('active', +c.dataset.val === GT.numGroups));
+}
+
 let _toastTimer;
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
 }
 
-// ── PWA ───────────────────────────────────
+// ── PODIO ──────────────────────────────────
+function mostrarPodio(entries, tournamentName) {
+  const medals = [
+    { cls: 'gold-card',   color: '#F5C518', label: '1°' },
+    { cls: 'silver-card', color: '#C0C8D8', label: '2°' },
+    { cls: 'bronze-card', color: '#CD7F32', label: '3° / 4°' },
+    { cls: 'bronze-card', color: '#CD7F32', label: '3° / 4°' },
+  ];
+  const syms = ['🥇', '🥈', '🥉', '🥉'];
+
+  const nameEl = document.getElementById('podio-tournament-name');
+  if (nameEl) nameEl.textContent = tournamentName || '';
+
+  document.getElementById('podio-cards').innerHTML = entries.slice(0, 4).map((name, i) => {
+    const m = medals[Math.min(i, 3)];
+    return `<div class="podio-card ${m.cls}">
+      <div class="podio-position" style="color:${m.color};">${syms[i]}</div>
+      <div>
+        <div class="podio-name">${name}</div>
+        <div class="podio-detail">${m.label}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('podio-screen').classList.add('show');
+}
+
+function cerrarPodio() {
+  document.getElementById('podio-screen').classList.remove('show');
+  goTo('screen-home');
+}
+
+// ── PWA ────────────────────────────────────
 if ('serviceWorker' in navigator) {
-  const sw = `
-    const C = 'spinscore-v15';
-    const F = ['./', './index.html', './css/style.css',
-               './js/core.js','./js/match.js','./js/liga.js',
-               './js/grupos.js','./js/eliminacion.js'];
-    self.addEventListener('install', e => {
-      e.waitUntil(caches.open(C).then(c => c.addAll(F)));
-      self.skipWaiting();
-    });
-    self.addEventListener('fetch', e => {
-      e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
-    });
-  `;
-  navigator.serviceWorker
-    .register(URL.createObjectURL(new Blob([sw], { type: 'application/javascript' })))
-    .catch(() => {});
+  const sw = `const C='spinscore-v17';
+  const F=['./','./index.html','./css/style.css','./js/core.js','./js/match.js','./js/liga.js','./js/grupos.js','./js/eliminacion.js','./images/Logo.png'];
+  self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(F)));self.skipWaiting();});
+  self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));});`;
+  navigator.serviceWorker.register(
+    URL.createObjectURL(new Blob([sw], { type: 'application/javascript' }))
+  ).catch(() => {});
 }
 
 window.addEventListener('load', () => {
+  _syncChips();
   updateHomeLabel();
-  const installed = window.matchMedia('(display-mode: standalone)').matches
-                 || navigator.standalone;
-  if (!installed) {
+  const installed = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (!installed)
     setTimeout(() => document.getElementById('install-banner').classList.remove('d-none'), 1500);
-  }
 });
 
-// Re-render responsive en resize
 window.addEventListener('resize', () => {
-  const active = document.querySelector('.screen.active');
-  if (!active) return;
-  if (active.id === 'screen-groups-main')  renderGroupTabContent();
-  if (active.id === 'screen-elimination')  renderElimination();
+  const a = document.querySelector('.screen.active');
+  if (!a) return;
+  if (a.id === 'screen-groups-main') renderGroupTabContent();
+  if (a.id === 'screen-elimination') renderElimination();
 });
