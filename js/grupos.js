@@ -12,7 +12,7 @@ const GT = {
 // ── FIX: selectGroups busca .ss-chip (HTML) ──
 function selectGroups(n) {
   GT.numGroups = n;
-  document.querySelectorAll('#chips-groups .ss-chip, #chips-groups .chip').forEach(c =>
+  document.querySelectorAll('#chips-groups .ss-chip').forEach(c =>
     c.classList.toggle('active', +c.dataset.val === n));
   document.getElementById('gp-max').textContent = n * 4;
   _updateGPInfo();

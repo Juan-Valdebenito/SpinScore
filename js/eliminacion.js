@@ -148,20 +148,15 @@ function abrirResultadoElim(ri,mi){abrirResultado({ri,mi},'elim');}
 function _dispararPodio() {
   const GT = getGT();
   const total = GT.elimRounds.length;
-  const finalM = GT.elimRounds[total - 1]?.[0];
-  if (!finalM || !finalM.done) return;
-
-  // 1° campeón
-  const champ = finalM.winnername;
-  // 2° perdedor de la final
-  const runner = finalM.p1name === champ ? finalM.p2name : finalM.p1name;
-  // 3°/4° perdedores de semis
+  const fin = GT.elimRounds[total-1]?.[0];
+  if (!fin || !fin.done) return;
+  const champ  = fin.winnername;
+  const runner = fin.p1name === champ ? fin.p2name : fin.p1name;
   const thirds = total >= 2
-    ? GT.elimRounds[total - 2]
+    ? GT.elimRounds[total-2]
         .filter(m => m.done)
         .map(m => m.p1name === m.winnername ? m.p2name : m.p1name)
         .filter(n => n && n !== 'TBD' && n !== champ && n !== runner)
     : [];
-
   mostrarPodio([champ, runner, ...thirds], GT.name);
 }

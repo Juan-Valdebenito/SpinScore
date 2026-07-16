@@ -1,4 +1,4 @@
-/* SpinScore v1.7 — core.js */
+/* SpinScore v1.8 — core.js */
 
 const STATE = { cfg: { sets: 3, pts: 11 } };
 
@@ -22,13 +22,13 @@ function updateHomeLabel() {
 function selectCfg(type, val) {
   if (type === 'sets') {
     STATE.cfg.sets = val;
-    document.querySelectorAll('#chips-sets .ss-chip, #chips-sets .chip').forEach(c =>
+    document.querySelectorAll('#chips-sets .ss-chip').forEach(c =>
       c.classList.toggle('active', +c.dataset.val === val));
     const el = document.getElementById('cfg-display-sets');
     if (el) el.textContent = val;
   } else {
     STATE.cfg.pts = val;
-    document.querySelectorAll('#chips-pts .ss-chip, #chips-pts .chip').forEach(c =>
+    document.querySelectorAll('#chips-pts .ss-chip').forEach(c =>
       c.classList.toggle('active', +c.dataset.val === val));
     const el = document.getElementById('cfg-display-pts');
     if (el) el.textContent = val;
@@ -36,14 +36,13 @@ function selectCfg(type, val) {
   updateHomeLabel();
 }
 
-// Sync chips to match STATE on load (fixes stuck-chip bug)
 function _syncChips() {
-  document.querySelectorAll('#chips-sets .ss-chip, #chips-sets .chip').forEach(c =>
+  document.querySelectorAll('#chips-sets .ss-chip').forEach(c =>
     c.classList.toggle('active', +c.dataset.val === STATE.cfg.sets));
-  document.querySelectorAll('#chips-pts .ss-chip, #chips-pts .chip').forEach(c =>
+  document.querySelectorAll('#chips-pts .ss-chip').forEach(c =>
     c.classList.toggle('active', +c.dataset.val === STATE.cfg.pts));
-  document.querySelectorAll('#chips-groups .ss-chip, #chips-groups .chip').forEach(c =>
-    c.classList.toggle('active', +c.dataset.val === GT.numGroups));
+  document.querySelectorAll('#chips-groups .ss-chip').forEach(c =>
+    c.classList.toggle('active', +c.dataset.val === (typeof GT !== 'undefined' ? GT.numGroups : 4)));
 }
 
 let _toastTimer;
@@ -54,30 +53,25 @@ function showToast(msg) {
   _toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
 }
 
-// ── PODIO ──────────────────────────────────
-function mostrarPodio(entries, tournamentName) {
-  const medals = [
-    { cls: 'gold-card',   color: '#F5C518', label: '1°' },
-    { cls: 'silver-card', color: '#C0C8D8', label: '2°' },
-    { cls: 'bronze-card', color: '#CD7F32', label: '3° / 4°' },
-    { cls: 'bronze-card', color: '#CD7F32', label: '3° / 4°' },
+// ── PODIO ──
+function mostrarPodio(names, tournamentName) {
+  const cfg = [
+    { cls:'gold-card',   color:'#F5C518', sym:'🥇', label:'1° Lugar' },
+    { cls:'silver-card', color:'#C0C8D8', sym:'🥈', label:'2° Lugar' },
+    { cls:'bronze-card', color:'#CD7F32', sym:'🥉', label:'3° / 4° Lugar' },
+    { cls:'bronze-card', color:'#CD7F32', sym:'🥉', label:'3° / 4° Lugar' },
   ];
-  const syms = ['🥇', '🥈', '🥉', '🥉'];
-
-  const nameEl = document.getElementById('podio-tournament-name');
-  if (nameEl) nameEl.textContent = tournamentName || '';
-
-  document.getElementById('podio-cards').innerHTML = entries.slice(0, 4).map((name, i) => {
-    const m = medals[Math.min(i, 3)];
+  document.getElementById('podio-tournament-name').textContent = tournamentName || '';
+  document.getElementById('podio-cards').innerHTML = names.slice(0,4).map((name, i) => {
+    const m = cfg[Math.min(i,3)];
     return `<div class="podio-card ${m.cls}">
-      <div class="podio-position" style="color:${m.color};">${syms[i]}</div>
+      <div class="podio-sym">${m.sym}</div>
       <div>
         <div class="podio-name">${name}</div>
-        <div class="podio-detail">${m.label}</div>
+        <div class="podio-label" style="color:${m.color};">${m.label}</div>
       </div>
     </div>`;
   }).join('');
-
   document.getElementById('podio-screen').classList.add('show');
 }
 
@@ -86,21 +80,21 @@ function cerrarPodio() {
   goTo('screen-home');
 }
 
-// ── PWA ────────────────────────────────────
+// ── PWA ──
 if ('serviceWorker' in navigator) {
-  const sw = `const C='spinscore-v17';
-  const F=['./','./index.html','./css/style.css','./js/core.js','./js/match.js','./js/liga.js','./js/grupos.js','./js/eliminacion.js','./images/Logo.png'];
+  const sw = `const C='spinscore-v18';
+  const F=['./','./index.html','./css/style.css','./js/core.js','./js/match.js','./js/liga.js','./js/grupos.js','./js/eliminacion.js'];
   self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(F)));self.skipWaiting();});
   self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));});`;
   navigator.serviceWorker.register(
-    URL.createObjectURL(new Blob([sw], { type: 'application/javascript' }))
-  ).catch(() => {});
+    URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))
+  ).catch(()=>{});
 }
 
 window.addEventListener('load', () => {
   _syncChips();
   updateHomeLabel();
-  const installed = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  const installed = window.matchMedia('(display-mode:standalone)').matches || navigator.standalone;
   if (!installed)
     setTimeout(() => document.getElementById('install-banner').classList.remove('d-none'), 1500);
 });
