@@ -1,3 +1,34 @@
+/* SpinScore v1.8.5 — grupos.js */
+
+function nuevoTorneoGrupos() {
+  // Reset GT for a fresh tournament
+  GT.id = null;
+  GT.name = '';
+  GT.numGroups = 4;
+  GT.players = [];
+  GT.groups = [];
+  GT.confirmed = false;
+  GT.phase = 'groups';
+  GT.currentGroupTab = 0;
+  GT.groupMatches = [];
+  GT.elimRounds = [];
+  GT.podio = null;
+  // Reset UI
+  const nameEl = document.getElementById('gt-name');
+  if (nameEl) nameEl.value = 'Torneo';
+  const gpList = document.getElementById('gp-list');
+  if (gpList) gpList.innerHTML = '';
+  document.getElementById('gp-count').textContent = '0';
+  document.getElementById('gp-max').textContent = '16';
+  document.getElementById('btn-sortear').disabled = true;
+  const info = document.getElementById('gp-info');
+  if (info) info.classList.add('d-none');
+  // Sync chips to default 4
+  document.querySelectorAll('#chips-groups .ss-chip').forEach(c =>
+    c.classList.toggle('active', +c.dataset.val === 4));
+  goTo('screen-groups-setup');
+}
+
 /* SpinScore v1.6 — grupos.js */
 
 const GROUP_COLORS = ['#4FC3F7','#F5C518','#E63946','#22C55E','#A78BFA','#FB923C','#F472B6','#34D399'];
@@ -73,6 +104,12 @@ function _renderGroupsPreview() {
 }
 
 function confirmarGrupos() {
+  // Assign a new unique ID to this tournament
+  const GT = getGT ? getGT() : window.GT;
+  if (!GT.id) {
+    GT.id        = storageNewId();
+    GT.createdAt = Date.now();
+  }
   GT.name = document.getElementById('gt-name').value.trim()||'Torneo';
   GT.confirmed=true; GT.phase='groups'; GT.currentGroupTab=0;
   GT.groupMatches=[];
@@ -305,6 +342,7 @@ function guardarResultado() {
   if(_rmc==='group'){
     const m=GT.groupMatches[_crm];
     m.sets1=sets1;m.sets2=sets2;m.setScores=setScores;m.done=true;
+    storageSnapshot();
     renderGroupsMain();goTo('screen-groups-main');
   } else {
     const {ri,mi}=_crm, m=GT.elimRounds[ri][mi];

@@ -308,3 +308,169 @@ button:active { transform:scale(.94); opacity:.85; }
 @keyframes ss-fadeIn { from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)} }
 @keyframes ss-pulse  { 0%,100%{transform:scale(1)}50%{transform:scale(1.1)} }
 @keyframes ss-popIn  { 0%{transform:scale(.5);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1} }
+
+/* ══ v1.8.5 ADDITIONS ══════════════════════ */
+
+/* ── MENU CARD PURPLE (Mis Torneos) ── */
+.menu-card-purple {
+  background: linear-gradient(135deg,rgba(167,139,250,.18),rgba(167,139,250,.05));
+  border-color: rgba(167,139,250,.4);
+}
+
+/* ── COLORED GROUP TABS ── */
+.group-tabs-bar {
+  display: flex;
+  overflow-x: auto;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--ss-border);
+  gap: 4px;
+  padding: 8px 12px 0;
+  background: var(--ss-bg);
+}
+.group-tabs-bar::-webkit-scrollbar { display: none; }
+
+.group-tab {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: 10px 10px 0 0;
+  border: 1.5px solid transparent;
+  border-bottom: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--ss-muted);
+  transition: all .15s;
+  white-space: nowrap;
+  position: relative;
+  bottom: -1px;
+}
+.group-tab:hover { color: var(--ss-text); }
+.group-tab.active {
+  color: var(--ss-text);
+  font-weight: 700;
+  border-color: currentColor;
+  border-bottom-color: var(--ss-bg);
+}
+/* Cada grupo tiene su color */
+.group-tab[data-group="0"] { --gt-color: #4FC3F7; }
+.group-tab[data-group="1"] { --gt-color: #F5C518; }
+.group-tab[data-group="2"] { --gt-color: #E63946; }
+.group-tab[data-group="3"] { --gt-color: #22C55E; }
+.group-tab[data-group="4"] { --gt-color: #A78BFA; }
+.group-tab[data-group="5"] { --gt-color: #FB923C; }
+.group-tab[data-group="6"] { --gt-color: #F472B6; }
+.group-tab[data-group="7"] { --gt-color: #34D399; }
+.group-tab[data-group="general"] { --gt-color: #8BAF94; }
+
+.group-tab.active {
+  color: var(--gt-color);
+  border-color: var(--gt-color);
+  border-bottom-color: var(--ss-bg);
+  background: color-mix(in srgb, var(--gt-color) 10%, var(--ss-bg));
+}
+.group-tab:not(.active):hover {
+  color: var(--gt-color);
+  background: color-mix(in srgb, var(--gt-color) 6%, transparent);
+}
+
+/* ── ACTIVE TORNEOS EN HOME ── */
+.active-torneos-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ss-accent);
+  margin-bottom: 8px;
+}
+.active-torneo-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  background: var(--ss-surface);
+  border: 1.5px solid rgba(34,197,94,.35);
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  color: var(--ss-text);
+  transition: border-color .12s, transform .08s;
+  text-align: left;
+}
+.active-torneo-btn:hover  { border-color: var(--ss-green); }
+.active-torneo-btn:active { transform: scale(.98); }
+.active-torneo-icon {
+  width: 34px; height: 34px;
+  background: rgba(34,197,94,.15);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ss-green); flex-shrink: 0;
+}
+.active-torneo-info { flex: 1; }
+.active-torneo-name { font-weight: 700; font-size: 15px; }
+.active-torneo-meta { font-size: 12px; color: var(--ss-muted); margin-top: 2px; }
+.active-torneo-arrow { color: var(--ss-green); font-size: 14px; }
+
+/* ── TORNEO CARDS (Mis Torneos) ── */
+.torneo-card {
+  background: var(--ss-surface);
+  border: 1px solid var(--ss-border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.torneo-active   { border-color: rgba(34,197,94,.3); }
+.torneo-finished { opacity: .85; }
+
+.torneo-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.torneo-card-name { font-weight: 700; font-size: 16px; color: var(--ss-text); }
+.torneo-card-meta { font-size: 12px; color: var(--ss-muted); margin-top: 2px; }
+.btn-delete-torneo {
+  background: none; border: none;
+  color: var(--ss-muted); font-size: 16px;
+  padding: 2px 6px; cursor: pointer;
+  flex-shrink: 0; margin-top: -2px;
+}
+.btn-delete-torneo:hover { color: var(--ss-red); }
+
+.torneo-progress-bar {
+  height: 4px;
+  background: var(--ss-border);
+  border-radius: 2px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+.torneo-progress-fill {
+  height: 100%;
+  background: var(--ss-green);
+  border-radius: 2px;
+  transition: width .3s ease;
+}
+.torneo-progress-label { font-size: 11px; color: var(--ss-muted); margin-bottom: 10px; }
+
+.torneo-podio-preview {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.torneo-podio-item {
+  background: var(--ss-card);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 13px;
+  color: var(--ss-text);
+}
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--ss-text);
+}
+
+.mt-2 { margin-top: 8px; }
+.mt-3 { margin-top: 12px; }
