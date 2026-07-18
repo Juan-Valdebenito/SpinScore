@@ -210,7 +210,7 @@ function limpiarHistorial() {
 
 // ── PWA ──
 if ('serviceWorker' in navigator) {
-  const sw = `const C='spinscore-v185';
+  const sw = `const C='spinscore-v186';
   const F=['./','./index.html','./css/style.css',
     './js/core.js','./js/storage.js','./js/match.js',
     './js/liga.js','./js/grupos.js','./js/eliminacion.js'];

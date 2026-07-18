@@ -72,7 +72,7 @@
     </nav>
 
     <div class="home-footer">
-      SpinScore v1.8.5 · By: JP ·
+      SpinScore v1.8.6 · By: JP ·
       Reglamento basado en <a href="https://www.ittf.com/sports/rules/" target="_blank" rel="noopener" class="ittf-link">ITTF</a>
     </div>
   </div>
@@ -113,7 +113,7 @@
       <button onclick="undoPoint()" class="btn-undo">↩</button>
     </div>
     <div id="set-dots" class="set-dots-bar"></div>
-    <div id="score-area" class="score-area">
+    <div id="score-area" class="score-area" style="position:relative;">
       <button class="player-side left" onclick="addPoint(0)">
         <div class="player-name" style="color:var(--ss-blue);" id="score-p1-name">J1</div>
         <div class="big-score" style="color:var(--ss-blue);" id="score-p1-pts">0</div>
@@ -127,7 +127,58 @@
         <div class="sets-count" id="score-p2-sets">0</div>
       </button>
     </div>
+    <!-- DEUCE banner (posicionado sobre el marcador) -->
+    <div id="deuce-banner" class="deuce-banner">DEUCE</div>
+
     <div class="score-hint">Toca el lado del jugador para sumar · ↩ deshacer</div>
+
+    <!-- Barra de tarjetas -->
+    <div class="cards-bar">
+      <!-- Jugador 1 -->
+      <div class="card-player-section">
+        <div class="card-counters">
+          <span class="card-badge card-badge-yellow" id="card-y-0" style="display:none;">0</span>
+          <span class="card-badge card-badge-red"    id="card-r-0" style="display:none;">0</span>
+        </div>
+        <span id="card-p1-name" style="font-size:11px;color:var(--ss-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+        <button class="btn-card btn-card-yellow" onclick="showCardModal(0,'yellow')">
+          <span class="card-icon card-icon-yellow"></span>
+        </button>
+        <button class="btn-card btn-card-red" onclick="showCardModal(0,'red')">
+          <span class="card-icon card-icon-red"></span>
+        </button>
+      </div>
+
+      <div style="width:1px;background:var(--ss-border);margin:0 6px;"></div>
+
+      <!-- Jugador 2 -->
+      <div class="card-player-section right">
+        <div class="card-counters">
+          <span class="card-badge card-badge-yellow" id="card-y-1" style="display:none;">0</span>
+          <span class="card-badge card-badge-red"    id="card-r-1" style="display:none;">0</span>
+        </div>
+        <span id="card-p2-name" style="font-size:11px;color:var(--ss-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;"></span>
+        <button class="btn-card btn-card-yellow" onclick="showCardModal(1,'yellow')">
+          <span class="card-icon card-icon-yellow"></span>
+        </button>
+        <button class="btn-card btn-card-red" onclick="showCardModal(1,'red')">
+          <span class="card-icon card-icon-red"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de tarjeta -->
+  <div id="card-modal" class="card-modal" onclick="closeCardModal()">
+    <div class="card-modal-box" onclick="event.stopPropagation()">
+      <div id="card-modal-icon" class="card-modal-icon"></div>
+      <div id="card-modal-title" class="card-modal-title"></div>
+      <div id="card-modal-sub"   class="card-modal-sub"></div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="card-modal-btn" id="card-modal-confirm">Confirmar</button>
+        <button onclick="closeCardModal()" style="background:var(--ss-surface);color:var(--ss-muted);border:1.5px solid var(--ss-border);border-radius:12px;padding:12px 24px;font-weight:700;cursor:pointer;">Cancelar</button>
+      </div>
+    </div>
   </div>
 
   <!-- ══ WIN ══ -->

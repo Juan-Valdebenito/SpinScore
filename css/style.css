@@ -474,3 +474,145 @@ button:active { transform:scale(.94); opacity:.85; }
 
 .mt-2 { margin-top: 8px; }
 .mt-3 { margin-top: 12px; }
+
+/* ── CHIPS DE GRUPOS CON COLOR ── */
+#chips-groups .ss-chip[data-val="2"] { --chip-color: #4FC3F7; }
+#chips-groups .ss-chip[data-val="4"] { --chip-color: #F5C518; }
+#chips-groups .ss-chip[data-val="6"] { --chip-color: #22C55E; }
+#chips-groups .ss-chip[data-val="8"] { --chip-color: #A78BFA; }
+
+#chips-groups .ss-chip {
+  border-color: color-mix(in srgb, var(--chip-color, var(--ss-border)) 40%, var(--ss-border));
+  color: color-mix(in srgb, var(--chip-color, var(--ss-muted)) 60%, var(--ss-muted));
+}
+#chips-groups .ss-chip:hover {
+  border-color: var(--chip-color, var(--ss-muted));
+  color: var(--chip-color, var(--ss-text));
+  background: color-mix(in srgb, var(--chip-color, transparent) 8%, var(--ss-surface));
+}
+#chips-groups .ss-chip.active {
+  border-color: var(--chip-color, var(--ss-accent));
+  background: color-mix(in srgb, var(--chip-color, var(--ss-accent)) 15%, var(--ss-surface));
+  color: var(--chip-color, var(--ss-accent));
+}
+
+/* ── TARJETAS EN MARCADOR ── */
+.cards-bar {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 12px;
+  border-top: 1px solid var(--ss-border);
+  flex-shrink: 0;
+  background: var(--ss-bg);
+  gap: 8px;
+}
+.card-player-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+.card-player-section.right { flex-direction: row-reverse; }
+
+.btn-card {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1.5px solid;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .08s, filter .12s;
+  background: none;
+}
+.btn-card:active { transform: scale(.92); }
+.btn-card-yellow {
+  border-color: rgba(245,197,24,.5);
+  color: #F5C518;
+}
+.btn-card-yellow:hover { background: rgba(245,197,24,.1); }
+.btn-card-red {
+  border-color: rgba(230,57,70,.5);
+  color: #E63946;
+}
+.btn-card-red:hover { background: rgba(230,57,70,.1); }
+
+.card-icon {
+  width: 14px; height: 18px;
+  border-radius: 2px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.card-icon-yellow { background: #F5C518; }
+.card-icon-red    { background: #E63946; }
+
+.card-counters {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.card-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 6px;
+  min-width: 20px;
+  text-align: center;
+}
+.card-badge-yellow { background: rgba(245,197,24,.15); color: #F5C518; }
+.card-badge-red    { background: rgba(230,57,70,.15);  color: #E63946; }
+
+/* Modal de tarjeta */
+.card-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 250;
+  animation: ss-fadeIn .15s ease;
+}
+.card-modal.show { display: flex; }
+.card-modal-box {
+  background: var(--ss-surface);
+  border-radius: 20px;
+  padding: 28px 24px;
+  text-align: center;
+  max-width: 300px;
+  width: 90%;
+  border: 1px solid var(--ss-border);
+}
+.card-modal-icon {
+  width: 48px; height: 64px;
+  border-radius: 6px;
+  margin: 0 auto 16px;
+  animation: ss-popIn .3s ease;
+}
+.card-modal-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.card-modal-sub   { font-size: 14px; color: var(--ss-muted); margin-bottom: 20px; }
+.card-modal-btn   { background: var(--ss-accent); color: var(--ss-bg); border: none; border-radius: 12px; padding: 12px 32px; font-weight: 800; font-size: 16px; cursor: pointer; }
+
+/* DEUCE indicator */
+.deuce-banner {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(245,197,24,.15);
+  border: 2px solid var(--ss-accent);
+  border-radius: 12px;
+  padding: 6px 18px;
+  font-family: 'Orbitron', monospace;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--ss-accent);
+  letter-spacing: 3px;
+  pointer-events: none;
+  animation: ss-pulse 1s ease infinite;
+  z-index: 10;
+}
+.deuce-banner.show { display: block; }
