@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-bs-theme="dark">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,7 +7,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SpinScore">
-  <title>SpinScore</title>
+  <meta name="description" content="SpinScore — Marcador profesional de Tenis de Mesa. Torneos, grupos, eliminatorias y más.">
+  <title>SpinScore — Marcador de Tenis de Mesa</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -29,7 +30,7 @@
         <path d="M51 15 Q47 20 51 25" stroke="#D4A012" stroke-width="1.5" fill="none" stroke-linecap="round"/>
       </svg>
       <div class="orb home-title">SPINSCORE</div>
-      <div class="home-subtitle">Marcador &amp; Torneos</div>
+      <div class="home-subtitle">Marcador Profesional de Tenis de Mesa</div>
     </div>
 
     <div id="install-banner" class="install-banner d-none">
@@ -38,7 +39,6 @@
       <button onclick="document.getElementById('install-banner').classList.add('d-none')" class="install-close">×</button>
     </div>
 
-    <!-- Torneos activos en curso -->
     <div id="home-active-torneos" style="padding:0 16px;"></div>
 
     <nav class="home-menu">
@@ -48,7 +48,7 @@
         <span class="menu-card-sub" id="home-cfg-label">3 sets · 11 puntos</span>
       </button>
       <button class="menu-card menu-card-gold" onclick="goTo('screen-tournament-setup')">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="2"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ss-accent)" stroke-width="2"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
         <span class="menu-card-title">Torneo Liga</span>
         <span class="menu-card-sub">Todos contra todos</span>
       </button>
@@ -58,22 +58,19 @@
         <span class="menu-card-sub">Grupos + Eliminacion</span>
       </button>
       <button class="menu-card menu-card-purple" onclick="goTo('screen-mis-torneos')">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         <span class="menu-card-title">Mis Torneos</span>
         <span class="menu-card-sub">Historial y activos</span>
       </button>
-      <button class="menu-card menu-card-muted" onclick="goTo('screen-settings')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8BAF94" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        <div>
-          <div style="font-weight:700;font-size:15px;">Configuracion</div>
-          <div class="menu-card-sub">Sets, puntos y reglas</div>
-        </div>
+      <button class="menu-card menu-card-muted full-row" onclick="goTo('screen-settings')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ss-muted)" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <div><div style="font-weight:700;font-size:15px;">Configuracion</div><div class="menu-card-sub">Sets, puntos, temas y más</div></div>
       </button>
     </nav>
 
     <div class="home-footer">
-      SpinScore v1.8.6 · By: JP ·
-      Reglamento basado en <a href="https://www.ittf.com/sports/rules/" target="_blank" rel="noopener" class="ittf-link">ITTF</a>
+      SpinScore v1.9 · By: JP · <a href="https://spinscore.cl" class="ittf-link" target="_blank">spinscore.cl</a> ·
+      Reglamento basado en <a href="https://www.ittf.com/sports/rules/" target="_blank" class="ittf-link">ITTF</a>
     </div>
   </div>
 
@@ -100,7 +97,7 @@
       <div class="text-center mb-4" style="color:var(--ss-muted);font-size:20px;">VS</div>
       <label class="ss-label" style="color:var(--ss-red);">Jugador 2</label>
       <input type="text" class="ss-input mb-4" id="qs-p2" value="Jugador 2">
-      <div class="ss-infobox mb-4">Formato: Al mejor de <b id="qs-sets-label">3</b> sets · <b id="qs-pts-label">11</b> puntos por set</div>
+      <div class="ss-infobox mb-4">Formato: Al mejor de <b id="qs-sets-label" style="color:var(--ss-text);">3</b> sets · <b id="qs-pts-label" style="color:var(--ss-text);">11</b> puntos por set</div>
       <button class="btn-primary" onclick="startQuickMatch()">Iniciar Partido</button>
     </div>
   </div>
@@ -113,7 +110,7 @@
       <button onclick="undoPoint()" class="btn-undo">↩</button>
     </div>
     <div id="set-dots" class="set-dots-bar"></div>
-    <div id="score-area" class="score-area" style="position:relative;">
+    <div id="score-area" class="score-area">
       <button class="player-side left" onclick="addPoint(0)">
         <div class="player-name" style="color:var(--ss-blue);" id="score-p1-name">J1</div>
         <div class="big-score" style="color:var(--ss-blue);" id="score-p1-pts">0</div>
@@ -126,56 +123,40 @@
         <div class="set-pips" id="pips-p2"></div>
         <div class="sets-count" id="score-p2-sets">0</div>
       </button>
+      <div id="deuce-banner" class="deuce-banner">DEUCE</div>
     </div>
-    <!-- DEUCE banner (posicionado sobre el marcador) -->
-    <div id="deuce-banner" class="deuce-banner">DEUCE</div>
-
     <div class="score-hint">Toca el lado del jugador para sumar · ↩ deshacer</div>
-
-    <!-- Barra de tarjetas -->
     <div class="cards-bar">
-      <!-- Jugador 1 -->
       <div class="card-player-section">
         <div class="card-counters">
           <span class="card-badge card-badge-yellow" id="card-y-0" style="display:none;">0</span>
           <span class="card-badge card-badge-red"    id="card-r-0" style="display:none;">0</span>
         </div>
         <span id="card-p1-name" style="font-size:11px;color:var(--ss-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-        <button class="btn-card btn-card-yellow" onclick="showCardModal(0,'yellow')">
-          <span class="card-icon card-icon-yellow"></span>
-        </button>
-        <button class="btn-card btn-card-red" onclick="showCardModal(0,'red')">
-          <span class="card-icon card-icon-red"></span>
-        </button>
+        <button class="btn-card btn-card-yellow" onclick="showCardModal(0,'yellow')"><span class="card-icon card-icon-yellow"></span></button>
+        <button class="btn-card btn-card-red"    onclick="showCardModal(0,'red')"><span class="card-icon card-icon-red"></span></button>
       </div>
-
       <div style="width:1px;background:var(--ss-border);margin:0 6px;"></div>
-
-      <!-- Jugador 2 -->
       <div class="card-player-section right">
         <div class="card-counters">
           <span class="card-badge card-badge-yellow" id="card-y-1" style="display:none;">0</span>
           <span class="card-badge card-badge-red"    id="card-r-1" style="display:none;">0</span>
         </div>
         <span id="card-p2-name" style="font-size:11px;color:var(--ss-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;"></span>
-        <button class="btn-card btn-card-yellow" onclick="showCardModal(1,'yellow')">
-          <span class="card-icon card-icon-yellow"></span>
-        </button>
-        <button class="btn-card btn-card-red" onclick="showCardModal(1,'red')">
-          <span class="card-icon card-icon-red"></span>
-        </button>
+        <button class="btn-card btn-card-yellow" onclick="showCardModal(1,'yellow')"><span class="card-icon card-icon-yellow"></span></button>
+        <button class="btn-card btn-card-red"    onclick="showCardModal(1,'red')"><span class="card-icon card-icon-red"></span></button>
       </div>
     </div>
   </div>
 
-  <!-- Modal de tarjeta -->
+  <!-- Card Modal -->
   <div id="card-modal" class="card-modal" onclick="closeCardModal()">
     <div class="card-modal-box" onclick="event.stopPropagation()">
       <div id="card-modal-icon" class="card-modal-icon"></div>
       <div id="card-modal-title" class="card-modal-title"></div>
       <div id="card-modal-sub"   class="card-modal-sub"></div>
       <div style="display:flex;gap:10px;justify-content:center;">
-        <button class="card-modal-btn" id="card-modal-confirm">Confirmar</button>
+        <button class="btn-primary" id="card-modal-confirm" style="max-width:140px;">Confirmar</button>
         <button onclick="closeCardModal()" style="background:var(--ss-surface);color:var(--ss-muted);border:1.5px solid var(--ss-border);border-radius:12px;padding:12px 24px;font-weight:700;cursor:pointer;">Cancelar</button>
       </div>
     </div>
@@ -183,7 +164,7 @@
 
   <!-- ══ WIN ══ -->
   <div id="win-screen" class="win-screen">
-    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="1.5" class="win-trophy"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--ss-accent)" stroke-width="1.5" class="win-trophy"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
     <div id="win-name" class="win-name"></div>
     <div style="color:var(--ss-muted);margin-bottom:16px;">Gano el partido</div>
     <div style="display:flex;gap:28px;align-items:center;margin-bottom:16px;">
@@ -197,7 +178,7 @@
 
   <!-- ══ PODIO ══ -->
   <div id="podio-screen" class="podio-screen">
-    <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="1.5" style="animation:ss-popIn .5s ease;margin-bottom:12px;"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+    <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--ss-accent)" stroke-width="1.5" style="animation:ss-popIn .5s ease;margin-bottom:12px;"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
     <div class="podio-title">Torneo Finalizado</div>
     <div class="podio-subtitle" id="podio-tournament-name"></div>
     <div id="podio-cards"></div>
@@ -212,6 +193,25 @@
       <div style="width:40px;"></div>
     </div>
     <div class="scroll-body">
+
+      <!-- Tema -->
+      <div class="ss-section-label">Tema de la aplicacion</div>
+      <div class="theme-picker mb-4">
+        <button class="theme-option" data-theme="standard" onclick="themeSet('standard')">
+          <div class="theme-option-preview" style="background:linear-gradient(135deg,#0D2818,#163524);border-color:#2A5C3A;"></div>
+          <div class="theme-option-label">Estandar</div>
+        </button>
+        <button class="theme-option" data-theme="dark" onclick="themeSet('dark')">
+          <div class="theme-option-preview" style="background:linear-gradient(135deg,#050A0F,#0D1520);border-color:#1E3A5F;"></div>
+          <div class="theme-option-label">Oscuro</div>
+        </button>
+        <button class="theme-option" data-theme="light" onclick="themeSet('light')">
+          <div class="theme-option-preview" style="background:linear-gradient(135deg,#F4F7F4,#FFFFFF);border-color:#C8DEC8;"></div>
+          <div class="theme-option-label">Claro</div>
+        </button>
+      </div>
+
+      <!-- Sets -->
       <div class="ss-section-label">Sets por partido</div>
       <div class="chips-row" id="chips-sets">
         <button class="ss-chip" data-val="1" onclick="selectCfg('sets',1)">1</button>
@@ -219,6 +219,8 @@
         <button class="ss-chip" data-val="5" onclick="selectCfg('sets',5)">5</button>
         <button class="ss-chip" data-val="7" onclick="selectCfg('sets',7)">7</button>
       </div>
+
+      <!-- Puntos -->
       <div class="ss-section-label">Puntos por set</div>
       <div class="chips-row" id="chips-pts">
         <button class="ss-chip" data-val="7"  onclick="selectCfg('pts',7)">7</button>
@@ -226,10 +228,38 @@
         <button class="ss-chip" data-val="15" onclick="selectCfg('pts',15)">15</button>
         <button class="ss-chip" data-val="21" onclick="selectCfg('pts',21)">21</button>
       </div>
-      <div class="ss-infobox">
+
+      <div class="ss-infobox mb-4">
         <div style="font-size:12px;color:var(--ss-muted);margin-bottom:4px;">Formato actual</div>
         <div style="font-weight:700;">Al mejor de <span id="cfg-display-sets" style="color:var(--ss-accent);">3</span> sets · <span id="cfg-display-pts" style="color:var(--ss-accent);">11</span> pts por set</div>
         <div style="font-size:12px;color:var(--ss-muted);margin-top:4px;">Gana el set quien llega primero con 2 de diferencia (ITTF)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CONTACTO ══ -->
+  <div id="screen-contact" class="screen">
+    <div class="ss-header">
+      <button class="btn-back" onclick="goTo('screen-home')">←</button>
+      <div class="ss-header-title">Contacto</div>
+      <div style="width:40px;"></div>
+    </div>
+    <div class="scroll-body">
+      <div class="contact-card mb-3">
+        <div style="font-size:28px;margin-bottom:12px;">📧</div>
+        <div style="font-weight:700;font-size:17px;margin-bottom:6px;">Escríbenos</div>
+        <div style="color:var(--ss-muted);font-size:14px;margin-bottom:12px;">¿Tienes dudas, sugerencias o quieres SpinScore para tu organización?</div>
+        <a href="mailto:contacto@spinscore.cl" class="contact-link">contacto@spinscore.cl</a>
+      </div>
+      <div class="contact-card mb-3">
+        <div style="font-size:28px;margin-bottom:12px;">🌐</div>
+        <div style="font-weight:700;font-size:17px;margin-bottom:6px;">Sitio web</div>
+        <a href="https://spinscore.cl" target="_blank" class="contact-link">spinscore.cl</a>
+      </div>
+      <div class="contact-card">
+        <div style="font-size:28px;margin-bottom:12px;">🏓</div>
+        <div style="font-weight:700;font-size:17px;margin-bottom:6px;">Acerca de SpinScore</div>
+        <div style="color:var(--ss-muted);font-size:14px;line-height:1.6;">SpinScore es una plataforma profesional de marcador y gestión de torneos de Tenis de Mesa, diseñada para federaciones, clubes y eventos de todos los niveles. Reglamento basado en estándares <a href="https://www.ittf.com/sports/rules/" target="_blank" class="contact-link">ITTF</a>.</div>
       </div>
     </div>
   </div>
@@ -327,7 +357,6 @@
       </div>
       <div style="width:40px;"></div>
     </div>
-    <!-- Tabs de grupos con color por grupo -->
     <div class="group-tabs-bar" id="groups-tabs"></div>
     <div class="scroll-body" id="groups-main-content"></div>
   </div>
@@ -341,7 +370,7 @@
     </div>
     <div class="scroll-body">
       <div id="result-match-info" class="result-match-banner mb-3"></div>
-      <div class="ss-infobox mb-3" style="font-size:12px;">Ingresa solo los sets jugados. Ej: si gana 2-0, solo pon 2 sets.</div>
+      <div class="ss-infobox mb-3" style="font-size:12px;">Ingresa solo los sets jugados. Ej: si gana 2-0, pon solo 2 sets.</div>
       <div id="result-sets-container"></div>
       <button class="btn-add-set" onclick="addSetRow()">+ Agregar set</button>
       <div style="height:16px;"></div>
@@ -366,6 +395,7 @@
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/theme.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/core.js"></script>
 <script src="js/match.js"></script>
