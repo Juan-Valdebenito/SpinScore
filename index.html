@@ -69,7 +69,7 @@
     </nav>
 
     <div class="home-footer">
-      SpinScore v1.9 · By: JP · <a href="https://spinscore.cl" class="ittf-link" target="_blank">spinscore.cl</a> ·
+      SpinScore v1.9.5 · By: JP · <a href="https://spinscore.cl" class="ittf-link" target="_blank">spinscore.cl</a> ·
       Reglamento basado en <a href="https://www.ittf.com/sports/rules/" target="_blank" class="ittf-link">ITTF</a>
     </div>
   </div>
@@ -133,8 +133,12 @@
           <span class="card-badge card-badge-red"    id="card-r-0" style="display:none;">0</span>
         </div>
         <span id="card-p1-name" style="font-size:11px;color:var(--ss-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-        <button class="btn-card btn-card-yellow" onclick="showCardModal(0,'yellow')"><span class="card-icon card-icon-yellow"></span></button>
-        <button class="btn-card btn-card-red"    onclick="showCardModal(0,'red')"><span class="card-icon card-icon-red"></span></button>
+        <div class="card-btn-wrapper" oncontextmenu="showCardTooltip(event,'yellow');return false;">
+          <button class="btn-card btn-card-yellow" onclick="showCardModal(0,'yellow')" title="Tarjeta Amarilla ITTF"><span class="card-icon card-icon-yellow"></span></button>
+        </div>
+        <div class="card-btn-wrapper" oncontextmenu="showCardTooltip(event,'red');return false;">
+          <button class="btn-card btn-card-red" onclick="showCardModal(0,'red')" title="Tarjeta Roja ITTF"><span class="card-icon card-icon-red"></span></button>
+        </div>
       </div>
       <div style="width:1px;background:var(--ss-border);margin:0 6px;"></div>
       <div class="card-player-section right">
@@ -143,8 +147,12 @@
           <span class="card-badge card-badge-red"    id="card-r-1" style="display:none;">0</span>
         </div>
         <span id="card-p2-name" style="font-size:11px;color:var(--ss-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;"></span>
-        <button class="btn-card btn-card-yellow" onclick="showCardModal(1,'yellow')"><span class="card-icon card-icon-yellow"></span></button>
-        <button class="btn-card btn-card-red"    onclick="showCardModal(1,'red')"><span class="card-icon card-icon-red"></span></button>
+        <div class="card-btn-wrapper" oncontextmenu="showCardTooltip(event,'yellow');return false;">
+          <button class="btn-card btn-card-yellow" onclick="showCardModal(1,'yellow')" title="Tarjeta Amarilla ITTF"><span class="card-icon card-icon-yellow"></span></button>
+        </div>
+        <div class="card-btn-wrapper" oncontextmenu="showCardTooltip(event,'red');return false;">
+          <button class="btn-card btn-card-red" onclick="showCardModal(1,'red')" title="Tarjeta Roja ITTF"><span class="card-icon card-icon-red"></span></button>
+        </div>
       </div>
     </div>
   </div>
@@ -389,6 +397,14 @@
       <div style="width:40px;"></div>
     </div>
     <div class="scroll-body" id="elim-content"></div>
+  </div>
+
+  <!-- ITTF Card Tooltip -->
+  <div id="card-tooltip" class="card-tooltip" onclick="hideCardTooltip()">
+    <div class="card-tooltip-header" id="card-tooltip-header"></div>
+    <div class="card-tooltip-rule"  id="card-tooltip-rule"></div>
+    <div class="card-tooltip-ref"   id="card-tooltip-ref"></div>
+    <div class="card-tooltip-close">Toca para cerrar</div>
   </div>
 
 </div>

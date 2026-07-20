@@ -1,4 +1,4 @@
-/* SpinScore v1.8.6 — match.js
+/* SpinScore v1.9.5 — match.js
    Motor de partido + tarjetas amarillas/rojas + DEUCE
 */
 
@@ -50,6 +50,7 @@ function initMatch(p1, p2, fromTournament, tournamentMatchId) {
   renderScoreUI();
   renderCardsUI();
   goTo('screen-score');
+  setPageTitle(`${p1} vs ${p2}`);
 }
 
 // ── PUNTOS ──
@@ -234,3 +235,49 @@ function confirmBack() {
     goTo(MATCH.fromTournament ? 'screen-tournament-bracket' : 'screen-quicksetup');
   }
 }
+
+
+// ── ITTF CARD TOOLTIPS ──────────────────────
+const ITTF_RULES = {
+  yellow: {
+    header: '🟨 Tarjeta Amarilla',
+    rule: 'La tarjeta amarilla es una advertencia oficial. Se emite por comportamiento antideportivo leve, como protestar decisiones, tardar en servir, o interrumpir el juego innecesariamente. No conlleva penalización de puntos inmediata, pero una segunda tarjeta amarilla al mismo jugador puede resultar en tarjeta roja.',
+    ref: 'Reglamento ITTF — Regla 3.4.3: Advertencias y penalizaciones de conducta'
+  },
+  red: {
+    header: '🟥 Tarjeta Roja',
+    rule: 'La tarjeta roja implica una penalización inmediata: se otorga un punto al rival. Se emite por comportamiento antideportivo grave, insultos, o como segunda infracción tras una tarjeta amarilla. Una segunda tarjeta roja en el mismo partido puede resultar en descalificación.',
+    ref: 'Reglamento ITTF — Regla 3.4.4: Penalización de puntos por conducta'
+  }
+};
+
+function showCardTooltip(event, type) {
+  event.preventDefault();
+  const rule = ITTF_RULES[type];
+  const tooltip = document.getElementById('card-tooltip');
+  document.getElementById('card-tooltip-header').textContent = rule.header;
+  document.getElementById('card-tooltip-header').style.color = type === 'yellow' ? '#F5C518' : 'var(--ss-red)';
+  document.getElementById('card-tooltip-rule').textContent  = rule.rule;
+  document.getElementById('card-tooltip-ref').textContent   = rule.ref;
+  tooltip.classList.add('show');
+}
+
+function hideCardTooltip() {
+  document.getElementById('card-tooltip').classList.remove('show');
+}
+
+// También se puede activar con long-press en móvil
+(function() {
+  let pressTimer;
+  function addLongPress(selector, type) {
+    document.addEventListener('touchstart', function(e) {
+      const btn = e.target.closest(selector);
+      if (!btn) return;
+      pressTimer = setTimeout(() => showCardTooltip(e, type), 500);
+    }, { passive: true });
+    document.addEventListener('touchend', () => clearTimeout(pressTimer), { passive: true });
+    document.addEventListener('touchmove', () => clearTimeout(pressTimer), { passive: true });
+  }
+  addLongPress('.btn-card-yellow', 'yellow');
+  addLongPress('.btn-card-red',    'red');
+})();

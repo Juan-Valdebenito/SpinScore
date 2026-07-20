@@ -7,12 +7,14 @@ function goTo(id) {
   const el = document.getElementById(id);
   if (el) el.classList.add('active');
   window.scrollTo(0, 0);
-  if (id === 'screen-home')               { updateHomeLabel(); renderHomeButtons(); }
-  if (id === 'screen-quicksetup')         updateQSLabels();
-  if (id === 'screen-tournament-bracket') renderBracket();
-  if (id === 'screen-groups-main')        renderGroupsMain();
-  if (id === 'screen-elimination')        renderElimination();
-  if (id === 'screen-mis-torneos')        renderMisTorneos();
+  if (id === 'screen-home')               { updateHomeLabel(); renderHomeButtons(); setPageTitle(null); }
+  if (id === 'screen-quicksetup')         { updateQSLabels(); setPageTitle('Partido Rapido'); }
+  if (id === 'screen-tournament-bracket') { renderBracket(); setPageTitle(LIGA.name || 'Liga'); }
+  if (id === 'screen-groups-main')        { renderGroupsMain(); setPageTitle(getGT().name || 'Torneo'); }
+  if (id === 'screen-elimination')        { renderElimination(); setPageTitle((getGT().name || 'Torneo') + ' · Eliminatoria'); }
+  if (id === 'screen-mis-torneos')        { renderMisTorneos(); setPageTitle('Mis Torneos'); }
+  if (id === 'screen-settings')           setPageTitle('Configuracion');
+  if (id === 'screen-contact')            setPageTitle('Contacto');
 }
 
 function updateHomeLabel() {
@@ -75,6 +77,12 @@ function reanudarTorneo(id) {
   storageLoad(snap);
   renderGroupsMain();
   goTo('screen-groups-main');
+}
+
+
+// ── TITULO DE PAGINA ──
+function setPageTitle(title) {
+  document.title = title ? `${title} — SpinScore` : 'SpinScore — Marcador de Tenis de Mesa';
 }
 
 // ── TOAST ──
@@ -186,7 +194,7 @@ function limpiarHistorial() {
 
 // ── PWA ──
 if ('serviceWorker' in navigator) {
-  const sw = `const C='spinscore-v19';
+  const sw = `const C='spinscore-v195';
   const F=['./','./index.html','./css/style.css',
     './js/theme.js','./js/storage.js','./js/core.js',
     './js/theme.js','./js/storage.js','./js/match.js','./js/liga.js','./js/grupos.js','./js/eliminacion.js'];
