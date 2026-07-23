@@ -13,6 +13,7 @@ function goTo(id) {
   if (id === 'screen-groups-main')        { renderGroupsMain(); setPageTitle(getGT().name || 'Torneo'); }
   if (id === 'screen-elimination')        { renderElimination(); setPageTitle((getGT().name || 'Torneo') + ' · Eliminatoria'); }
   if (id === 'screen-mis-torneos')        { renderMisTorneos(); setPageTitle('Mis Torneos'); }
+  if (id === 'screen-categorias')          { renderCategorias(); setPageTitle('Categorías'); }
   if (id === 'screen-settings')           setPageTitle('Configuracion');
   if (id === 'screen-contact')            setPageTitle('Contacto');
 }
@@ -83,6 +84,36 @@ function reanudarTorneo(id) {
 // ── TITULO DE PAGINA ──
 function setPageTitle(title) {
   document.title = title ? `${title} — SpinScore` : 'SpinScore — Marcador de Tenis de Mesa';
+}
+
+
+// ── EXPORTAR PDF ──────────────────────────
+function exportarPDF() {
+  const GT = getGT();
+  if (!GT.name) { showToast('No hay torneo activo'); return; }
+  window.print();
+}
+
+// ── VISTA PUBLICA ─────────────────────────
+function abrirVistaPublica() {
+  const GT = getGT();
+  if (!GT.id) { showToast('Guarda el torneo primero'); return; }
+  const url = `public.html?id=${GT.id}`;
+  window.open(url, '_blank');
+}
+
+// ── COMPARTIR LINK ────────────────────────
+function compartirTorneo() {
+  const GT = getGT();
+  if (!GT.id) { showToast('No hay torneo activo'); return; }
+  const url = `${location.origin}${location.pathname.replace('index.html','')}public.html?id=${GT.id}`;
+  if (navigator.share) {
+    navigator.share({ title: GT.name + ' — SpinScore', url });
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => showToast('Link copiado al portapapeles'));
+  } else {
+    showToast('Link: ' + url);
+  }
 }
 
 // ── TOAST ──
@@ -194,10 +225,10 @@ function limpiarHistorial() {
 
 // ── PWA ──
 if ('serviceWorker' in navigator) {
-  const sw = `const C='spinscore-v195';
+  const sw = `const C='spinscore-v20';
   const F=['./','./index.html','./css/style.css',
     './js/theme.js','./js/storage.js','./js/core.js',
-    './js/theme.js','./js/storage.js','./js/match.js','./js/liga.js','./js/grupos.js','./js/eliminacion.js'];
+    './js/theme.js','./js/storage.js','./js/match.js','./js/liga.js','./js/grupos.js','./js/eliminacion.js','./landing.html','./public.html','./multimesa.html'];
   self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(F)));self.skipWaiting();});
   self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));});`;
   navigator.serviceWorker.register(
@@ -221,3 +252,65 @@ window.addEventListener('resize', () => {
   if (a.id==='screen-groups-main') renderGroupTabContent();
   if (a.id==='screen-elimination') renderElimination();
 });
+
+// ── CATEGORÍAS UI ──────────────────────────
+function addCategoria() {
+  const input = document.getElementById('cat-input');
+  const name = input.value.trim();
+  if (!name) return;
+  const cat = { id: catNewId(), name, createdAt: Date.now() };
+  catSave(cat);
+  input.value = '';
+  renderCategorias();
+}
+
+function renderCategorias() {
+  const cats = catsGetAll();
+  const container = document.getElementById('cat-list');
+  if (!container) return;
+  if (!cats.length) {
+    container.innerHTML = `<div class="empty-state" style="padding:40px 0;">
+      <div style="font-size:32px;margin-bottom:8px;">📂</div>
+      <div style="font-weight:700;margin-bottom:4px;">Sin categorías</div>
+      <div style="color:var(--ss-muted);font-size:13px;">Agrega categorías para organizar tus torneos</div>
+    </div>`;
+    return;
+  }
+  container.innerHTML = cats.map(cat => {
+    const torneos = storageGetAll().filter(t => t.catId === cat.id);
+    const activos = torneos.filter(t => t.status === 'active').length;
+    const terminados = torneos.filter(t => t.status === 'finished').length;
+    return `<div class="player-item" style="margin-bottom:10px;flex-direction:column;align-items:stretch;gap:10px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:36px;height:36px;background:color-mix(in srgb,var(--ss-accent) 15%,var(--ss-surface));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📂</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:15px;">${cat.name}</div>
+          <div style="font-size:12px;color:var(--ss-muted);">${activos} activo${activos!==1?'s':''} · ${terminados} finalizado${terminados!==1?'s':''}</div>
+        </div>
+        <button class="btn-remove" onclick="deleteCategoria('${cat.id}')">✕</button>
+      </div>
+      <button class="btn-primary" style="font-size:14px;padding:10px;" onclick="nuevoCatTorneo('${cat.id}','${cat.name}')">
+        + Nuevo torneo en esta categoría
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function deleteCategoria(id) {
+  if (!confirm('¿Eliminar esta categoría y sus torneos?')) return;
+  catDelete(id);
+  renderCategorias();
+  renderHomeButtons();
+}
+
+function nuevoCatTorneo(catId, catName) {
+  nuevoTorneoGrupos();
+  // Tag the tournament with this category when confirmed
+  window._pendingCatId   = catId;
+  window._pendingCatName = catName;
+  // Update title input with category name
+  const nameEl = document.getElementById('gt-name');
+  if (nameEl) nameEl.value = catName;
+  goTo('screen-groups-setup');
+}
+

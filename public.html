@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bracket — SpinScore</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style>
+    :root { --bg:#0D2818;--surface:#163524;--card:#1E4A30;--accent:#F5C518;--red:#E63946;--blue:#4FC3F7;--green:#22C55E;--text:#F0F4F0;--muted:#8BAF94;--border:#2A5C3A;--win:#22C55E; }
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap');
+    body { background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh; }
+    .orb { font-family:'Orbitron',monospace;font-weight:900; }
+    nav { display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:10; }
+    .nav-brand { font-family:'Orbitron',monospace;font-size:16px;color:var(--accent);letter-spacing:2px; }
+    .badge-live { background:rgba(230,57,70,.15);border:1px solid rgba(230,57,70,.4);color:#E63946;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px; }
+    .dot-live { width:6px;height:6px;border-radius:50%;background:#E63946;animation:pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+
+    .hero { padding:32px 24px 16px;text-align:center; }
+    .torneo-name { font-size:28px;font-weight:800;margin-bottom:4px; }
+    .torneo-meta { font-size:13px;color:var(--muted); }
+
+    /* Tabs de grupos */
+    .group-tabs { display:flex;overflow-x:auto;border-bottom:1px solid var(--border);padding:0 16px;gap:4px; }
+    .group-tabs::-webkit-scrollbar { display:none; }
+    .gtab { padding:10px 16px;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap;transition:all .15s; }
+    .gtab.active { color:var(--accent);border-color:var(--accent); }
+
+    .content { max-width:1000px;margin:0 auto;padding:24px 16px; }
+
+    /* Group table */
+    .group-card { background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:20px;overflow:hidden; }
+    .group-header { padding:12px 16px;font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border); }
+    .gbadge { width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#0D2818;flex-shrink:0; }
+    .gplayer { display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);font-size:14px; }
+    .gplayer:last-child { border-bottom:none; }
+    .gplayer-num { width:24px;color:var(--muted);font-size:12px; }
+    .gplayer-name { flex:1;font-weight:500; }
+    .gstats { display:flex;gap:12px;font-size:12px;color:var(--muted); }
+    .gstat-g { color:var(--win);font-weight:700; }
+    .gstat-p { color:var(--red);font-weight:700; }
+
+    /* Match rows */
+    .match-row { display:flex;align-items:center;background:var(--card);border-radius:10px;padding:10px 14px;margin-bottom:6px; }
+    .match-p { flex:1;font-size:13px;font-weight:600; }
+    .match-p.win { color:var(--win); }
+    .match-score { font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--muted);padding:0 10px; }
+    .match-score.done { color:var(--text); }
+    .match-pending { color:var(--border);font-style:italic; }
+
+    /* Bracket elim */
+    .round-title { font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin:20px 0 10px; }
+    .elim-match { background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:8px; }
+    .elim-player { display:flex;align-items:center;padding:6px 0;gap:8px; }
+    .elim-player:first-child { border-bottom:1px solid var(--border); }
+    .elim-name { flex:1;font-size:14px;font-weight:600; }
+    .elim-name.winner { color:var(--win); }
+    .elim-name.tbd { color:var(--border);font-style:italic; }
+    .elim-sets { font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--muted); }
+    .elim-sets.winner { color:var(--text); }
+    .elim-detail { font-size:11px;color:var(--border);text-align:center;margin-top:4px; }
+
+    /* Podio */
+    .podio-card { display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:10px; }
+    .podio-sym { font-size:28px;width:38px;text-align:center; }
+    .podio-name { font-size:16px;font-weight:700; }
+    .podio-pos { font-size:12px;color:var(--muted);margin-top:2px; }
+    .gold-card { border-color:rgba(245,197,24,.5);background:rgba(245,197,24,.07); }
+
+    /* Refresh */
+    .refresh-bar { text-align:center;padding:10px;font-size:12px;color:var(--muted); }
+
+    /* Empty */
+    .empty { text-align:center;padding:60px 20px;color:var(--muted); }
+
+    @media print {
+      nav,.refresh-bar { display:none; }
+      body { background:#fff;color:#000; }
+    }
+  </style>
+</head>
+<body>
+<nav>
+  <span class="nav-brand">SPINSCORE</span>
+  <span class="badge-live"><span class="dot-live"></span> Vista Pública</span>
+</nav>
+
+<div class="hero">
+  <div class="torneo-name" id="pub-name">Cargando torneo...</div>
+  <div class="torneo-meta" id="pub-meta"></div>
+</div>
+
+<div class="group-tabs" id="pub-tabs"></div>
+<div class="content" id="pub-content"></div>
+<div class="refresh-bar">🔄 Esta página se actualiza cada 30 segundos</div>
+
+<script>
+const GROUP_COLORS = ['#4FC3F7','#F5C518','#E63946','#22C55E','#A78BFA','#FB923C','#F472B6','#34D399'];
+const GROUP_NAMES  = ['A','B','C','D','E','F','G','H'];
+const ROUND_NAMES  = ['Dieciseisavos','Octavos de Final','Cuartos de Final','Semifinal','Final'];
+
+let currentTab = 0;
+let data = null;
+
+function loadData() {
+  // Load from localStorage (same device) or URL hash (shared)
+  const hash = location.hash.slice(1);
+  if (hash) {
+    try { data = JSON.parse(atob(hash)); } catch(e) { data = null; }
+  }
+  if (!data) {
+    // Try active tournament from localStorage
+    const all = JSON.parse(localStorage.getItem('spinscore_torneos') || '[]');
+    const id = new URLSearchParams(location.search).get('id');
+    data = id ? all.find(t => t.id === id) : all.find(t => t.status === 'active');
+  }
+  render();
+  setTimeout(loadData, 30000);
+}
+
+function render() {
+  if (!data) {
+    document.getElementById('pub-name').textContent = 'Torneo no encontrado';
+    document.getElementById('pub-content').innerHTML = '<div class="empty">No se encontró ningún torneo activo.<br>Abre la app y comparte el link desde un torneo activo.</div>';
+    return;
+  }
+  document.title = `${data.name} — SpinScore`;
+  document.getElementById('pub-name').textContent = data.name;
+  document.getElementById('pub-meta').textContent = `${data.players.length} jugadores · ${data.phase === 'elimination' ? 'Fase Eliminatoria' : 'Fase de Grupos'}`;
+
+  const tabs = document.getElementById('pub-tabs');
+  if (data.phase === 'groups' || data.groupMatches?.length) {
+    tabs.innerHTML = data.groups.map((_,gi) =>
+      `<button class="gtab${gi===currentTab?' active':''}" onclick="switchTab(${gi})">Grupo ${GROUP_NAMES[gi]}</button>`
+    ).join('') +
+    `<button class="gtab${currentTab===data.groups.length?' active':''}" onclick="switchTab(${data.groups.length})">General</button>` +
+    (data.elimRounds?.length ? `<button class="gtab${currentTab===data.groups.length+1?' active':''}" onclick="switchTab(${data.groups.length+1})">Eliminatoria</button>` : '');
+  } else { tabs.innerHTML = ''; }
+
+  renderContent();
+}
+
+function switchTab(idx) {
+  currentTab = idx;
+  document.querySelectorAll('.gtab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  renderContent();
+}
+
+function renderContent() {
+  const c = document.getElementById('pub-content');
+  if (!data) return;
+
+  if (data.elimRounds?.length && currentTab === data.groups.length + 1) {
+    renderElim(c); return;
+  }
+  if (currentTab === data.groups.length) {
+    renderGeneral(c); return;
+  }
+  renderGroup(c, currentTab);
+}
+
+function calcStats(gi) {
+  const group = data.groups[gi];
+  const st = group.map(pi => ({idx:pi,pts:0,won:0,lost:0,setW:0,setL:0}));
+  (data.groupMatches||[]).filter(m=>m.groupIdx===gi&&m.done).forEach(m=>{
+    const s1=st.find(x=>x.idx===m.p1), s2=st.find(x=>x.idx===m.p2);
+    if(!s1||!s2)return;
+    s1.setW+=m.sets1;s1.setL+=m.sets2;s2.setW+=m.sets2;s2.setL+=m.sets1;
+    const w=m.sets1>m.sets2?s1:s2,l=w===s1?s2:s1;
+    w.pts+=2;w.won++;l.lost++;
+  });
+  return st.sort((a,b)=>b.pts-a.pts||(b.setW-b.setL)-(a.setW-a.setL));
+}
+
+function renderGroup(c, gi) {
+  const color = GROUP_COLORS[gi];
+  const stats = calcStats(gi);
+  const matches = (data.groupMatches||[]).filter(m=>m.groupIdx===gi);
+  const allDone = matches.every(m=>m.done);
+
+  let html = `<div class="group-card">
+    <div class="group-header"><div class="gbadge" style="background:${color};">G${GROUP_NAMES[gi]}</div> Grupo ${GROUP_NAMES[gi]}</div>
+    <div style="display:flex;font-size:10px;color:var(--muted);font-weight:700;padding:6px 16px;border-bottom:1px solid var(--border);">
+      <div style="width:24px;">#</div><div style="flex:1;">JUGADOR</div>
+      <div style="width:30px;text-align:center;">PTS</div><div style="width:24px;text-align:center;">G</div>
+      <div style="width:24px;text-align:center;">P</div><div style="width:38px;text-align:center;">SETS</div>
+    </div>`;
+  stats.forEach((s,rank)=>{
+    const pass = rank<2&&allDone;
+    html+=`<div class="gplayer" style="${pass?'background:rgba(34,197,94,.06);':''}">
+      <div class="gplayer-num" style="color:${pass?'var(--win)':'var(--muted)'};">${rank+1}${pass?'*':''}</div>
+      <div class="gplayer-name" style="font-weight:${rank<2?600:400};">${data.players[s.idx]}</div>
+      <div class="gstats">
+        <span>${s.pts}</span>
+        <span class="gstat-g">${s.won}</span>
+        <span class="gstat-p">${s.lost}</span>
+        <span>${s.setW}-${s.setL}</span>
+      </div>
+    </div>`;
+  });
+  html+=`</div><div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;">Partidos</div>`;
+
+  matches.forEach(m=>{
+    const p1=data.players[m.p1],p2=data.players[m.p2];
+    const w=m.done?(m.sets1>m.sets2?'p1':'p2'):null;
+    const detail=m.done?m.setScores?.map(([a,b])=>`${a}-${b}`).join(' | '):'';
+    html+=`<div class="match-row">
+      <div class="match-p${w==='p1'?' win':''}">${p1}</div>
+      ${m.done
+        ?`<div class="match-score done" style="color:var(--blue);">${m.sets1}</div><span style="color:var(--muted);padding:0 4px;">–</span><div class="match-score done" style="color:var(--red);">${m.sets2}</div>`
+        :`<div class="match-score"><span class="match-pending">vs</span></div>`}
+      <div class="match-p${w==='p2'?' win':''}" style="text-align:right;">${p2}</div>
+    </div>
+    ${detail?`<div style="font-size:11px;color:var(--border);text-align:center;margin:-2px 0 6px;">${detail}</div>`:''}`;
+  });
+
+  if(allDone){
+    const top2=stats.slice(0,2).map(s=>data.players[s.idx]);
+    html+=`<div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:12px;padding:12px 16px;font-size:13px;margin-top:8px;">Clasifican: <b>${top2.join(' y ')}</b></div>`;
+  }
+  c.innerHTML=html;
+}
+
+function renderGeneral(c) {
+  let html='';
+  data.groups.forEach((_,gi)=>{
+    const color=GROUP_COLORS[gi],stats=calcStats(gi);
+    const done=(data.groupMatches||[]).filter(m=>m.groupIdx===gi).every(m=>m.done);
+    html+=`<div class="group-card">
+      <div class="group-header"><div class="gbadge" style="background:${color};">G${GROUP_NAMES[gi]}</div>Grupo ${GROUP_NAMES[gi]}${done?'<span style="margin-left:auto;font-size:11px;color:var(--win);">✓ Completo</span>':''}</div>`;
+    stats.forEach((s,rank)=>{
+      html+=`<div class="gplayer" style="${rank<2&&done?'background:rgba(34,197,94,.06);':''}">
+        <div class="gplayer-num" style="color:${rank<2&&done?'var(--win)':'var(--muted)'};">${rank+1}${rank<2&&done?'*':''}</div>
+        <div class="gplayer-name" style="font-size:13px;font-weight:${rank<2?600:400};">${data.players[s.idx]}</div>
+        <div class="gstats"><span class="gstat-g">${s.won}G</span><span class="gstat-p">${s.lost}P</span><span>${s.pts}pts</span></div>
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+  if(data.elimRounds?.length){
+    html+=`<button onclick="switchTab(${data.groups.length+1})" style="width:100%;background:var(--accent);color:var(--bg);border:none;border-radius:14px;padding:14px;font-weight:800;font-size:16px;cursor:pointer;margin-top:8px;">Ver Cuadro Eliminatorio →</button>`;
+  }
+  c.innerHTML=html;
+}
+
+function renderElim(c) {
+  const rounds=data.elimRounds||[], total=rounds.length;
+  let html='';
+  rounds.forEach((round,ri)=>{
+    const fe=total-1-ri;
+    const name=fe<ROUND_NAMES.length?ROUND_NAMES[ROUND_NAMES.length-1-fe]:`Ronda ${ri+1}`;
+    html+=`<div class="round-title">${name}</div>`;
+    round.forEach(m=>{
+      const w1=m.done&&m.sets1>m.sets2,w2=m.done&&m.sets2>m.sets1;
+      const detail=m.done?m.setScores?.map(([a,b])=>`${a}-${b}`).join(' | '):'';
+      html+=`<div class="elim-match">
+        <div class="elim-player"><div class="elim-name${w1?' winner':m.p1name==='TBD'?' tbd':''}">${m.p1name}</div><div class="elim-sets${w1?' winner':''}">${m.done?m.sets1:'–'}</div></div>
+        <div class="elim-player"><div class="elim-name${w2?' winner':m.p2name==='TBD'?' tbd':''}">${m.p2name}</div><div class="elim-sets${w2?' winner':''}">${m.done?m.sets2:'–'}</div></div>
+        ${detail?`<div class="elim-detail">${detail}</div>`:''}
+      </div>`;
+    });
+  });
+  // Podio si terminó
+  if(data.podio?.length){
+    html+=`<div class="round-title" style="margin-top:24px;">Podio Final</div>`;
+    const medals=[{cls:'gold-card',sym:'🥇',label:'1° Lugar'},{cls:'',sym:'🥈',label:'2° Lugar'},{cls:'',sym:'🥉',label:'3° / 4° Lugar'},{cls:'',sym:'🥉',label:'3° / 4° Lugar'}];
+    data.podio.slice(0,4).forEach((name,i)=>{
+      const m=medals[Math.min(i,3)];
+      html+=`<div class="podio-card ${m.cls}"><div class="podio-sym">${m.sym}</div><div><div class="podio-name">${name}</div><div class="podio-pos">${m.label}</div></div></div>`;
+    });
+  }
+  c.innerHTML=html;
+}
+
+loadData();
+</script>
+</body>
+</html>

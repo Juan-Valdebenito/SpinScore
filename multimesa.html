@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multimesa — SpinScore</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap');
+    :root { --bg:#0D2818;--surface:#163524;--card:#1E4A30;--accent:#F5C518;--red:#E63946;--blue:#4FC3F7;--green:#22C55E;--text:#F0F4F0;--muted:#8BAF94;--border:#2A5C3A;--win:#22C55E; }
+    *,*::before,*::after { box-sizing:border-box;margin:0;padding:0; }
+    body { background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden; }
+    .orb { font-family:'Orbitron',monospace;font-weight:900; }
+
+    /* NAV */
+    nav { display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:50; }
+    .nav-brand { font-family:'Orbitron',monospace;font-size:15px;color:var(--accent);letter-spacing:2px; }
+    .nav-right { display:flex;gap:10px;align-items:center; }
+    .btn-nav { background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:border-color .15s; }
+    .btn-nav:hover { border-color:var(--accent);color:var(--text); }
+    .btn-add-mesa { background:var(--accent);border:none;color:var(--bg);padding:7px 16px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:filter .15s; }
+    .btn-add-mesa:hover { filter:brightness(1.08); }
+
+    /* GRID */
+    .mesas-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;padding:16px 20px; }
+
+    /* MESA CARD */
+    .mesa-card { background:var(--surface);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;transition:border-color .15s; }
+    .mesa-card.active { border-color:rgba(245,197,24,.4); }
+    .mesa-card.finished { border-color:rgba(34,197,94,.4);opacity:.85; }
+
+    .mesa-header { display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--card); }
+    .mesa-name { font-weight:700;font-size:14px; }
+    .mesa-format { font-size:11px;color:var(--muted); }
+    .mesa-actions { display:flex;gap:6px; }
+    .btn-mesa-sm { background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:7px;font-size:11px;cursor:pointer;transition:all .12s; }
+    .btn-mesa-sm:hover { border-color:var(--muted);color:var(--text); }
+    .btn-mesa-sm.danger:hover { border-color:var(--red);color:var(--red); }
+
+    /* SCORE INSIDE CARD */
+    .mesa-score { display:flex;align-items:stretch;min-height:140px; }
+    .mesa-player { flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px 8px;cursor:pointer;transition:background .1s;border:none;background:none;color:var(--text); }
+    .mesa-player:active { background:rgba(255,255,255,.04); }
+    .mesa-player.left { border-right:1px solid var(--border); }
+    .mesa-player-name { font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    .mesa-big-score { font-family:'Orbitron',monospace;font-weight:900;font-size:56px;line-height:1;text-shadow:0 0 20px currentColor; }
+    .mesa-sets-count { font-family:'Orbitron',monospace;font-size:20px;color:var(--muted); }
+    .mesa-sets-count.winning { color:var(--win); }
+    .mesa-set-pips { display:flex;gap:4px; }
+    .mpip { width:8px;height:8px;border-radius:50%;background:var(--border); }
+    .mpip.blue { background:var(--blue); }
+    .mpip.red  { background:var(--red); }
+
+    .mesa-footer { display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid var(--border);background:var(--card); }
+    .mesa-serve { font-size:11px;color:var(--muted); }
+    .mesa-set-dots { display:flex;gap:4px; }
+    .sdot { width:8px;height:8px;border-radius:50%;background:var(--border); }
+    .sdot.blue { background:var(--blue); }
+    .sdot.red  { background:var(--red); }
+    .btn-undo-sm { background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 4px; }
+
+    /* WIN OVERLAY */
+    .mesa-win-overlay { position:absolute;inset:0;background:rgba(13,40,24,.95);display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;border-radius:18px;z-index:5; }
+    .mesa-win-overlay.show { display:flex; }
+    .mesa-win-name { font-size:20px;font-weight:800;color:var(--accent);text-align:center; }
+    .mesa-win-result { font-family:'Orbitron',monospace;font-size:28px;font-weight:900; }
+    .btn-reset-mesa { background:var(--accent);border:none;color:var(--bg);padding:8px 20px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;margin-top:4px; }
+
+    /* SETUP MODAL */
+    .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:100; }
+    .modal-overlay.show { display:flex; }
+    .modal-box { background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;width:90%;max-width:380px; }
+    .modal-title { font-size:18px;font-weight:700;margin-bottom:16px; }
+    .modal-field { margin-bottom:14px; }
+    .modal-label { font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px; }
+    .modal-input { width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-size:15px;outline:none;font-family:inherit; }
+    .modal-input:focus { border-color:var(--accent); }
+    .modal-chips { display:flex;gap:8px;margin-top:4px; }
+    .mchip { flex:1;padding:10px 0;border-radius:10px;border:1.5px solid var(--border);background:var(--card);color:var(--muted);font-weight:700;font-size:15px;cursor:pointer;transition:all .12s; }
+    .mchip.active { border-color:var(--accent);background:rgba(245,197,24,.12);color:var(--accent); }
+    .modal-btns { display:flex;gap:10px;margin-top:18px; }
+    .btn-modal-cancel { flex:1;background:var(--card);border:1px solid var(--border);color:var(--muted);padding:12px;border-radius:12px;font-weight:600;cursor:pointer; }
+    .btn-modal-ok { flex:1;background:var(--accent);border:none;color:var(--bg);padding:12px;border-radius:12px;font-weight:800;cursor:pointer; }
+
+    /* EMPTY */
+    .empty-mesas { text-align:center;padding:80px 20px;color:var(--muted); }
+    .empty-mesas svg { opacity:.3;margin-bottom:16px; }
+    .empty-mesas h3 { font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px; }
+    .empty-mesas p { font-size:14px; }
+
+    @keyframes pulse { 0%,100%{transform:scale(1)}50%{transform:scale(1.08)} }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">SPINSCORE · MULTIMESA</span>
+  <div class="nav-right">
+    <a href="index.html" class="btn-nav">← App</a>
+    <button class="btn-add-mesa" onclick="openSetupModal()">+ Nueva mesa</button>
+  </div>
+</nav>
+
+<div class="mesas-grid" id="mesas-grid">
+  <div class="empty-mesas" id="empty-state">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    <h3>Sin mesas activas</h3>
+    <p>Agrega una mesa para comenzar a marcar partidos simultáneos</p>
+  </div>
+</div>
+
+<!-- Setup Modal -->
+<div class="modal-overlay" id="setup-modal">
+  <div class="modal-box">
+    <div class="modal-title">Nueva Mesa</div>
+    <div class="modal-field">
+      <label class="modal-label">Nombre de la mesa</label>
+      <input type="text" class="modal-input" id="modal-mesa-name" placeholder="Ej: Mesa 1, Cancha A...">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Jugador 1</label>
+      <input type="text" class="modal-input" id="modal-p1" placeholder="Nombre">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Jugador 2</label>
+      <input type="text" class="modal-input" id="modal-p2" placeholder="Nombre">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Sets</label>
+      <div class="modal-chips" id="modal-chips-sets">
+        <button class="mchip" data-val="1" onclick="selectModalCfg('sets',1)">1</button>
+        <button class="mchip active" data-val="3" onclick="selectModalCfg('sets',3)">3</button>
+        <button class="mchip" data-val="5" onclick="selectModalCfg('sets',5)">5</button>
+        <button class="mchip" data-val="7" onclick="selectModalCfg('sets',7)">7</button>
+      </div>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Puntos por set</label>
+      <div class="modal-chips" id="modal-chips-pts">
+        <button class="mchip" data-val="7"  onclick="selectModalCfg('pts',7)">7</button>
+        <button class="mchip active" data-val="11" onclick="selectModalCfg('pts',11)">11</button>
+        <button class="mchip" data-val="15" onclick="selectModalCfg('pts',15)">15</button>
+        <button class="mchip" data-val="21" onclick="selectModalCfg('pts',21)">21</button>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="closeSetupModal()">Cancelar</button>
+      <button class="btn-modal-ok" onclick="createMesa()">Crear Mesa</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let mesas = [];
+let modalCfg = { sets: 3, pts: 11 };
+let mesaIdCounter = 1;
+
+function openSetupModal() {
+  document.getElementById('modal-mesa-name').value = `Mesa ${mesaIdCounter}`;
+  document.getElementById('modal-p1').value = '';
+  document.getElementById('modal-p2').value = '';
+  document.getElementById('setup-modal').classList.add('show');
+  document.getElementById('modal-p1').focus();
+}
+function closeSetupModal() {
+  document.getElementById('setup-modal').classList.remove('show');
+}
+
+function selectModalCfg(type, val) {
+  modalCfg[type] = val;
+  const id = type === 'sets' ? 'modal-chips-sets' : 'modal-chips-pts';
+  document.querySelectorAll(`#${id} .mchip`).forEach(c =>
+    c.classList.toggle('active', +c.dataset.val === val));
+}
+
+function createMesa() {
+  const name = document.getElementById('modal-mesa-name').value.trim() || `Mesa ${mesaIdCounter}`;
+  const p1   = document.getElementById('modal-p1').value.trim() || 'J1';
+  const p2   = document.getElementById('modal-p2').value.trim() || 'J2';
+  const mesa = {
+    id: mesaIdCounter++,
+    name, p1, p2,
+    sets: modalCfg.sets,
+    pts:  modalCfg.pts,
+    setsNeeded: Math.ceil(modalCfg.sets / 2),
+    pts_score: [0, 0],
+    sets_score: [0, 0],
+    history: [],
+    setHistory: [],
+    status: 'active', // active | finished
+    winner: null,
+  };
+  mesas.push(mesa);
+  closeSetupModal();
+  renderAll();
+}
+
+function renderAll() {
+  const grid = document.getElementById('mesas-grid');
+  const empty = document.getElementById('empty-state');
+  if (!mesas.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  // Remove old cards
+  grid.querySelectorAll('.mesa-card').forEach(c => c.remove());
+
+  mesas.forEach(m => {
+    const card = document.createElement('div');
+    card.className = `mesa-card${m.status === 'active' ? ' active' : m.status === 'finished' ? ' finished' : ''}`;
+    card.id = `mesa-${m.id}`;
+    card.style.position = 'relative';
+    card.innerHTML = buildMesaHTML(m);
+    grid.appendChild(card);
+  });
+}
+
+function buildMesaHTML(m) {
+  const [a, b] = m.pts_score, [sa, sb] = m.sets_score;
+  const setsNeeded = m.setsNeeded;
+  const inDeuce = a >= m.pts - 1 && b >= m.pts - 1;
+  const cycle = inDeuce ? 1 : 2;
+  const srv = (Math.floor((a+b)/cycle) + (sa+sb)) % 2;
+
+  // Set dots
+  const dots = Array.from({length: m.sets}, (_,i) =>
+    `<span class="sdot${i<sa?' blue':i<sa+sb?' red':''}"></span>`).join('');
+
+  // Pips
+  const p1pips = Array.from({length:setsNeeded},(_,i)=>`<span class="mpip${i<sa?' blue':''}"></span>`).join('');
+  const p2pips = Array.from({length:setsNeeded},(_,i)=>`<span class="mpip${i<sb?' red':''}"></span>`).join('');
+
+  const winHTML = m.status === 'finished' ? `
+    <div class="mesa-win-overlay show">
+      <div style="font-size:32px;">🏆</div>
+      <div class="mesa-win-name">${m.winner === 0 ? m.p1 : m.p2}</div>
+      <div class="mesa-win-result" style="color:var(--blue);">${m.sets_score[0]}<span style="color:var(--muted);font-size:18px;"> – </span><span style="color:var(--red);">${m.sets_score[1]}</span></div>
+      <button class="btn-reset-mesa" onclick="resetMesa(${m.id})">Nueva partida</button>
+    </div>` : '';
+
+  return `
+    <div class="mesa-header">
+      <div>
+        <div class="mesa-name">${m.name}</div>
+        <div class="mesa-format">Al mejor de ${m.sets} sets · ${m.pts} pts</div>
+      </div>
+      <div class="mesa-actions">
+        <button class="btn-mesa-sm" onclick="editMesaName(${m.id})">✏️</button>
+        <button class="btn-mesa-sm danger" onclick="deleteMesa(${m.id})">✕</button>
+      </div>
+    </div>
+    <div class="mesa-score">
+      <button class="mesa-player left" onclick="addMesaPoint(${m.id},0)" ${m.status==='finished'?'disabled':''}>
+        <div class="mesa-player-name" style="color:var(--blue);">${srv===0?'> ':''}${m.p1}</div>
+        <div class="mesa-big-score" style="color:var(--blue);">${a}</div>
+        <div class="mesa-set-pips">${p1pips}</div>
+        <div class="mesa-sets-count${sa>=setsNeeded?' winning':''}">${sa}</div>
+      </button>
+      <button class="mesa-player" onclick="addMesaPoint(${m.id},1)" ${m.status==='finished'?'disabled':''}>
+        <div class="mesa-player-name" style="color:var(--red);">${srv===1?'> ':''}${m.p2}</div>
+        <div class="mesa-big-score" style="color:var(--red);">${b}</div>
+        <div class="mesa-set-pips">${p2pips}</div>
+        <div class="mesa-sets-count${sb>=setsNeeded?' winning':''}">${sb}</div>
+      </button>
+    </div>
+    <div class="mesa-footer">
+      <div class="mesa-serve">${inDeuce&&a===b&&a>=m.pts-1?'⚡ DEUCE':''}</div>
+      <div class="mesa-set-dots">${dots}</div>
+      <button class="btn-undo-sm" onclick="undoMesaPoint(${m.id})" title="Deshacer">↩</button>
+    </div>
+    ${winHTML}`;
+}
+
+function addMesaPoint(id, player) {
+  const m = mesas.find(x => x.id === id);
+  if (!m || m.status === 'finished') return;
+  if (m.sets_score[0] >= m.setsNeeded || m.sets_score[1] >= m.setsNeeded) return;
+
+  m.pts_score[player]++;
+  m.history.push(player);
+
+  const [a, b] = m.pts_score;
+  if ((a >= m.pts || b >= m.pts) && Math.abs(a-b) >= 2) {
+    const winner = a > b ? 0 : 1;
+    m.setHistory.push([a, b]);
+    m.sets_score[winner]++;
+    m.pts_score = [0, 0];
+    m.history = [];
+    if (m.sets_score[0] >= m.setsNeeded || m.sets_score[1] >= m.setsNeeded) {
+      m.status = 'finished';
+      m.winner = m.sets_score[0] > m.sets_score[1] ? 0 : 1;
+    }
+  }
+  updateMesaCard(m);
+}
+
+function undoMesaPoint(id) {
+  const m = mesas.find(x => x.id === id);
+  if (!m || !m.history.length) return;
+  const last = m.history.pop();
+  m.pts_score[last]--;
+  updateMesaCard(m);
+}
+
+function resetMesa(id) {
+  const m = mesas.find(x => x.id === id);
+  if (!m) return;
+  m.pts_score = [0,0]; m.sets_score = [0,0];
+  m.history = []; m.setHistory = [];
+  m.status = 'active'; m.winner = null;
+  updateMesaCard(m);
+}
+
+function deleteMesa(id) {
+  if (!confirm('¿Eliminar esta mesa?')) return;
+  mesas = mesas.filter(x => x.id !== id);
+  const el = document.getElementById(`mesa-${id}`);
+  if (el) el.remove();
+  if (!mesas.length) document.getElementById('empty-state').style.display = 'block';
+}
+
+function editMesaName(id) {
+  const m = mesas.find(x => x.id === id);
+  if (!m) return;
+  const name = prompt('Nuevo nombre de la mesa:', m.name);
+  if (name?.trim()) { m.name = name.trim(); updateMesaCard(m); }
+}
+
+function updateMesaCard(m) {
+  const card = document.getElementById(`mesa-${m.id}`);
+  if (!card) return;
+  card.className = `mesa-card${m.status==='active'?' active':m.status==='finished'?' finished':''}`;
+  card.innerHTML = buildMesaHTML(m);
+}
+
+// Keyboard shortcuts: Escape to close modal
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSetupModal();
+  if (e.key === 'Enter' && document.getElementById('setup-modal').classList.contains('show')) createMesa();
+});
+</script>
+</body>
+</html>

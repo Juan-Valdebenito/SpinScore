@@ -126,14 +126,14 @@ function renderGroupsMain() {
   document.getElementById('gt-phase-label').textContent = 'Fase de Grupos';
   const tabsEl = document.getElementById('groups-tabs');
   tabsEl.innerHTML = GT.groups.map((_,gi)=>
-    `<button class="tab${gi===GT.currentGroupTab?' active':''}" onclick="switchGroupTab(${gi})">Grupo ${GROUP_NAMES[gi]}</button>`
-  ).join('') + `<button class="tab${GT.currentGroupTab===GT.groups.length?' active':''}" onclick="switchGroupTab(${GT.groups.length})">General</button>`;
+    `<button class="group-tab${gi===GT.currentGroupTab?' active':''}" data-group="${gi}" onclick="switchGroupTab(${gi})">Grupo ${GROUP_NAMES[gi]}</button>`
+  ).join('') + `<button class="group-tab${GT.currentGroupTab===GT.groups.length?' active':''}" data-group="general" onclick="switchGroupTab(${GT.groups.length})">General</button>`;
   renderGroupTabContent();
 }
 
 function switchGroupTab(idx) {
   GT.currentGroupTab=idx;
-  document.querySelectorAll('#groups-tabs .tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.querySelectorAll('#groups-tabs .group-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
   renderGroupTabContent();
 }
 

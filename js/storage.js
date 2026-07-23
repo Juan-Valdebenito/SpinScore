@@ -88,3 +88,26 @@ function storageLoad(snap) {
   GT.currentGroupTab = 0;
   GT.podio       = snap.podio || null;
 }
+
+// ── CATEGORÍAS ─────────────────────────────
+const CAT_KEY = 'spinscore_cats';
+
+function catsGetAll() {
+  try { return JSON.parse(localStorage.getItem(CAT_KEY) || '[]'); } catch { return []; }
+}
+
+function catSave(cat) {
+  const all = catsGetAll();
+  const idx = all.findIndex(c => c.id === cat.id);
+  if (idx >= 0) all[idx] = cat; else all.push(cat);
+  localStorage.setItem(CAT_KEY, JSON.stringify(all));
+}
+
+function catDelete(id) {
+  localStorage.setItem(CAT_KEY, JSON.stringify(catsGetAll().filter(c => c.id !== id)));
+  // Remove torneos of this category
+  const all = storageGetAll().filter(t => t.catId !== id);
+  localStorage.setItem('spinscore_torneos', JSON.stringify(all));
+}
+
+function catNewId() { return 'C' + Date.now(); }
