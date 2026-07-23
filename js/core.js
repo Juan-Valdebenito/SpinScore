@@ -225,12 +225,25 @@ function limpiarHistorial() {
 
 // ── PWA ──
 if ('serviceWorker' in navigator) {
-  const sw = `const C='spinscore-v20';
+  const sw = `const C='spinscore-v21';
   const F=['./','./index.html','./css/style.css',
     './js/theme.js','./js/storage.js','./js/core.js',
     './js/theme.js','./js/storage.js','./js/match.js','./js/liga.js','./js/grupos.js','./js/eliminacion.js','./landing.html','./public.html','./multimesa.html'];
   self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(F)));self.skipWaiting();});
-  self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));});`;
+  self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});
+  self.addEventListener('fetch',e=>{
+    if(e.request.mode==='navigate'){
+      e.respondWith(
+        fetch(e.request).then(r=>{
+          const clone=r.clone();
+          caches.open(C).then(cache=>cache.put(e.request,clone));
+          return r;
+        }).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html')||caches.match('./')))
+      );
+      return;
+    }
+    e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
+  });`;
   navigator.serviceWorker.register(
     URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))
   ).catch(()=>{});
@@ -313,4 +326,3 @@ function nuevoCatTorneo(catId, catName) {
   if (nameEl) nameEl.value = catName;
   goTo('screen-groups-setup');
 }
-
