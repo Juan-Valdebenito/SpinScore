@@ -59,8 +59,8 @@ function _renderMatchesTab() {
       <div style="color:var(--ss-muted);font-size:14px;margin-top:4px;">Campeon: <b style="color:var(--ss-text);">${champ}</b></div>
     </div>`;
     // Podio liga
-    const entries=st.slice(0,4).map(s=>({name:LIGA.players[s.idx],tournament:LIGA.name}));
-    setTimeout(()=>mostrarPodio(entries),400);
+    const podiumNames=st.slice(0,4).map(s=>LIGA.players[s.idx]);
+    setTimeout(()=>mostrarPodio(podiumNames, LIGA.name),400);
   }
   if(pending.length>0){
     html+=`<div class="section-label">Pendientes</div>`;

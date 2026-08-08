@@ -127,6 +127,11 @@ function showToast(msg) {
 
 // ── PODIO ──
 function mostrarPodio(names, tournamentName) {
+  // Los podios antiguos podían contener objetos; se normalizan para no mostrar
+  // "[object Object]" y se descartan entradas vacías.
+  names = (Array.isArray(names) ? names : [])
+    .map(entry => typeof entry === 'string' ? entry : entry?.name)
+    .filter(Boolean);
   const cfgP = [
     { cls:'gold-card',   color:'#F5C518', sym:'🥇', label:'1° Lugar' },
     { cls:'silver-card', color:'#C0C8D8', sym:'🥈', label:'2° Lugar' },
@@ -228,7 +233,7 @@ if ('serviceWorker' in navigator) {
   const sw = `const C='spinscore-v21';
   const F=['./','./index.html','./css/style.css',
     './js/theme.js','./js/storage.js','./js/core.js',
-    './js/theme.js','./js/storage.js','./js/match.js','./js/liga.js','./js/grupos.js','./js/eliminacion.js','./landing.html','./public.html','./multimesa.html'];
+    './js/theme.js','./js/storage.js','./js/core.js','./js/match.js','./js/liga.js','./js/grupos.js','./js/eliminacion.js','./index.html','./app.html','./public.html','./multimesa.html'];
   self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(F)));self.skipWaiting();});
   self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});
   self.addEventListener('fetch',e=>{

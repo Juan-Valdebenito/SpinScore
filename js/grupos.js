@@ -304,9 +304,9 @@ function addSetRow(valA=null,valB=null){
   row.className='set-row'; row.id=`set-row-${id}`;
   row.innerHTML=`
     <div class="set-row-label">Set ${num}</div>
-    <input type="number" class="set-input" id="set-a-${id}" min="0" max="99" value="${valA!==null?valA:''}" placeholder="0">
+    <input type="number" class="set-input" id="set-a-${id}" min="0" max="999" value="${valA!==null?valA:''}" placeholder="0">
     <div class="set-dash">–</div>
-    <input type="number" class="set-input" id="set-b-${id}" min="0" max="99" value="${valB!==null?valB:''}" placeholder="0">
+    <input type="number" class="set-input" id="set-b-${id}" min="0" max="999" value="${valB!==null?valB:''}" placeholder="0">
     <button class="btn-remove-set" onclick="removeSetRow('set-row-${id}')">×</button>`;
   container.appendChild(row);
   _renumberSets();
@@ -321,18 +321,29 @@ function _renumberSets(){
 
 function guardarResultado() {
   const rows=document.querySelectorAll('#result-sets-container .set-row');
-  const setScores=[];let sets1=0,sets2=0,valid=true;
+  const setScores=[];let sets1=0,sets2=0,valid=true,validationError='';
   const setsNeeded=Math.ceil(STATE.cfg.sets/2);
+  const pointsToWin=STATE.cfg.pts;
 
   rows.forEach(row=>{
     const inputs=row.querySelectorAll('.set-input');
-    const a=parseInt(inputs[0].value), b=parseInt(inputs[1].value);
-    if(isNaN(a)||isNaN(b)){valid=false;return;}
+    const rawA=inputs[0].value.trim(), rawB=inputs[1].value.trim();
+    const a=Number(rawA), b=Number(rawB);
+    if(rawA===''||rawB===''||!Number.isInteger(a)||!Number.isInteger(b)||a<0||b<0){
+      valid=false; validationError='Ingresa puntos enteros iguales o mayores a 0'; return;
+    }
+    // ITTF: cada set se gana al llegar al objetivo con una diferencia mínima de 2.
+    if(a===b || Math.max(a,b)<pointsToWin || Math.abs(a-b)<2){
+      valid=false; validationError=`Cada set debe terminar a ${pointsToWin} puntos con 2 de diferencia`; return;
+    }
+    if(sets1>=setsNeeded||sets2>=setsNeeded){
+      valid=false; validationError='No agregues sets después de que el partido ya terminó'; return;
+    }
     setScores.push([a,b]);
-    if(a>b)sets1++;else sets2++;
+    if(a>b)sets1++; else sets2++;
   });
 
-  if(!valid||setScores.length===0){showToast('Completa todos los sets');return;}
+  if(!valid||setScores.length===0){showToast(validationError||'Completa todos los sets');return;}
 
   // Validar que alguien llegó a setsNeeded
   if(sets1<setsNeeded&&sets2<setsNeeded){showToast(`Faltan sets: necesitas ${setsNeeded} ganados`);return;}
@@ -384,12 +395,7 @@ function _mostrarPodioPorGrupos(){
     .map(m=>m.sets1>m.sets2?m.p2name:m.p1name)
     .filter(n=>n&&n!=='TBD'&&n!==champion&&n!==runnerUp);
 
-  const entries=[
-    {name:champion,  tournament:GT.name},
-    {name:runnerUp,  tournament:GT.name},
-    ...semifinalists.map(n=>({name:n,tournament:GT.name})),
-  ];
-  mostrarPodio(entries);
+  mostrarPodio([champion, runnerUp, ...semifinalists], GT.name);
 }
 
 function getGT(){return GT;}
