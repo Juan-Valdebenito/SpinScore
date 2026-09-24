@@ -1,0 +1,15 @@
+{
+  "name": "SpinScore — Marcador de Tenis de Mesa",
+  "short_name": "SpinScore",
+  "description": "Marcador y gestión de torneos de Tenis de Mesa: partidos, ligas, grupos y eliminatorias.",
+  "lang": "es",
+  "start_url": "./app.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0D2818",
+  "theme_color": "#0D2818",
+  "icons": [
+    { "src": "images/Logo.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }
+  ]
+}

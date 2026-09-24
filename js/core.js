@@ -1,6 +1,8 @@
-/* SpinScore v1.9 — core.js */
+/* SpinScore — core.js
+   Navegación, inicio, Mis Torneos, categorías, compartir, podio y PWA.
+*/
 
-const STATE = { cfg: { sets: 3, pts: 11 } };
+const STATE = { cfg: cfgGet() };
 
 function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -8,13 +10,14 @@ function goTo(id) {
   if (el) el.classList.add('active');
   window.scrollTo(0, 0);
   if (id === 'screen-home')               { updateHomeLabel(); renderHomeButtons(); setPageTitle(null); }
-  if (id === 'screen-quicksetup')         { updateQSLabels(); setPageTitle('Partido Rapido'); }
+  if (id === 'screen-quicksetup')         { updateQSLabels(); setPageTitle('Partido Rápido'); }
+  if (id === 'screen-tournament-setup')   setPageTitle('Nueva Liga');
   if (id === 'screen-tournament-bracket') { renderBracket(); setPageTitle(LIGA.name || 'Liga'); }
   if (id === 'screen-groups-main')        { renderGroupsMain(); setPageTitle(getGT().name || 'Torneo'); }
   if (id === 'screen-elimination')        { renderElimination(); setPageTitle((getGT().name || 'Torneo') + ' · Eliminatoria'); }
   if (id === 'screen-mis-torneos')        { renderMisTorneos(); setPageTitle('Mis Torneos'); }
-  if (id === 'screen-categorias')          { renderCategorias(); setPageTitle('Categorías'); }
-  if (id === 'screen-settings')           setPageTitle('Configuracion');
+  if (id === 'screen-categorias')         { renderCategorias(); setPageTitle('Categorías'); }
+  if (id === 'screen-settings')           setPageTitle('Configuración');
   if (id === 'screen-contact')            setPageTitle('Contacto');
 }
 
@@ -24,19 +27,9 @@ function updateHomeLabel() {
 }
 
 function selectCfg(type, val) {
-  if (type === 'sets') {
-    STATE.cfg.sets = val;
-    document.querySelectorAll('#chips-sets .ss-chip').forEach(c =>
-      c.classList.toggle('active', +c.dataset.val === val));
-    const el = document.getElementById('cfg-display-sets');
-    if (el) el.textContent = val;
-  } else {
-    STATE.cfg.pts = val;
-    document.querySelectorAll('#chips-pts .ss-chip').forEach(c =>
-      c.classList.toggle('active', +c.dataset.val === val));
-    const el = document.getElementById('cfg-display-pts');
-    if (el) el.textContent = val;
-  }
+  STATE.cfg[type] = val;
+  cfgSave(STATE.cfg);
+  _syncChips();
   updateHomeLabel();
 }
 
@@ -46,73 +39,119 @@ function _syncChips() {
   document.querySelectorAll('#chips-pts .ss-chip').forEach(c =>
     c.classList.toggle('active', +c.dataset.val === STATE.cfg.pts));
   document.querySelectorAll('#chips-groups .ss-chip').forEach(c =>
-    c.classList.toggle('active', +c.dataset.val === (typeof GT !== 'undefined' ? GT.numGroups : 4)));
+    c.classList.toggle('active', +c.dataset.val === getGT().numGroups));
+  const s = document.getElementById('cfg-display-sets');
+  const p = document.getElementById('cfg-display-pts');
+  if (s) s.textContent = STATE.cfg.sets;
+  if (p) p.textContent = STATE.cfg.pts;
 }
 
-// ── ACTIVE TORNEOS HOME ──
+function formatLabel(cfg) {
+  return `${cfg.sets} set${cfg.sets > 1 ? 's' : ''} · ${cfg.pts} pts`;
+}
+
+// ── EN CURSO (HOME) ────────────────────────
+const ICON_GROUPS = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="2" y="3" width="9" height="8" rx="1"/><rect x="13" y="3" width="9" height="8" rx="1"/><rect x="2" y="13" width="9" height="8" rx="1"/><rect x="13" y="13" width="9" height="8" rx="1"/></svg>';
+const ICON_TROPHY = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/></svg>';
+const ICON_BOLT   = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
+
+function _activeBtn(onclick, icon, name, meta) {
+  return `
+    <button class="active-torneo-btn" onclick="${onclick}">
+      <div class="active-torneo-icon">${icon}</div>
+      <div class="flex-1">
+        <div class="active-torneo-name">${esc(name)}</div>
+        <div class="active-torneo-meta">${esc(meta)}</div>
+      </div>
+      <div class="active-torneo-arrow" aria-hidden="true">▶</div>
+    </button>`;
+}
+
 function renderHomeButtons() {
   const container = document.getElementById('home-active-torneos');
   if (!container) return;
-  const activos = storageGetAll().filter(t => t.status === 'active');
-  if (!activos.length) { container.innerHTML = ''; return; }
-  container.innerHTML = `
-    <div style="padding:0 0 8px;">
-      <div class="active-torneos-label">Torneos en curso</div>
-      ${activos.map(t => `
-        <button class="active-torneo-btn" onclick="reanudarTorneo('${t.id}')">
-          <div class="active-torneo-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="9" height="8" rx="1"/><rect x="13" y="3" width="9" height="8" rx="1"/><rect x="2" y="13" width="9" height="8" rx="1"/><rect x="13" y="13" width="9" height="8" rx="1"/></svg>
-          </div>
-          <div style="flex:1;">
-            <div class="active-torneo-name">${t.name}</div>
-            <div class="active-torneo-meta">${t.players.length} jugadores · ${t.phase==='elimination'?'Eliminatoria':'Fase de grupos'}</div>
-          </div>
-          <div class="active-torneo-arrow">▶</div>
-        </button>`).join('')}
-    </div>`;
+  let items = '';
+
+  const live = liveMatchGet();
+  if (live && live.p) {
+    items += _activeBtn('resumeLiveMatch()', ICON_BOLT,
+      `${live.p[0]} vs ${live.p[1]}`,
+      `Partido en vivo · ${live.sets[0]}-${live.sets[1]} en sets`);
+  }
+  if (LIGA.id && LIGA.status === 'active') {
+    const done = LIGA.matches.filter(m => m.done).length;
+    items += _activeBtn("goTo('screen-tournament-bracket')", ICON_TROPHY,
+      LIGA.name, `Liga · ${done}/${LIGA.matches.length} partidos`);
+  }
+  storageGetAll().filter(t => t.status === 'active').forEach(t => {
+    items += _activeBtn(`reanudarTorneo('${esc(t.id)}')`, ICON_GROUPS, t.name,
+      `${t.players.length} jugadores · ${t.phase === 'elimination' ? 'Eliminatoria' : 'Fase de grupos'}`);
+  });
+
+  container.innerHTML = items
+    ? `<div class="pb-2"><div class="active-torneos-label">En curso</div>${items}</div>`
+    : '';
 }
 
 function reanudarTorneo(id) {
   const snap = storageGetAll().find(t => t.id === id);
   if (!snap) return;
   storageLoad(snap);
-  renderGroupsMain();
-  goTo('screen-groups-main');
+  goTo(snap.phase === 'elimination' ? 'screen-elimination' : 'screen-groups-main');
 }
-
 
 // ── TITULO DE PAGINA ──
 function setPageTitle(title) {
   document.title = title ? `${title} — SpinScore` : 'SpinScore — Marcador de Tenis de Mesa';
 }
 
-
 // ── EXPORTAR PDF ──────────────────────────
 function exportarPDF() {
-  const GT = getGT();
-  if (!GT.name) { showToast('No hay torneo activo'); return; }
+  if (!getGT().name) { showToast('No hay torneo activo'); return; }
   window.print();
 }
 
-// ── VISTA PUBLICA ─────────────────────────
+// ── VISTA PUBLICA / COMPARTIR ─────────────
 function abrirVistaPublica() {
   const GT = getGT();
   if (!GT.id) { showToast('Guarda el torneo primero'); return; }
-  const url = `public.html?id=${GT.id}`;
-  window.open(url, '_blank');
+  window.open(`public.html?id=${encodeURIComponent(GT.id)}`, '_blank');
 }
 
-// ── COMPARTIR LINK ────────────────────────
-function compartirTorneo() {
+/** Datos mínimos que necesita public.html para mostrar el torneo. */
+function _publicPayload(GT) {
+  return {
+    name: GT.name, cfg: GT.cfg, phase: GT.phase, players: GT.players,
+    groups: GT.groups, groupMatches: GT.groupMatches, elimRounds: GT.elimRounds,
+    podio: GT.podio || null, sharedAt: Date.now(),
+  };
+}
+
+async function compartirTorneo() {
   const GT = getGT();
   if (!GT.id) { showToast('No hay torneo activo'); return; }
-  const url = `${location.origin}${location.pathname.replace('index.html','')}public.html?id=${GT.id}`;
-  if (navigator.share) {
-    navigator.share({ title: GT.name + ' — SpinScore', url });
-  } else if (navigator.clipboard) {
-    navigator.clipboard.writeText(url).then(() => showToast('Link copiado al portapapeles'));
-  } else {
-    showToast('Link: ' + url);
+  let url;
+  try {
+    const hash = await encodeShare(_publicPayload(GT));
+    url = new URL('public.html', location.href);
+    url.hash = hash;
+    url = url.href;
+  } catch {
+    showToast('No se pudo generar el link'); return;
+  }
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: GT.name + ' — SpinScore', url });
+      return;
+    }
+  } catch (e) {
+    if (e && e.name === 'AbortError') return; // el usuario cerró el menú de compartir
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    showToast('Link copiado · muestra el estado actual del torneo');
+  } catch {
+    await ssPrompt('Copia este link', url);
   }
 }
 
@@ -120,39 +159,42 @@ function compartirTorneo() {
 let _toastTimer;
 function showToast(msg) {
   const t = document.getElementById('toast');
+  if (!t) return;
   t.textContent = msg; t.classList.add('show');
   clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
 }
 
 // ── PODIO ──
-function mostrarPodio(names, tournamentName) {
-  // Los podios antiguos podían contener objetos; se normalizan para no mostrar
-  // "[object Object]" y se descartan entradas vacías.
+const PODIO_META = {
+  1: { cls: 'gold-card',   color: '#F5C518', sym: '🥇', label: '1° Lugar' },
+  2: { cls: 'silver-card', color: '#C0C8D8', sym: '🥈', label: '2° Lugar' },
+  3: { cls: 'bronze-card', color: '#CD7F32', sym: '🥉', label: '3° Lugar' },
+  4: { cls: '',            color: 'var(--ss-muted)', sym: '4°', label: '4° Lugar' },
+};
+
+/**
+ * Muestra la pantalla de podio (solo presentación; quien llama persiste el resultado).
+ * @param {string[]} names
+ * @param {string} tournamentName
+ * @param {number[]} places lugar de cada nombre. En eliminación directa ambos
+ *   semifinalistas perdedores reciben bronce (3° compartido, como en la ITTF).
+ */
+function mostrarPodio(names, tournamentName, places = [1, 2, 3, 4]) {
   names = (Array.isArray(names) ? names : [])
     .map(entry => typeof entry === 'string' ? entry : entry?.name)
     .filter(Boolean);
-  const cfgP = [
-    { cls:'gold-card',   color:'#F5C518', sym:'🥇', label:'1° Lugar' },
-    { cls:'silver-card', color:'#C0C8D8', sym:'🥈', label:'2° Lugar' },
-    { cls:'bronze-card', color:'#CD7F32', sym:'🥉', label:'3° / 4° Lugar' },
-    { cls:'bronze-card', color:'#CD7F32', sym:'🥉', label:'3° / 4° Lugar' },
-  ];
   document.getElementById('podio-tournament-name').textContent = tournamentName || '';
-  document.getElementById('podio-cards').innerHTML = names.slice(0,4).map((name,i) => {
-    const m = cfgP[Math.min(i,3)];
+  document.getElementById('podio-cards').innerHTML = names.slice(0, 4).map((name, i) => {
+    const m = PODIO_META[places[i] || 4];
     return `<div class="podio-card ${m.cls}">
       <div class="podio-sym">${m.sym}</div>
       <div>
-        <div class="podio-name">${name}</div>
+        <div class="podio-name">${esc(name)}</div>
         <div class="podio-label" style="color:${m.color};">${m.label}</div>
       </div>
     </div>`;
   }).join('');
-  const GT = getGT();
-  GT.podio = names;
-  storageSnapshot();
-  storageFinish(GT.id);
   document.getElementById('podio-screen').classList.add('show');
 }
 
@@ -164,13 +206,19 @@ function cerrarPodio() {
 // ── MIS TORNEOS ──
 function renderMisTorneos() {
   const all = storageGetAll();
+  const cats = new Map(catsGetAll().map(c => [c.id, c.name]));
   const activos    = all.filter(t => t.status === 'active');
   const terminados = all.filter(t => t.status === 'finished');
   const container  = document.getElementById('mis-torneos-content');
+  const catLabel = t => t.catId && cats.has(t.catId) ? ` · ${cats.get(t.catId)}` : '';
   let html = '';
 
   if (!all.length) {
-    container.innerHTML = `<div class="empty-state"><div style="font-size:40px;margin-bottom:12px;">📋</div><div style="font-weight:700;font-size:17px;margin-bottom:6px;">Sin torneos aún</div><div style="color:var(--ss-muted);font-size:14px;">Crea un Torneo por Grupos desde el inicio</div></div>`;
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">Sin torneos aún</div>
+      <div class="empty-sub">Crea un Torneo por Grupos desde el inicio</div>
+    </div>`;
     return;
   }
 
@@ -180,28 +228,35 @@ function renderMisTorneos() {
       const pct = _torneoProgress(t);
       html += `<div class="torneo-card torneo-active">
         <div class="torneo-card-header">
-          <div><div class="torneo-card-name">${t.name}</div><div class="torneo-card-meta">${t.players.length} jugadores · ${t.phase==='elimination'?'Fase eliminatoria':'Fase de grupos'}</div></div>
-          <button class="btn-delete-torneo" onclick="eliminarTorneo('${t.id}',event)">✕</button>
+          <div>
+            <div class="torneo-card-name">${esc(t.name)}</div>
+            <div class="torneo-card-meta">${t.players.length} jugadores · ${t.phase === 'elimination' ? 'Fase eliminatoria' : 'Fase de grupos'}${esc(catLabel(t))}</div>
+          </div>
+          <button class="btn-delete-torneo" aria-label="Eliminar torneo ${esc(t.name)}" onclick="eliminarTorneo('${esc(t.id)}')">✕</button>
         </div>
-        <div class="torneo-progress-bar"><div class="torneo-progress-fill" style="width:${pct}%"></div></div>
+        <div class="torneo-progress-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><div class="torneo-progress-fill" style="width:${pct}%"></div></div>
         <div class="torneo-progress-label">${pct}% completado</div>
-        <button class="btn-primary mt-2" onclick="reanudarTorneo('${t.id}')">Continuar torneo</button>
+        <button class="btn-primary mt-2" onclick="reanudarTorneo('${esc(t.id)}')">Continuar torneo</button>
       </div>`;
     });
   }
 
   if (terminados.length) {
-    html += `<div class="ss-section-label" style="margin-top:20px;">Historial (${terminados.length})</div>`;
+    html += `<div class="ss-section-label mt-section">Historial (${terminados.length})</div>`;
     terminados.forEach(t => {
       const fecha = t.finishedAt ? new Date(t.finishedAt).toLocaleDateString('es-CL') : '';
       html += `<div class="torneo-card">
         <div class="torneo-card-header">
-          <div><div class="torneo-card-name">${t.name}</div><div class="torneo-card-meta">${t.players.length} jugadores · ${fecha}</div></div>
-          <button class="btn-delete-torneo" onclick="eliminarTorneo('${t.id}',event)">✕</button>
+          <div>
+            <div class="torneo-card-name">${esc(t.name)}</div>
+            <div class="torneo-card-meta">${t.players.length} jugadores · ${fecha}${esc(catLabel(t))}</div>
+          </div>
+          <button class="btn-delete-torneo" aria-label="Eliminar torneo ${esc(t.name)}" onclick="eliminarTorneo('${esc(t.id)}')">✕</button>
         </div>
         <div class="torneo-podio-preview">
-          ${(t.podio||[]).slice(0,3).map((n,i)=>['🥇','🥈','🥉'][i]+' '+n).map(x=>`<span class="torneo-podio-item">${x}</span>`).join('')}
+          ${(t.podio || []).slice(0, 3).map((n, i) => `<span class="torneo-podio-item">${['🥇', '🥈', '🥉'][i]} ${esc(n)}</span>`).join('')}
         </div>
+        <button class="btn-secondary mt-3 w-100" onclick="reanudarTorneo('${esc(t.id)}')">Ver torneo</button>
       </div>`;
     });
     html += `<button class="btn-secondary mt-3 w-100" onclick="limpiarHistorial()">Limpiar historial</button>`;
@@ -210,74 +265,34 @@ function renderMisTorneos() {
 }
 
 function _torneoProgress(t) {
-  const total = (t.groupMatches||[]).length + (t.elimRounds||[]).reduce((s,r)=>s+r.length,0);
-  const done  = (t.groupMatches||[]).filter(m=>m.done).length + (t.elimRounds||[]).reduce((s,r)=>s+r.filter(m=>m.done).length,0);
-  return total===0?0:Math.round((done/total)*100);
+  const real = m => m.p1name !== 'BYE' && m.p2name !== 'BYE' && !m.bye;
+  const elim = (t.elimRounds || []).flat().filter(real);
+  const total = (t.groupMatches || []).length + elim.length;
+  const done  = (t.groupMatches || []).filter(m => m.done).length + elim.filter(m => m.done).length;
+  return total === 0 ? 0 : Math.round((done / total) * 100);
 }
 
-function eliminarTorneo(id,e) {
-  e.stopPropagation();
-  if (!confirm('¿Eliminar este torneo?')) return;
-  storageDelete(id); renderMisTorneos(); renderHomeButtons();
+async function eliminarTorneo(id) {
+  if (!await ssConfirm('Se borrarán todos sus resultados.', { title: '¿Eliminar este torneo?', okText: 'Eliminar', danger: true })) return;
+  storageDelete(id);
+  renderMisTorneos(); renderHomeButtons();
 }
 
-function limpiarHistorial() {
-  if (!confirm('¿Limpiar todos los torneos terminados?')) return;
-  const activos = storageGetAll().filter(t=>t.status==='active');
-  localStorage.setItem('spinscore_torneos', JSON.stringify(activos));
+async function limpiarHistorial() {
+  if (!await ssConfirm('Se borrarán todos los torneos terminados.', { title: '¿Limpiar historial?', okText: 'Limpiar', danger: true })) return;
+  storageClearFinished();
   renderMisTorneos();
 }
-
-// ── PWA ──
-if ('serviceWorker' in navigator) {
-  const sw = `const C='spinscore-v21';
-  const F=['./','./index.html','./css/style.css',
-    './js/theme.js','./js/storage.js','./js/core.js',
-    './js/theme.js','./js/storage.js','./js/core.js','./js/match.js','./js/liga.js','./js/grupos.js','./js/eliminacion.js','./index.html','./app.html','./public.html','./multimesa.html'];
-  self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(F)));self.skipWaiting();});
-  self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});
-  self.addEventListener('fetch',e=>{
-    if(e.request.mode==='navigate'){
-      e.respondWith(
-        fetch(e.request).then(r=>{
-          const clone=r.clone();
-          caches.open(C).then(cache=>cache.put(e.request,clone));
-          return r;
-        }).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html')||caches.match('./')))
-      );
-      return;
-    }
-    e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
-  });`;
-  navigator.serviceWorker.register(
-    URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))
-  ).catch(()=>{});
-}
-
-window.addEventListener('load', () => {
-  themeInit();
-  _syncChips();
-  updateHomeLabel();
-  renderHomeButtons();
-  const installed = window.matchMedia('(display-mode:standalone)').matches || navigator.standalone;
-  if (!installed)
-    setTimeout(() => document.getElementById('install-banner').classList.remove('d-none'), 1500);
-});
-
-window.addEventListener('resize', () => {
-  const a = document.querySelector('.screen.active');
-  if (!a) return;
-  if (a.id==='screen-groups-main') renderGroupTabContent();
-  if (a.id==='screen-elimination') renderElimination();
-});
 
 // ── CATEGORÍAS UI ──────────────────────────
 function addCategoria() {
   const input = document.getElementById('cat-input');
   const name = input.value.trim();
   if (!name) return;
-  const cat = { id: catNewId(), name, createdAt: Date.now() };
-  catSave(cat);
+  if (catsGetAll().some(c => c.name.toLowerCase() === name.toLowerCase())) {
+    showToast('Esa categoría ya existe'); return;
+  }
+  catSave({ id: catNewId(), name, createdAt: Date.now() });
   input.value = '';
   renderCategorias();
 }
@@ -287,47 +302,82 @@ function renderCategorias() {
   const container = document.getElementById('cat-list');
   if (!container) return;
   if (!cats.length) {
-    container.innerHTML = `<div class="empty-state" style="padding:40px 0;">
-      <div style="font-size:32px;margin-bottom:8px;">📂</div>
-      <div style="font-weight:700;margin-bottom:4px;">Sin categorías</div>
-      <div style="color:var(--ss-muted);font-size:13px;">Agrega categorías para organizar tus torneos</div>
+    container.innerHTML = `<div class="empty-state empty-state-sm">
+      <div class="empty-icon">📂</div>
+      <div class="empty-title">Sin categorías</div>
+      <div class="empty-sub">Agrega categorías para organizar tus torneos</div>
     </div>`;
     return;
   }
+  const torneos = storageGetAll();
   container.innerHTML = cats.map(cat => {
-    const torneos = storageGetAll().filter(t => t.catId === cat.id);
-    const activos = torneos.filter(t => t.status === 'active').length;
-    const terminados = torneos.filter(t => t.status === 'finished').length;
-    return `<div class="player-item" style="margin-bottom:10px;flex-direction:column;align-items:stretch;gap:10px;">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div style="width:36px;height:36px;background:color-mix(in srgb,var(--ss-accent) 15%,var(--ss-surface));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📂</div>
-        <div style="flex:1;">
-          <div style="font-weight:700;font-size:15px;">${cat.name}</div>
-          <div style="font-size:12px;color:var(--ss-muted);">${activos} activo${activos!==1?'s':''} · ${terminados} finalizado${terminados!==1?'s':''}</div>
+    const deCat = torneos.filter(t => t.catId === cat.id);
+    const activos = deCat.filter(t => t.status === 'active').length;
+    const terminados = deCat.filter(t => t.status === 'finished').length;
+    return `<div class="player-item cat-item">
+      <div class="cat-item-row">
+        <div class="cat-icon" aria-hidden="true">📂</div>
+        <div class="flex-1">
+          <div class="cat-name">${esc(cat.name)}</div>
+          <div class="cat-meta">${activos} activo${activos !== 1 ? 's' : ''} · ${terminados} finalizado${terminados !== 1 ? 's' : ''}</div>
         </div>
-        <button class="btn-remove" onclick="deleteCategoria('${cat.id}')">✕</button>
+        <button class="btn-remove" aria-label="Eliminar categoría ${esc(cat.name)}" onclick="deleteCategoria('${esc(cat.id)}')">✕</button>
       </div>
-      <button class="btn-primary" style="font-size:14px;padding:10px;" onclick="nuevoCatTorneo('${cat.id}','${cat.name}')">
-        + Nuevo torneo en esta categoría
-      </button>
+      <button class="btn-primary btn-compact" onclick="nuevoCatTorneo('${esc(cat.id)}')">+ Nuevo torneo en esta categoría</button>
     </div>`;
   }).join('');
 }
 
-function deleteCategoria(id) {
-  if (!confirm('¿Eliminar esta categoría y sus torneos?')) return;
+async function deleteCategoria(id) {
+  if (!await ssConfirm('También se eliminarán todos sus torneos.', { title: '¿Eliminar esta categoría?', okText: 'Eliminar', danger: true })) return;
   catDelete(id);
   renderCategorias();
   renderHomeButtons();
 }
 
-function nuevoCatTorneo(catId, catName) {
-  nuevoTorneoGrupos();
-  // Tag the tournament with this category when confirmed
-  window._pendingCatId   = catId;
-  window._pendingCatName = catName;
-  // Update title input with category name
-  const nameEl = document.getElementById('gt-name');
-  if (nameEl) nameEl.value = catName;
-  goTo('screen-groups-setup');
+function nuevoCatTorneo(catId) {
+  const cat = catsGetAll().find(c => c.id === catId);
+  if (!cat) return;
+  nuevoTorneoGrupos(cat.id, cat.name);
 }
+
+// ── INSTALACIÓN PWA ──
+let _installPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _installPrompt = e;
+  const btn = document.getElementById('install-btn');
+  const txt = document.getElementById('install-text');
+  if (btn) btn.classList.remove('d-none');
+  if (txt) txt.textContent = 'Instala SpinScore para usarlo sin conexión';
+  document.getElementById('install-banner')?.classList.remove('d-none');
+});
+
+async function instalarApp() {
+  if (!_installPrompt) return;
+  _installPrompt.prompt();
+  await _installPrompt.userChoice;
+  _installPrompt = null;
+  document.getElementById('install-banner').classList.add('d-none');
+}
+
+// ── ARRANQUE ──
+registerServiceWorker();
+
+window.addEventListener('load', () => {
+  themeInit();
+  applyVersionLabels();
+  _syncChips();
+  updateHomeLabel();
+  renderHomeButtons();
+  const installed = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (!installed)
+    setTimeout(() => document.getElementById('install-banner').classList.remove('d-none'), 1500);
+});
+
+window.addEventListener('resize', debounce(() => {
+  const a = document.querySelector('.screen.active');
+  if (!a) return;
+  if (a.id === 'screen-groups-main') renderGroupTabContent();
+  if (a.id === 'screen-elimination') renderElimination();
+}, 150));

@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════
-   SpinScore v1.9 — style.css
+   SpinScore — style.css
    3 temas: standard (verde), dark (negro+azul), light (blanco)
 ════════════════════════════════════════════ */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap');
@@ -61,7 +61,8 @@
 /* ── RESET ── */
 *,*::before,*::after { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html,body { height:100%; background:var(--ss-bg); color:var(--ss-text); font-family:'Inter',sans-serif; overscroll-behavior:none; transition:background .3s, color .3s; }
-button { cursor:pointer; font-family:inherit; border:none; transition:transform .08s, opacity .08s; }
+button { cursor:pointer; font-family:inherit; border:none; transition:transform .08s, opacity .08s; touch-action:manipulation; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline:2px solid var(--ss-accent); outline-offset:2px; }
 button:active { transform:scale(.94); opacity:.85; }
 
 /* ── LAYOUT ── */
@@ -513,7 +514,9 @@ button:active { transform:scale(.94); opacity:.85; }
   .btn-add-set, .btn-remove, .btn-remove-set { display: none !important; }
 
   body { background: #fff !important; color: #000 !important; }
-  .screen { display: block !important; height: auto !important; overflow: visible !important; }
+  .screen:not(.active) { display: none !important; }
+  .screen.active { display: block !important; height: auto !important; overflow: visible !important; }
+  .group-tabs-bar, .btn-final, .b-play-hint, .btn-swap-serve { display: none !important; }
   .scroll-body { overflow: visible !important; padding: 16px !important; }
 
   .group-card { border: 1px solid #ccc !important; background: #fff !important; break-inside: avoid; }
@@ -545,3 +548,153 @@ button:active { transform:scale(.94); opacity:.85; }
 
 /* Print header/footer hidden on screen */
 .print-header, .print-footer { display: none; }
+
+/* ══ v2.1 — clases que reemplazan estilos inline ══════════ */
+
+/* ── Utilidades ── */
+.flex-1 { flex:1; min-width:0; }
+.pb-2 { padding-bottom:8px; }
+.mt-4 { margin-top:16px; }
+.mt-section { margin-top:20px; }
+.text-center { text-align:center; }
+.text-right { text-align:right; }
+.text-strong { color:var(--ss-text); }
+.text-accent { color:var(--ss-accent); }
+.text-bold { font-weight:700; }
+.muted { color:var(--ss-muted); }
+.score-blue { color:var(--ss-blue); }
+.score-red { color:var(--ss-red); }
+.label-blue { color:var(--ss-blue); }
+.label-red { color:var(--ss-red); }
+.label-green { color:var(--ss-green); }
+.label-accent { color:var(--ss-accent); }
+.input-row { display:flex; gap:8px; }
+.btn-row { display:flex; gap:10px; }
+.header-center { flex:1; text-align:center; min-width:0; }
+.header-spacer { width:40px; flex-shrink:0; }
+.btn-narrow { max-width:280px; }
+.btn-compact { font-size:14px; padding:10px; }
+.btn-ghost { width:100%; background:transparent; color:var(--ss-muted); border:1.5px solid var(--ss-border); border-radius:12px; padding:12px 20px; font-weight:700; font-size:15px; }
+.btn-ghost:hover { color:var(--ss-text); border-color:var(--ss-muted); }
+.ss-infobox.warn { border-color:color-mix(in srgb,var(--ss-red) 50%,var(--ss-border)); color:var(--ss-text); }
+.infobox-sm { font-size:12px; }
+.infobox-note { font-size:12px; color:var(--ss-muted); margin-top:4px; }
+.infobox-kicker { font-size:12px; color:var(--ss-muted); margin-bottom:4px; }
+
+/* ── Home ── */
+.home-active { padding:0 16px; }
+.menu-card-rose   { background:linear-gradient(135deg,rgba(248,113,113,.18),rgba(248,113,113,.05)); border-color:rgba(248,113,113,.4); }
+.menu-card-orange { background:linear-gradient(135deg,rgba(251,146,60,.18),rgba(251,146,60,.05)); border-color:rgba(251,146,60,.4); }
+.menu-card-title-sm { font-weight:700; font-size:15px; }
+.install-action { background:var(--ss-accent); color:var(--ss-bg); border-radius:8px; padding:5px 12px; font-weight:700; font-size:12px; }
+.empty-icon { font-size:40px; margin-bottom:12px; }
+.empty-title { font-weight:700; font-size:17px; margin-bottom:6px; }
+.empty-sub { color:var(--ss-muted); font-size:14px; }
+.empty-state-sm { padding:40px 0; }
+.empty-state-sm .empty-icon { font-size:32px; margin-bottom:8px; }
+
+/* ── Categorías ── */
+.cat-item { margin-bottom:10px; flex-direction:column; align-items:stretch; gap:10px; }
+.cat-item-row { display:flex; align-items:center; gap:12px; }
+.cat-icon { width:36px; height:36px; background:color-mix(in srgb,var(--ss-accent) 15%,var(--ss-surface)); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.cat-name { font-weight:700; font-size:15px; }
+.cat-meta { font-size:12px; color:var(--ss-muted); }
+
+/* ── Listas de jugadores ── */
+.player-item-name { flex:1; font-size:15px; min-width:0; overflow-wrap:anywhere; }
+
+/* ── Partido rápido / marcador ── */
+.qs-vs { color:var(--ss-muted); font-size:20px; }
+.ss-chip.chip-sm { font-size:14px; padding:10px 0; }
+.player-name.serving::before { content:""; display:inline-block; width:9px; height:9px; border-radius:50%; background:var(--ss-accent); margin-right:6px; vertical-align:middle; box-shadow:0 0 8px var(--ss-accent); }
+.serve-dot-inline { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--ss-accent); vertical-align:middle; }
+.btn-swap-serve { display:block; margin:6px auto 0; background:none; border:1px dashed var(--ss-border); color:var(--ss-muted); border-radius:8px; padding:4px 10px; font-size:11px; font-weight:600; }
+.btn-swap-serve:hover { color:var(--ss-accent); border-color:var(--ss-accent); }
+.card-player-name { font-size:11px; color:var(--ss-muted); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+.cards-divider { width:1px; background:var(--ss-border); margin:0 6px; }
+.card-modal-btns { display:flex; gap:10px; justify-content:center; }
+.card-modal-btns > button { flex:1; }
+
+#screen-score .ss-header { padding:10px 14px; }
+
+/* ── Ganador / podio ── */
+.win-sub { color:var(--ss-muted); margin-bottom:16px; }
+.win-result { display:flex; gap:28px; align-items:center; margin-bottom:16px; }
+.win-player { font-size:13px; font-weight:600; }
+.win-sets { font-size:50px; }
+.win-dash { color:var(--ss-muted); font-size:22px; }
+.win-set-row { display:flex; justify-content:space-between; gap:24px; font-size:14px; color:var(--ss-muted); padding:3px 0; }
+.win-set-winner { color:var(--ss-win); font-weight:700; }
+.podio-trophy { animation:ss-popIn .5s ease; margin-bottom:12px; }
+
+/* ── Filas de partidos (ahora son <button>) ── */
+button.match-row, button.elim-match, button.b-match { color:var(--ss-text); text-align:inherit; font:inherit; }
+button.elim-match, button.b-match { display:block; width:100%; }
+.match-p { flex:1; min-width:0; font-weight:700; font-size:14px; overflow-wrap:anywhere; }
+.match-p-left { text-align:left; color:var(--ss-blue); }
+.match-p-right { text-align:right; color:var(--ss-red); }
+.match-p.is-winner { color:var(--ss-win); font-weight:700; }
+.match-p.is-loser { color:var(--ss-muted); font-weight:400; }
+.match-go { margin-left:10px; color:var(--ss-accent); font-size:18px; flex-shrink:0; }
+.match-row-stack { flex-direction:column; align-items:stretch; gap:4px; }
+.match-row-line { display:flex; align-items:center; width:100%; }
+.match-score { display:flex; gap:8px; align-items:center; flex-shrink:0; padding:0 8px; font-size:16px; }
+.match-detail { font-size:11px; color:var(--ss-muted); text-align:center; }
+.match-row.done.editable { cursor:pointer; }
+.match-row.done.editable:hover { opacity:.9; }
+.match-grid { display:grid; grid-template-columns:1fr; gap:0 10px; }
+@media(min-width:768px) { .match-grid { grid-template-columns:1fr 1fr; } }
+.section-label.muted { color:var(--ss-muted); }
+.champion-banner { background:color-mix(in srgb,var(--ss-accent) 12%,transparent); border:1px solid var(--ss-accent); border-radius:14px; padding:16px; margin-bottom:16px; text-align:center; }
+.champion-banner-title { font-weight:800; color:var(--ss-accent); font-size:20px; }
+.champion-banner-sub { color:var(--ss-muted); font-size:14px; margin-top:4px; }
+.champion-banner-name { font-size:20px; font-weight:700; margin-top:4px; }
+
+/* ── Tablas de posiciones ── */
+.col-rank { width:28px; flex-shrink:0; }
+.col-pts  { width:34px; text-align:center; flex-shrink:0; }
+.col-num  { width:28px; text-align:center; flex-shrink:0; }
+.col-sets { width:42px; text-align:center; flex-shrink:0; }
+.standing-rank { font-weight:800; font-size:13px; color:var(--ss-muted); }
+.standing-rank.first { color:var(--ss-accent); }
+.standing-name { font-weight:500; font-size:14px; overflow-wrap:anywhere; }
+.standing-name.first { font-weight:700; }
+.standing-pts { color:var(--ss-accent); font-weight:800; }
+.standing-row .col-num, .standing-row .col-sets { font-size:13px; }
+.standings-footer { color:var(--ss-muted); }
+
+/* ── Grupos ── */
+.group-status { margin-left:auto; font-size:11px; color:var(--ss-win); font-weight:600; }
+.group-table-head { font-size:10px; color:var(--ss-muted); font-weight:700; letter-spacing:.5px; padding-top:6px; padding-bottom:6px; }
+.group-table-head .group-player-name { font-weight:700; }
+.group-player-stats.cols { gap:0; }
+.group-player.passing { background:rgba(34,197,94,.07); }
+.group-player.passing .group-player-num { color:var(--ss-win); }
+.group-player-name { min-width:0; overflow-wrap:anywhere; }
+.group-player-name.top { font-weight:600; }
+.group-player-name.small { font-size:13px; }
+.groups-grid { display:grid; grid-template-columns:1fr; gap:0 16px; }
+@media(min-width:768px) { .groups-grid { grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); } }
+.result-vs { color:var(--ss-muted); font-size:18px; flex-shrink:0; }
+
+/* ── Eliminatoria ── */
+.elim-result-detail.accent { color:var(--ss-accent); }
+.elim-player-name.is-tbd, .b-name.is-tbd { color:var(--ss-muted); font-style:italic; opacity:.7; }
+.elim-player-name.is-bye, .b-name.is-bye { color:var(--ss-muted); font-style:italic; letter-spacing:1px; }
+.is-bye-match { opacity:.6; }
+.bracket-final-vs { display:flex; flex-direction:column; align-items:center; gap:2px; font-size:12px; font-weight:700; text-align:center; }
+.bracket-final-vs span { color:var(--ss-muted); font-weight:400; font-size:10px; }
+.elim-result-detail, .b-detail { color:var(--ss-muted); }
+
+/* ── Contacto ── */
+.contact-icon { font-size:28px; margin-bottom:12px; }
+.contact-title { font-weight:700; font-size:17px; margin-bottom:6px; }
+.contact-text { color:var(--ss-muted); font-size:14px; line-height:1.6; }
+
+/* ── Impresión ── */
+.print-title { font-family:monospace; font-size:20px; font-weight:900; letter-spacing:2px; }
+.print-sub { font-size:12px; color:#666; margin-top:4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
+}

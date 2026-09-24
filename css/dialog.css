@@ -1,0 +1,49 @@
+/* SpinScore — dialog.css
+   Diálogos propios (ssConfirm / ssPrompt). Usa las variables de la app
+   (--ss-*) y cae a las de multimesa/public (--surface, etc.) si no existen.
+*/
+.ss-dialog-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,.65);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  animation: ss-dialog-in .15s ease;
+}
+.ss-dialog {
+  width: 100%; max-width: 340px;
+  background: var(--ss-surface, var(--surface, #163524));
+  color: var(--ss-text, var(--text, #F0F4F0));
+  border: 1px solid var(--ss-border, var(--border, #2A5C3A));
+  border-radius: 18px;
+  padding: 22px 20px 18px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.45);
+  font-family: 'Inter', sans-serif;
+}
+.ss-dialog-title { font-weight: 800; font-size: 17px; margin-bottom: 6px; }
+.ss-dialog-msg { font-size: 14px; color: var(--ss-muted, var(--muted, #8BAF94)); line-height: 1.5; margin-bottom: 16px; }
+.ss-dialog-input {
+  width: 100%; margin: 6px 0 16px;
+  background: var(--ss-card, var(--card, #1E4A30));
+  color: inherit;
+  border: 1.5px solid var(--ss-border, var(--border, #2A5C3A));
+  border-radius: 10px; padding: 11px 12px; font-size: 16px; outline: none;
+}
+.ss-dialog-input:focus { border-color: var(--ss-accent, var(--accent, #F5C518)); }
+.ss-dialog-btns { display: flex; gap: 10px; }
+.ss-dialog-btns button {
+  flex: 1; border-radius: 12px; padding: 12px; font-weight: 700; font-size: 15px; cursor: pointer;
+  font-family: inherit;
+}
+.ss-dialog-cancel {
+  background: transparent;
+  color: var(--ss-muted, var(--muted, #8BAF94));
+  border: 1.5px solid var(--ss-border, var(--border, #2A5C3A));
+}
+.ss-dialog-ok {
+  background: var(--ss-accent, var(--accent, #F5C518));
+  color: var(--ss-bg, var(--bg, #0D2818));
+  border: none;
+}
+.ss-dialog-ok.danger { background: var(--ss-red, var(--red, #E63946)); color: #fff; }
+.ss-dialog-btns button:focus-visible { outline: 2px solid var(--ss-accent, var(--accent, #F5C518)); outline-offset: 2px; }
+@keyframes ss-dialog-in { from { opacity: 0; } to { opacity: 1; } }

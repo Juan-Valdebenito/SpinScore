@@ -1,18 +1,22 @@
-/* SpinScore v1.9 — theme.js */
+/* SpinScore — theme.js */
 
 const THEME_KEY = 'spinscore_theme';
 const THEMES = ['standard', 'dark', 'light'];
 
 function themeGet() {
-  return localStorage.getItem(THEME_KEY) || 'standard';
+  try {
+    const t = localStorage.getItem(THEME_KEY);
+    return THEMES.includes(t) ? t : 'standard';
+  } catch { return 'standard'; }
 }
 
 function themeSet(t) {
-  localStorage.setItem(THEME_KEY, t);
+  try { localStorage.setItem(THEME_KEY, t); } catch { /* sin almacenamiento */ }
   document.documentElement.setAttribute('data-theme', t);
-  // Update pickers wherever they are
-  document.querySelectorAll('.theme-option').forEach(el =>
-    el.classList.toggle('active', el.dataset.theme === t));
+  document.querySelectorAll('.theme-option').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === t);
+    el.setAttribute('aria-pressed', el.dataset.theme === t);
+  });
 }
 
 function themeInit() {

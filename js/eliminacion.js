@@ -1,162 +1,185 @@
-/* SpinScore v1.6 — eliminacion.js */
+/* SpinScore — eliminacion.js
+   Fase eliminatoria: armado del cuadro (con BYEs), avance de ganadores y render.
+*/
 
-const ROUND_NAMES=['Dieciseisavos','Octavos de Final','Cuartos de Final','Semifinal','Final'];
+const ROUND_NAMES = ['Dieciseisavos', 'Octavos de Final', 'Cuartos de Final', 'Semifinal', 'Final'];
 
 function iniciarEliminacion() {
-  const GT=getGT();
-  const classified=[];
-  GT.groups.forEach((_,gi)=>calcGroupStats(gi).slice(0,2).forEach((s,pos)=>classified.push({playerIdx:s.idx,group:gi,pos})));
-  GT.elimRounds=[]; GT.phase='elimination';
-  const seeds=_buildSeeding(classified);
-  const firstRound=[];
-  for(let i=0;i<seeds.length;i+=2){
-    const h=seeds[i],a=seeds[i+1]||null;
-    firstRound.push(_nm(h?h.playerIdx:null,h?GT.players[h.playerIdx]:'TBD',a?a.playerIdx:null,a?GT.players[a.playerIdx]:'TBD'));
-  }
-  GT.elimRounds.push(firstRound);
-  let size=firstRound.length;
-  while(size>1){size=Math.ceil(size/2);GT.elimRounds.push(Array.from({length:size},()=>_nm(null,'TBD',null,'TBD')));}
-  renderElimination(); goTo('screen-elimination');
-}
+  const classified = [];
+  GT.groups.forEach((_, gi) =>
+    calcGroupStats(gi).slice(0, 2).forEach((s, pos) =>
+      classified.push({ id: s.idx, group: gi, pos })));
 
-function _nm(p1,p1name,p2,p2name){return{p1,p1name,p2,p2name,sets1:0,sets2:0,setScores:[],done:false,winner:null,winnername:null};}
-
-function _buildSeeding(classified) {
-  const first=classified.filter(c=>c.pos===0), second=classified.filter(c=>c.pos===1);
-  const used=new Set(), seeds=[];
-  first.forEach(f=>{
-    seeds.push(f);
-    const cross=second.find(s=>s.group!==f.group&&!used.has(s.group));
-    if(cross){used.add(cross.group);seeds.push(cross);}
-    else seeds.push(second.find(s=>!used.has(s.group))||second[0]);
+  const firstRound = buildFirstRound(classified).map(([a, b]) => {
+    if (!b) {
+      // BYE: pasa directo a la siguiente ronda
+      return Object.assign(_nm(a.id, GT.players[a.id], null, 'BYE'),
+        { bye: true, done: true, winner: a.id, winnername: GT.players[a.id] });
+    }
+    return _nm(a.id, GT.players[a.id], b.id, GT.players[b.id]);
   });
-  return seeds;
+
+  GT.elimRounds = [firstRound];
+  GT.phase = 'elimination';
+  let size = firstRound.length;
+  while (size > 1) {
+    size = Math.ceil(size / 2);
+    GT.elimRounds.push(Array.from({ length: size }, () => _nm(null, null, null, null)));
+  }
+  firstRound.forEach((m, mi) => { if (m.bye) propagateElimWinner(0, mi); });
+  storageSnapshot();
+  goTo('screen-elimination');
 }
 
-function _rn(ri,total){
-  const fe=total-1-ri;
-  return fe<ROUND_NAMES.length?ROUND_NAMES[ROUND_NAMES.length-1-fe]:`Ronda ${ri+1}`;
+function _nm(p1, p1name, p2, p2name) {
+  return { p1, p1name, p2, p2name, sets1: 0, sets2: 0, setScores: [], done: false, winner: null, winnername: null };
+}
+
+/** Lleva al ganador del partido (ri, mi) a su cupo en la ronda siguiente. */
+function propagateElimWinner(ri, mi) {
+  const nextRi = ri + 1;
+  if (nextRi >= GT.elimRounds.length) return;
+  const m = GT.elimRounds[ri][mi], next = GT.elimRounds[nextRi][Math.floor(mi / 2)];
+  if (mi % 2 === 0) { next.p1 = m.winner; next.p1name = m.winnername; }
+  else              { next.p2 = m.winner; next.p2name = m.winnername; }
+}
+
+function _rn(ri, total) {
+  const fe = total - 1 - ri;
+  return fe < ROUND_NAMES.length ? ROUND_NAMES[ROUND_NAMES.length - 1 - fe] : `Ronda ${ri + 1}`;
+}
+
+function _canPlay(m) {
+  return !m.done && !isPendingName(m.p1name) && !isPendingName(m.p2name);
+}
+
+/** Nombre listo para HTML, con estilo para cupos vacíos y BYE. */
+function _slotName(name) {
+  if (name === 'BYE') return { html: 'BYE', cls: ' is-bye' };
+  if (isPendingName(name)) return { html: 'Por definir', cls: ' is-tbd' };
+  return { html: esc(name), cls: '' };
 }
 
 function renderElimination() {
-  const GT=getGT(), total=GT.elimRounds.length;
-  const isDesktop=window.innerWidth>=768;
-  const container=document.getElementById('elim-content');
-  document.getElementById('elim-header-name').textContent=GT.name;
-  isDesktop?_renderDesktop(container,GT,total):_renderMobile(container,GT,total);
+  const total = GT.elimRounds.length;
+  const container = document.getElementById('elim-content');
+  document.getElementById('elim-header-name').textContent = GT.name;
+  if (!total) { container.innerHTML = ''; return; }
+  window.innerWidth >= 768 ? _renderDesktop(container, total) : _renderMobile(container, total);
 }
 
-function _renderMobile(container,GT,total) {
-  let html='';
-  GT.elimRounds.forEach((round,ri)=>{
-    html+=`<div class="elim-round-title">${_rn(ri,total)}</div>`;
-    round.forEach((m,mi)=>{
-      const can=m.p1name!=='TBD'&&m.p2name!=='TBD'&&!m.done;
-      const isFinal=ri===total-1;
-      if(m.done){
-        const w1=m.sets1>m.sets2, detail=m.setScores.map(([a,b])=>`${a}-${b}`).join(' | ');
-        html+=`<div class="elim-match">
-          <div class="elim-player"><div class="elim-player-name${w1?' winner':''}">${m.p1name}</div><div class="elim-player-sets${w1?' winner':''}">${m.sets1}</div></div>
-          <div class="elim-player"><div class="elim-player-name${!w1?' winner':''}">${m.p2name}</div><div class="elim-player-sets${!w1?' winner':''}">${m.sets2}</div></div>
-          ${detail?`<div class="elim-result-detail">${detail}</div>`:''}
+function _renderMobile(container, total) {
+  let html = '';
+  GT.elimRounds.forEach((round, ri) => {
+    html += `<div class="elim-round-title">${_rn(ri, total)}</div>`;
+    round.forEach((m, mi) => {
+      const n1 = _slotName(m.p1name), n2 = _slotName(m.p2name);
+      if (m.bye) {
+        html += `<div class="elim-match is-bye-match">
+          <div class="elim-player"><div class="elim-player-name winner">${n1.html}</div><div class="elim-player-sets">→</div></div>
+          <div class="elim-result-detail">Pasa directo (BYE)</div>
         </div>`;
-        if(isFinal&&m.done){
-          html+=`<div style="background:rgba(245,197,24,.12);border:1px solid var(--ss-accent);border-radius:14px;padding:16px;text-align:center;margin-top:12px;">
-            <div style="font-weight:800;color:var(--ss-accent);font-size:22px;">Campeon</div>
-            <div style="font-size:20px;font-weight:700;margin-top:4px;">${m.winnername}</div>
+      } else if (m.done) {
+        const w1 = m.sets1 > m.sets2, detail = m.setScores.map(([a, b]) => `${a}-${b}`).join(' | ');
+        html += `<div class="elim-match">
+          <div class="elim-player"><div class="elim-player-name${w1 ? ' winner' : ''}">${n1.html}</div><div class="elim-player-sets${w1 ? ' winner' : ''}">${m.sets1}</div></div>
+          <div class="elim-player"><div class="elim-player-name${!w1 ? ' winner' : ''}">${n2.html}</div><div class="elim-player-sets${!w1 ? ' winner' : ''}">${m.sets2}</div></div>
+          ${detail ? `<div class="elim-result-detail">${detail}</div>` : ''}
+        </div>`;
+        if (ri === total - 1) {
+          html += `<div class="champion-banner mt-3">
+            <div class="champion-banner-title">Campeón</div>
+            <div class="champion-banner-name">${esc(m.winnername)}</div>
           </div>`;
         }
       } else {
-        html+=`<div class="elim-match${can?' clickable':''}" ${can?`onclick="abrirResultadoElim(${ri},${mi})"`:''}>
-          <div class="elim-player"><div class="elim-player-name${m.p1name==='TBD'?' elim-tbd':''}">${m.p1name}</div><div class="elim-player-sets">–</div></div>
-          <div class="elim-player"><div class="elim-player-name${m.p2name==='TBD'?' elim-tbd':''}">${m.p2name}</div><div class="elim-player-sets">–</div></div>
-          ${can?`<div class="elim-result-detail" style="color:var(--ss-accent);">Toca para ingresar resultado</div>`:''}
-        </div>`;
+        const can = _canPlay(m);
+        html += `<${can ? 'button' : 'div'} class="elim-match${can ? ' clickable' : ''}" ${can ? `onclick="abrirResultadoElim(${ri},${mi})" aria-label="Ingresar resultado ${n1.html} contra ${n2.html}"` : ''}>
+          <div class="elim-player"><div class="elim-player-name${n1.cls}">${n1.html}</div><div class="elim-player-sets">–</div></div>
+          <div class="elim-player"><div class="elim-player-name${n2.cls}">${n2.html}</div><div class="elim-player-sets">–</div></div>
+          ${can ? `<div class="elim-result-detail accent">Toca para ingresar resultado</div>` : ''}
+        </${can ? 'button' : 'div'}>`;
       }
     });
   });
-  container.innerHTML=html;
+  container.innerHTML = html;
 }
 
-function _renderDesktop(container,GT,total) {
-  const firstSize=GT.elimRounds[0].length, halfSize=Math.ceil(firstSize/2);
-  const leftRounds=_halfRounds(GT,'left',halfSize);
-  const rightRounds=_halfRounds(GT,'right',firstSize-halfSize);
-  const champion=GT.elimRounds[total-1]?.[0];
-  let html=`<div class="bracket-wrapper"><div class="bracket-half bracket-left">`;
-  leftRounds.forEach((round,ri)=>{
-    html+=`<div class="bracket-col"><div class="bracket-round-label">${_rn(ri,total)}</div><div class="bracket-col-matches">`;
-    round.forEach((m,mi)=>{html+=_bcard(m,ri,mi);});
-    html+=`</div></div>`;
-    if(ri<leftRounds.length-1)html+=_conn(round.length,'left');
+function _renderDesktop(container, total) {
+  const leftRounds  = _halfRounds('left');
+  const rightRounds = _halfRounds('right');
+  const champion = GT.elimRounds[total - 1][0];
+  let html = `<div class="bracket-wrapper"><div class="bracket-half bracket-left">`;
+  leftRounds.forEach((round, ri) => {
+    html += `<div class="bracket-col"><div class="bracket-round-label">${_rn(ri, total)}</div><div class="bracket-col-matches">`;
+    round.forEach((m, mi) => { html += _bcard(m, ri, mi); });
+    html += `</div></div>`;
+    if (ri < leftRounds.length - 1) html += _conn(round.length);
   });
-  html+=`</div>`;
-  const champName=champion?.done?champion.winnername:null;
-  html+=`<div class="bracket-center">
+  html += `</div>`;
+
+  const champName = champion.done ? champion.winnername : null;
+  const fin1 = _slotName(champion.p1name), fin2 = _slotName(champion.p2name);
+  html += `<div class="bracket-center">
     <div class="bracket-final-label">FINAL</div>
+    ${total === 1 || !champion.done ? `<div class="bracket-final-vs">${fin1.html}<span>vs</span>${fin2.html}</div>` : ''}
     <div class="bracket-champion-box">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="${champName?'#F5C518':'#2A5C3A'}" stroke-width="1.5"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
-      <div class="bracket-champion-name">${champName||'Campeon'}</div>
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="${champName ? '#F5C518' : '#2A5C3A'}" stroke-width="1.5" aria-hidden="true"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+      <div class="bracket-champion-name">${champName ? esc(champName) : 'Campeón'}</div>
+      ${champion.done ? `<div class="b-detail">${champion.setScores.map(([a, b]) => `${a}-${b}`).join(' | ')}</div>` : ''}
     </div>
-    ${champion&&!champion.done&&champion.p1name!=='TBD'&&champion.p2name!=='TBD'
-      ?`<button class="btn-final" onclick="abrirResultadoElim(${total-1},0)">Ingresar resultado</button>`:''
-    }
+    ${_canPlay(champion) ? `<button class="btn-final" onclick="abrirResultadoElim(${total - 1},0)">Ingresar resultado</button>` : ''}
   </div>`;
-  html+=`<div class="bracket-half bracket-right">`;
-  rightRounds.forEach((round,ri)=>{
-    if(ri<rightRounds.length-1)html+=_conn(round.length,'right');
-    const origOffset=halfSize;
-    html+=`<div class="bracket-col"><div class="bracket-round-label">${_rn(ri,total)}</div><div class="bracket-col-matches">`;
-    round.forEach((m,mi)=>{html+=_bcard(m,ri,origOffset+mi);});
-    html+=`</div></div>`;
+
+  html += `<div class="bracket-half bracket-right">`;
+  rightRounds.forEach((round, ri) => {
+    if (ri < rightRounds.length - 1) html += _conn(round.length);
+    // En la mitad derecha, el índice real del partido parte en la mitad de SU ronda.
+    const offset = Math.ceil(GT.elimRounds[ri].length / 2);
+    html += `<div class="bracket-col"><div class="bracket-round-label">${_rn(ri, total)}</div><div class="bracket-col-matches">`;
+    round.forEach((m, mi) => { html += _bcard(m, ri, offset + mi); });
+    html += `</div></div>`;
   });
-  html+=`</div></div>`;
-  container.innerHTML=html;
+  html += `</div></div>`;
+  container.innerHTML = html;
 }
 
-function _halfRounds(GT,side,firstSize) {
-  const total=GT.elimRounds.length, half=[];
-  GT.elimRounds.forEach((round,ri)=>{
-    if(ri===total-1)return;
-    const h1=Math.ceil(round.length/2);
-    const slice=side==='left'?round.slice(0,h1):round.slice(h1);
-    if(slice.length>0)half.push(slice);
+/** Rondas previas a la final, divididas en mitad izquierda o derecha. */
+function _halfRounds(side) {
+  const total = GT.elimRounds.length, half = [];
+  GT.elimRounds.forEach((round, ri) => {
+    if (ri === total - 1) return;
+    const h1 = Math.ceil(round.length / 2);
+    const slice = side === 'left' ? round.slice(0, h1) : round.slice(h1);
+    if (slice.length > 0) half.push(slice);
   });
   return half;
 }
 
-function _bcard(m,ri,mi) {
-  const can=m.p1name!=='TBD'&&m.p2name!=='TBD'&&!m.done;
-  const w1=m.done&&m.sets1>m.sets2, w2=m.done&&m.sets2>m.sets1;
-  const detail=m.done?m.setScores.map(([a,b])=>`${a}-${b}`).join(' | '):'';
-  return `<div class="b-match${can?' b-clickable':''}${m.done?' b-done':''}" ${can?`onclick="abrirResultadoElim(${ri},${mi})"`:''}>
-    <div class="b-team${w1?' b-winner':''}"><div class="b-name${m.p1name==='TBD'?' b-tbd':''}">${m.p1name}</div><div class="b-score${w1?' b-winner':''}">${m.done?m.sets1:'–'}</div></div>
-    <div class="b-team${w2?' b-winner':''}"><div class="b-name${m.p2name==='TBD'?' b-tbd':''}">${m.p2name}</div><div class="b-score${w2?' b-winner':''}">${m.done?m.sets2:'–'}</div></div>
-    ${detail?`<div class="b-detail">${detail}</div>`:''}
-    ${can?`<div class="b-play-hint">Toca para ingresar</div>`:''}
-  </div>`;
+function _bcard(m, ri, mi) {
+  const n1 = _slotName(m.p1name), n2 = _slotName(m.p2name);
+  if (m.bye) {
+    return `<div class="b-match b-done is-bye-match">
+      <div class="b-team b-winner"><div class="b-name">${n1.html}</div><div class="b-score">→</div></div>
+      <div class="b-team"><div class="b-name is-bye">BYE</div><div class="b-score"></div></div>
+    </div>`;
+  }
+  const can = _canPlay(m);
+  const w1 = m.done && m.sets1 > m.sets2, w2 = m.done && m.sets2 > m.sets1;
+  const detail = m.done ? m.setScores.map(([a, b]) => `${a}-${b}`).join(' | ') : '';
+  const tag = can ? 'button' : 'div';
+  return `<${tag} class="b-match${can ? ' b-clickable' : ''}${m.done ? ' b-done' : ''}" ${can ? `onclick="abrirResultadoElim(${ri},${mi})" aria-label="Ingresar resultado ${n1.html} contra ${n2.html}"` : ''}>
+    <div class="b-team${w1 ? ' b-winner' : ''}"><div class="b-name${n1.cls}">${n1.html}</div><div class="b-score${w1 ? ' b-winner' : ''}">${m.done ? m.sets1 : '–'}</div></div>
+    <div class="b-team${w2 ? ' b-winner' : ''}"><div class="b-name${n2.cls}">${n2.html}</div><div class="b-score${w2 ? ' b-winner' : ''}">${m.done ? m.sets2 : '–'}</div></div>
+    ${detail ? `<div class="b-detail">${detail}</div>` : ''}
+    ${can ? `<div class="b-play-hint">Toca para ingresar</div>` : ''}
+  </${tag}>`;
 }
 
-function _conn(matchCount,side) {
-  const lines=Array.from({length:Math.ceil(matchCount/2)},()=>`
+function _conn(matchCount) {
+  const lines = Array.from({ length: Math.ceil(matchCount / 2) }, () => `
     <div class="conn-pair"><div class="conn-top"></div><div class="conn-mid"></div><div class="conn-bot"></div></div>`).join('');
-  return `<div class="bracket-connector">${lines}</div>`;
+  return `<div class="bracket-connector" aria-hidden="true">${lines}</div>`;
 }
 
-function abrirResultadoElim(ri,mi){abrirResultado({ri,mi},'elim');}
-
-function _dispararPodio() {
-  const GT = getGT();
-  const total = GT.elimRounds.length;
-  const fin = GT.elimRounds[total-1]?.[0];
-  if (!fin || !fin.done) return;
-  const champ  = fin.winnername;
-  const runner = fin.p1name === champ ? fin.p2name : fin.p1name;
-  const thirds = total >= 2
-    ? GT.elimRounds[total-2]
-        .filter(m => m.done)
-        .map(m => m.p1name === m.winnername ? m.p2name : m.p1name)
-        .filter(n => n && n !== 'TBD' && n !== champ && n !== runner)
-    : [];
-  mostrarPodio([champ, runner, ...thirds], GT.name);
-}
+function abrirResultadoElim(ri, mi) { abrirResultado({ ri, mi }, 'elim'); }

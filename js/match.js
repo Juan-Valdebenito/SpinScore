@@ -1,74 +1,150 @@
-/* SpinScore v1.9.5 — match.js
-   Motor de partido + tarjetas amarillas/rojas + DEUCE
+/* SpinScore — match.js
+   Motor de partido en vivo: puntos, sets, saque ITTF, deuce, tarjetas
+   y deshacer (incluye puntos que cerraron un set y tarjetas).
 */
 
 const MATCH = {
-  p: ['J1','J2'],
-  pts: [0,0],
-  sets: [0,0],
-  history: [],
+  p: ['J1', 'J2'],
+  cfg: { sets: 3, pts: 11 },
+  pts: [0, 0],
+  sets: [0, 0],
   setHistory: [],
   setsNeeded: 2,
-  fromTournament: false,
-  tournamentMatchId: null,
-  // Tarjetas por jugador
-  cards: [
-    { yellow: 0, red: 0 },
-    { yellow: 0, red: 0 },
-  ],
+  firstServer: 0,
+  source: 'quick',       // 'quick' | 'liga'
+  matchId: null,         // id del partido de liga
+  cards: [{ yellow: 0, red: 0 }, { yellow: 0, red: 0 }],
+  undo: [],              // pila de estados previos
 };
+
+let _winTimer = null;
+let _qsFirstServer = 0;
 
 function updateQSLabels() {
   document.getElementById('qs-sets-label').textContent = STATE.cfg.sets;
   document.getElementById('qs-pts-label').textContent  = STATE.cfg.pts;
+  _renderQSServe();
 }
 
-function startQuickMatch() {
+function selectQSServe(i) {
+  _qsFirstServer = i;
+  _renderQSServe();
+}
+
+function _renderQSServe() {
+  document.querySelectorAll('#qs-serve .ss-chip').forEach(c =>
+    c.classList.toggle('active', +c.dataset.val === _qsFirstServer));
+}
+
+async function startQuickMatch() {
   const p1 = document.getElementById('qs-p1').value.trim() || 'J1';
   const p2 = document.getElementById('qs-p2').value.trim() || 'J2';
-  initMatch(p1, p2, false, null);
+  if (!await _confirmReplaceLive()) return;
+  initMatch(p1, p2, { source: 'quick', cfg: STATE.cfg, firstServer: _qsFirstServer });
 }
 
-function initMatch(p1, p2, fromTournament, tournamentMatchId) {
-  MATCH.p = [p1, p2];
-  MATCH.pts = [0,0]; MATCH.sets = [0,0];
-  MATCH.history = []; MATCH.setHistory = [];
-  MATCH.setsNeeded = Math.ceil(STATE.cfg.sets / 2);
-  MATCH.fromTournament = fromTournament;
-  MATCH.tournamentMatchId = tournamentMatchId;
-  MATCH.cards = [{ yellow:0, red:0 }, { yellow:0, red:0 }];
+/** Si hay otro partido en vivo guardado, pide confirmación antes de reemplazarlo. */
+async function _confirmReplaceLive() {
+  const live = liveMatchGet();
+  if (!live || !live.p) return true;
+  return ssConfirm(`Hay un partido sin terminar: ${live.p[0]} vs ${live.p[1]}. Si inicias otro se perderá.`,
+    { title: '¿Iniciar nuevo partido?', okText: 'Iniciar', danger: true });
+}
 
+/**
+ * @param {string} p1
+ * @param {string} p2
+ * @param {{source?:'quick'|'liga', matchId?:string, cfg?:{sets:number,pts:number}, firstServer?:0|1}} opts
+ */
+function initMatch(p1, p2, opts = {}) {
+  const cfg = { ...(opts.cfg || STATE.cfg) };
+  Object.assign(MATCH, {
+    p: [p1, p2],
+    cfg,
+    pts: [0, 0], sets: [0, 0],
+    setHistory: [],
+    setsNeeded: setsNeededFor(cfg.sets),
+    firstServer: opts.firstServer || 0,
+    source: opts.source || 'quick',
+    matchId: opts.matchId ?? null,
+    cards: [{ yellow: 0, red: 0 }, { yellow: 0, red: 0 }],
+    undo: [],
+  });
+  _showScoreScreen();
+  _persistLive();
+}
+
+function _showScoreScreen() {
+  clearTimeout(_winTimer);
+  document.getElementById('win-screen').classList.remove('show');
   document.getElementById('score-format-label').textContent =
-    `Al mejor de ${STATE.cfg.sets} set${STATE.cfg.sets>1?'s':''} · ${STATE.cfg.pts} pts`;
-  document.getElementById('score-p1-name').textContent = p1;
-  document.getElementById('score-p2-name').textContent = p2;
-
-  // Init cards bar player names
-  document.getElementById('card-p1-name').textContent = p1.length > 10 ? p1.slice(0,10)+'…' : p1;
-  document.getElementById('card-p2-name').textContent = p2.length > 10 ? p2.slice(0,10)+'…' : p2;
-
+    `Al mejor de ${MATCH.cfg.sets} set${MATCH.cfg.sets > 1 ? 's' : ''} · ${MATCH.cfg.pts} pts`;
+  document.getElementById('card-p1-name').textContent = MATCH.p[0];
+  document.getElementById('card-p2-name').textContent = MATCH.p[1];
+  document.getElementById('score-p1-btn').setAttribute('aria-label', `Punto para ${MATCH.p[0]}`);
+  document.getElementById('score-p2-btn').setAttribute('aria-label', `Punto para ${MATCH.p[1]}`);
   renderScoreUI();
   renderCardsUI();
   goTo('screen-score');
-  setPageTitle(`${p1} vs ${p2}`);
+  setPageTitle(`${MATCH.p[0]} vs ${MATCH.p[1]}`);
+}
+
+/** Reanuda el partido en vivo guardado (tras recargar o cerrar la app). */
+function resumeLiveMatch() {
+  const live = liveMatchGet();
+  if (!live || !live.p) return;
+  Object.assign(MATCH, live);
+  _showScoreScreen();
+  if (_isMatchOver()) showWinScreen();
+}
+
+function _persistLive() {
+  liveMatchSave({ ...MATCH });
+}
+
+function _isMatchOver() {
+  return MATCH.sets[0] >= MATCH.setsNeeded || MATCH.sets[1] >= MATCH.setsNeeded;
+}
+
+// ── DESHACER ──
+function _pushUndo() {
+  MATCH.undo.push(JSON.stringify({
+    pts: MATCH.pts, sets: MATCH.sets, setHistory: MATCH.setHistory, cards: MATCH.cards,
+  }));
+  if (MATCH.undo.length > 500) MATCH.undo.shift();
+}
+
+function undoPoint() {
+  if (!MATCH.undo.length) { showToast('Nada que deshacer'); return; }
+  Object.assign(MATCH, JSON.parse(MATCH.undo.pop()));
+  clearTimeout(_winTimer);
+  document.getElementById('win-screen').classList.remove('show');
+  renderScoreUI();
+  renderCardsUI();
+  _persistLive();
 }
 
 // ── PUNTOS ──
 function addPoint(player) {
-  if (MATCH.sets[0] >= MATCH.setsNeeded || MATCH.sets[1] >= MATCH.setsNeeded) return;
+  if (_isMatchOver()) return;
+  _pushUndo();
+  _scorePoint(player);
+  _persistLive();
+}
+
+function _scorePoint(player) {
   MATCH.pts[player]++;
-  MATCH.history.push(player);
-  const el = document.getElementById(player===0 ? 'score-p1-pts' : 'score-p2-pts');
+  const el = document.getElementById(player === 0 ? 'score-p1-pts' : 'score-p2-pts');
   el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse');
   checkSetEnd();
   renderScoreUI();
 }
 
-function undoPoint() {
-  if (!MATCH.history.length) { showToast('Nada que deshacer'); return; }
-  const last = MATCH.history.pop();
-  MATCH.pts[last]--;
+function swapFirstServer() {
+  if (MATCH.undo.length) return;
+  MATCH.firstServer = 1 - MATCH.firstServer;
   renderScoreUI();
+  _persistLive();
 }
 
 // ── TARJETAS ──
@@ -78,6 +154,7 @@ function undoPoint() {
  * @param {'yellow'|'red'} type
  */
 function showCardModal(player, type) {
+  if (_isMatchOver()) return;
   const modal   = document.getElementById('card-modal');
   const icon    = document.getElementById('card-modal-icon');
   const title   = document.getElementById('card-modal-title');
@@ -94,27 +171,27 @@ function showCardModal(player, type) {
     icon.style.background = '#E63946';
     title.textContent     = 'Tarjeta Roja';
     title.style.color     = '#E63946';
-    sub.textContent       = `Punto para ${player===0 ? MATCH.p[1] : MATCH.p[0]}`;
+    sub.textContent       = `Punto para ${MATCH.p[1 - player]}`;
   }
 
   btnEl.onclick = () => {
     applyCard(player, type);
-    modal.classList.remove('show');
+    closeCardModal();
   };
   modal.classList.add('show');
+  btnEl.focus();
 }
 
 function applyCard(player, type) {
+  _pushUndo(); // deshacer revierte la tarjeta y, si es roja, también el punto
   MATCH.cards[player][type]++;
-  if (type === 'red') {
-    // Tarjeta roja: punto al rival (regla ITTF)
-    const rival = player === 0 ? 1 : 0;
-    addPoint(rival);
-  }
+  // Tarjeta roja: punto al rival (regla ITTF)
+  if (type === 'red') _scorePoint(1 - player);
   renderCardsUI();
+  _persistLive();
   showToast(type === 'yellow'
     ? `Tarjeta amarilla → ${MATCH.p[player]}`
-    : `Tarjeta roja → Punto para ${MATCH.p[player===0?1:0]}`
+    : `Tarjeta roja → Punto para ${MATCH.p[1 - player]}`
   );
 }
 
@@ -133,21 +210,20 @@ function renderCardsUI() {
 
 // ── SETS ──
 function checkSetEnd() {
-  const [a,b] = MATCH.pts;
-  const lead  = Math.abs(a-b);
-  if ((a >= STATE.cfg.pts || b >= STATE.cfg.pts) && lead >= 2) {
-    const winner = a > b ? 0 : 1;
-    MATCH.setHistory.push([a,b]);
-    MATCH.sets[winner]++;
-    MATCH.pts = [0,0]; MATCH.history = [];
-    if (MATCH.sets[0] >= MATCH.setsNeeded || MATCH.sets[1] >= MATCH.setsNeeded)
-      setTimeout(showWinScreen, 300);
+  const [a, b] = MATCH.pts;
+  if (!isSetWon(a, b, MATCH.cfg.pts)) return;
+  MATCH.setHistory.push([a, b]);
+  MATCH.sets[a > b ? 0 : 1]++;
+  MATCH.pts = [0, 0];
+  if (_isMatchOver()) {
+    clearTimeout(_winTimer);
+    _winTimer = setTimeout(showWinScreen, 300);
   }
 }
 
 function renderScoreUI() {
-  const [a,b]   = MATCH.pts;
-  const [sa,sb] = MATCH.sets;
+  const [a, b]   = MATCH.pts;
+  const [sa, sb] = MATCH.sets;
 
   document.getElementById('score-p1-pts').textContent = a;
   document.getElementById('score-p2-pts').textContent = b;
@@ -156,39 +232,41 @@ function renderScoreUI() {
   document.getElementById('score-p1-sets').className = 'sets-count' + (sa >= MATCH.setsNeeded ? ' winning' : '');
   document.getElementById('score-p2-sets').className = 'sets-count' + (sb >= MATCH.setsNeeded ? ' winning' : '');
 
-  renderSetDots(sa, sb);
+  renderSetDots();
   renderPips('pips-p1', sa, MATCH.setsNeeded, 'filled-blue');
   renderPips('pips-p2', sb, MATCH.setsNeeded, 'filled-red');
 
   // Saque ITTF
-  const total   = a + b;
-  const inDeuce = a >= STATE.cfg.pts - 1 && b >= STATE.cfg.pts - 1;
-  const cycle   = inDeuce ? 1 : 2;
-  const srv     = (Math.floor(total / cycle) + (sa + sb)) % 2;
-  document.getElementById('score-p1-name').textContent = (srv===0 ? '> ' : '') + MATCH.p[0];
-  document.getElementById('score-p2-name').textContent = (srv===1 ? '> ' : '') + MATCH.p[1];
+  const srv = serverFor(a, b, sa + sb, MATCH.cfg.pts, MATCH.firstServer);
+  ['score-p1-name', 'score-p2-name'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.textContent = MATCH.p[i];
+    el.classList.toggle('serving', srv === i);
+  });
 
-  // DEUCE indicator
+  const swap = document.getElementById('btn-swap-serve');
+  if (swap) swap.classList.toggle('d-none', MATCH.undo.length > 0);
+
   const deuceBanner = document.getElementById('deuce-banner');
-  if (deuceBanner) {
-    const isDeuce = a >= STATE.cfg.pts - 1 && b >= STATE.cfg.pts - 1 && a === b;
-    deuceBanner.classList.toggle('show', isDeuce);
-  }
+  if (deuceBanner) deuceBanner.classList.toggle('show', isDeuce(a, b, MATCH.cfg.pts));
 }
 
-function renderSetDots(sa, sb) {
+function renderSetDots() {
+  const [sa, sb] = MATCH.sets;
   const c = document.getElementById('set-dots'); c.innerHTML = '';
-  for (let i=0; i<STATE.cfg.sets; i++) {
+  // Se colorea cada set jugado según quién lo ganó, en orden.
+  for (let i = 0; i < MATCH.cfg.sets; i++) {
     const d = document.createElement('div'); d.className = 'pip';
-    if (i < sa) d.classList.add('filled-blue');
-    else if (i < sa+sb) d.classList.add('filled-red');
+    const s = MATCH.setHistory[i];
+    if (s) d.classList.add(s[0] > s[1] ? 'filled-blue' : 'filled-red');
     c.appendChild(d);
   }
+  c.setAttribute('aria-label', `Sets: ${sa} a ${sb}`);
 }
 
 function renderPips(elId, filled, total, cls) {
   const el = document.getElementById(elId); el.innerHTML = '';
-  for (let i=0; i<total; i++) {
+  for (let i = 0; i < total; i++) {
     const p = document.createElement('div');
     p.className = 'pip' + (i < filled ? ' ' + cls : '');
     el.appendChild(p);
@@ -196,44 +274,40 @@ function renderPips(elId, filled, total, cls) {
 }
 
 function showWinScreen() {
-  const [sa,sb] = MATCH.sets, wi = sa > sb ? 0 : 1;
+  const [sa, sb] = MATCH.sets, wi = sa > sb ? 0 : 1;
   document.getElementById('win-name').textContent    = MATCH.p[wi];
   document.getElementById('win-p1-name').textContent = MATCH.p[0];
   document.getElementById('win-p2-name').textContent = MATCH.p[1];
   document.getElementById('win-p1-sets').textContent = sa;
   document.getElementById('win-p2-sets').textContent = sb;
   document.getElementById('win-set-history').innerHTML =
-    MATCH.setHistory.map(([a,b],i) => `
-      <div style="display:flex;justify-content:space-between;gap:24px;font-size:14px;color:var(--ss-muted);padding:3px 0;">
-        <span>Set ${i+1}</span>
-        <span style="color:${a>b?'var(--ss-win)':'var(--ss-text)'};">${a}</span>
+    MATCH.setHistory.map(([a, b], i) => `
+      <div class="win-set-row">
+        <span>Set ${i + 1}</span>
+        <span class="${a > b ? 'win-set-winner' : ''}">${a}</span>
         <span>–</span>
-        <span style="color:${b>a?'var(--ss-win)':'var(--ss-text)'};">${b}</span>
+        <span class="${b > a ? 'win-set-winner' : ''}">${b}</span>
       </div>`).join('');
   document.getElementById('win-screen').classList.add('show');
 }
 
 function finishMatch() {
   document.getElementById('win-screen').classList.remove('show');
-  if (MATCH.fromTournament) {
-    const m = LIGA.matches.find(x => x.id === MATCH.tournamentMatchId);
-    if (m) {
-      m.sets1 = MATCH.sets[0]; m.sets2 = MATCH.sets[1];
-      m.setHistory = [...MATCH.setHistory]; m.done = true;
-    }
-    renderBracket();
-    goTo('screen-tournament-bracket');
+  liveMatchClear();
+  if (MATCH.source === 'liga') {
+    ligaRegistrarResultado(MATCH.matchId, MATCH.sets, MATCH.setHistory);
   } else {
     goTo('screen-home');
   }
 }
 
-function confirmBack() {
-  const has = MATCH.history.length > 0 || MATCH.sets[0] > 0 || MATCH.sets[1] > 0;
-  if (!has || confirm('¿Salir del partido? Se perdera el progreso.')) {
-    document.getElementById('win-screen').classList.remove('show');
-    goTo(MATCH.fromTournament ? 'screen-tournament-bracket' : 'screen-quicksetup');
-  }
+async function confirmBack() {
+  const started = MATCH.undo.length > 0;
+  if (started && !await ssConfirm('Se perderá el progreso de este partido.', { title: '¿Salir del partido?', okText: 'Salir', danger: true })) return;
+  liveMatchClear();
+  clearTimeout(_winTimer);
+  document.getElementById('win-screen').classList.remove('show');
+  goTo(MATCH.source === 'liga' ? 'screen-tournament-bracket' : 'screen-quicksetup');
 }
 
 
@@ -281,3 +355,12 @@ function hideCardTooltip() {
   addLongPress('.btn-card-yellow', 'yellow');
   addLongPress('.btn-card-red',    'red');
 })();
+
+// Atajos de teclado en el marcador (útil en notebook junto a la mesa)
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('screen-score')?.classList.contains('active')) return;
+  if (document.querySelector('.ss-dialog-overlay, .card-modal.show, .win-screen.show')) return;
+  if (e.key === 'ArrowLeft')  addPoint(0);
+  if (e.key === 'ArrowRight') addPoint(1);
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undoPoint(); }
+});
