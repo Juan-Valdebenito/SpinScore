@@ -2,7 +2,7 @@
    Permite usar la app sin conexión una vez abierta por primera vez.
    Cambia CACHE en cada versión para que los clientes reciban los archivos nuevos.
 */
-const CACHE = 'spinscore-2.1.0';
+const CACHE = 'spinscore-2.2.0';
 
 const CORE = [
   './',
@@ -23,11 +23,14 @@ const CORE = [
   './js/liga.js',
   './js/grupos.js',
   './js/eliminacion.js',
-  './images/Logo.png',
+  './images/favicon.ico',
+  './images/favicon-32.png',
+  './images/icon-192.png',
+  './images/apple-touch-icon.png',
 ];
 
-// CDNs usados por las páginas (Bootstrap y Google Fonts): se guardan al primer uso.
-const RUNTIME_HOSTS = ['cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
+// Google Fonts: se guarda al primer uso para que las fuentes funcionen sin conexión.
+const RUNTIME_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));

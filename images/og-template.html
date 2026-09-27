@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<!-- Plantilla para regenerar images/og-image.jpg (1200×630). Se captura con Chrome a ese tamaño. -->
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Inter:wght@500;700&display=swap');
+  * { margin:0; box-sizing:border-box; }
+  body { width:1200px; height:630px; overflow:hidden; font-family:'Inter',sans-serif; color:#F0F4F0;
+         background: radial-gradient(ellipse 70% 90% at 15% 10%, rgba(34,197,94,.22), transparent 60%), #0D2818; }
+  .wrap { display:flex; align-items:center; height:100%; padding:0 72px; gap:48px; }
+  .text { flex:1; }
+  .logo { width:120px; height:120px; border-radius:28px; margin-bottom:28px; box-shadow:0 10px 40px rgba(0,0,0,.45); }
+  h1 { font-family:'Orbitron',monospace; font-size:78px; letter-spacing:3px; color:#F5C518; line-height:1; margin-bottom:22px; }
+  p { font-size:34px; font-weight:700; line-height:1.25; margin-bottom:26px; }
+  .tags { display:flex; gap:12px; flex-wrap:wrap; }
+  .tags span { font-size:21px; font-weight:500; color:#8BAF94; border:1.5px solid #2A5C3A; border-radius:999px; padding:7px 18px; }
+  .phone { width:300px; height:560px; border-radius:40px; border:10px solid #050A0F; overflow:hidden; flex-shrink:0;
+           box-shadow:0 30px 80px rgba(0,0,0,.6), 0 0 0 2px #2A5C3A; transform:rotate(3deg); margin-top:40px; }
+  .phone img { width:100%; display:block; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="text">
+      <img class="logo" src="logo-paddle.webp" alt="">
+      <h1>SPINSCORE</h1>
+      <p>Marcador y torneos de<br>tenis de mesa</p>
+      <div class="tags"><span>Reglas ITTF</span><span>Grupos + cuadro</span><span>Gratis y offline</span></div>
+    </div>
+    <div class="phone"><img src="screens/marcador.webp" alt=""></div>
+  </div>
+</body>
+</html>

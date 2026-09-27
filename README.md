@@ -53,6 +53,18 @@ npm test       # corre los tests
 
 Al publicar una versión nueva, actualiza `APP_VERSION` en `js/utils.js` y `CACHE` en `sw.js` para que los usuarios reciban los archivos nuevos.
 
+## Imágenes
+
+| Archivo | Uso |
+|---|---|
+| `images/Logo.png` | Original en alta resolución (1024 px, 1,4 MB). **No se carga en la web**: es la fuente para generar el resto. |
+| `images/favicon.ico`, `favicon-32.png` | Favicon (solo la paleta, el texto no se lee a ese tamaño). |
+| `images/icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` | Íconos de la PWA al instalarla. |
+| `images/screens/*.webp` | Capturas de la app que se muestran en la landing y en el diálogo de instalación. |
+| `images/og-image.jpg` | Vista previa al compartir en redes (1200×630). Se genera capturando `images/og-template.html` a ese tamaño. |
+
+Las etiquetas Open Graph usan URLs absolutas con `https://spinscore.cl`. Si el sitio se publica en otro dominio, cámbialo en `index.html`, `app.html` y `public.html`.
+
 ## Datos
 
 Todo vive en el `localStorage` del navegador (claves `spinscore_*`). Borrar los datos del sitio borra los torneos.
