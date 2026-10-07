@@ -3,7 +3,7 @@
 :root {
   --bg: #0D2818; --surface: #163524; --accent: #F5C518;
   --red: #E63946; --blue: #4FC3F7; --green: #22C55E;
-  --text: #F0F4F0; --muted: #8BAF94; --border: #2A5C3A;
+  --text: #F0F4F0; --muted: #9DBFA5; --border: #2A5C3A;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -69,7 +69,7 @@ footer { padding: 40px 24px; border-top: 1px solid var(--border); }
 .footer-links { display: flex; gap: 20px; }
 .footer-links a { color: var(--muted); text-decoration: none; font-size: 13px; }
 .footer-links a:hover { color: var(--text); }
-.footer-copy { font-size: 12px; color: var(--border); }
+.footer-copy { font-size: 12px; color: var(--muted); }
 
 @media (max-width: 640px) {
   nav { padding: 14px 20px; }
@@ -114,3 +114,8 @@ section[id] { scroll-margin-top: 72px; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
+
+/* ── Áreas táctiles mínimas de 44 px ── */
+.nav-logo, .footer-links a { min-height: 44px; display: inline-flex; align-items: center; }
+.btn-launch { min-height: 44px; display: inline-flex; align-items: center; }
+.nav-links a { min-height: 44px; display: inline-flex; align-items: center; }

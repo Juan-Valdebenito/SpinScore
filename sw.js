@@ -2,7 +2,7 @@
    Permite usar la app sin conexión una vez abierta por primera vez.
    Cambia CACHE en cada versión para que los clientes reciban los archivos nuevos.
 */
-const CACHE = 'spinscore-2.2.0';
+const CACHE = 'spinscore-2.3.0';
 
 const CORE = [
   './',

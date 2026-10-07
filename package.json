@@ -1,6 +1,6 @@
 {
   "name": "spinscore",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "private": true,
   "description": "Marcador y gestión de torneos de Tenis de Mesa (PWA, sin backend).",
   "scripts": {

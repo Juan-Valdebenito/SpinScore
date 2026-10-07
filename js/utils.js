@@ -2,7 +2,7 @@
    Utilidades compartidas por app.html, public.html y multimesa.html.
 */
 
-const APP_VERSION = '2.2.0';
+const APP_VERSION = '2.3.0';
 
 // ── HTML SEGURO ────────────────────────────
 

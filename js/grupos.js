@@ -3,7 +3,7 @@
    (también para la fase eliminatoria).
 */
 
-const GROUP_COLORS = ['#4FC3F7', '#F5C518', '#E63946', '#22C55E', '#A78BFA', '#FB923C', '#F472B6', '#34D399'];
+const GROUP_COLORS = ['#4FC3F7', '#F5C518', '#F87171', '#22C55E', '#A78BFA', '#FB923C', '#F472B6', '#34D399'];
 const GROUP_NAMES  = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 const MIN_PER_GROUP = 2;
 const MAX_PER_GROUP = 4;

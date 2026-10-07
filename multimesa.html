@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="css/dialog.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap');
-    :root { --bg:#0D2818;--surface:#163524;--card:#1E4A30;--accent:#F5C518;--red:#E63946;--blue:#4FC3F7;--green:#22C55E;--text:#F0F4F0;--muted:#8BAF94;--border:#2A5C3A;--win:#22C55E; }
+    :root { --bg:#0D2818;--surface:#163524;--card:#1E4A30;--accent:#F5C518;--red:#E63946;--blue:#4FC3F7;--green:#22C55E;--text:#F0F4F0;--muted:#9DBFA5;--red-text:#FF8F97;--border:#2A5C3A;--win:#22C55E; }
     *,*::before,*::after { box-sizing:border-box;margin:0;padding:0; }
     body { background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden; }
     .orb { font-family:'Orbitron',monospace;font-weight:900; }
@@ -32,13 +32,13 @@
     /* MESA CARD */
     .mesa-card { background:var(--surface);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;transition:border-color .15s; }
     .mesa-card.active { border-color:rgba(245,197,24,.4); }
-    .mesa-card.finished { border-color:rgba(34,197,94,.4);opacity:.85; }
+    .mesa-card.finished { border-color:rgba(34,197,94,.4); }
 
     .mesa-header { display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--card); }
     .mesa-name { font-weight:700;font-size:14px; }
-    .mesa-format { font-size:11px;color:var(--muted); }
+    .mesa-format { font-size:12px;color:var(--muted); }
     .mesa-actions { display:flex;gap:6px; }
-    .btn-mesa-sm { background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:7px;font-size:11px;cursor:pointer;transition:all .12s; }
+    .btn-mesa-sm { background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:7px;font-size:12px;cursor:pointer;transition:all .12s; }
     .btn-mesa-sm:hover { border-color:var(--muted);color:var(--text); }
     .btn-mesa-sm.danger:hover { border-color:var(--red);color:var(--red); }
 
@@ -57,7 +57,7 @@
     .mpip.red  { background:var(--red); }
 
     .mesa-footer { display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:1px solid var(--border);background:var(--card); }
-    .mesa-serve { font-size:11px;color:var(--muted); }
+    .mesa-serve { font-size:12px;color:var(--muted); }
     .mesa-set-dots { display:flex;gap:4px; }
     .sdot { width:8px;height:8px;border-radius:50%;background:var(--border); }
     .sdot.blue { background:var(--blue); }
@@ -77,7 +77,7 @@
     .modal-box { background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;width:90%;max-width:380px; }
     .modal-title { font-size:18px;font-weight:700;margin-bottom:16px; }
     .modal-field { margin-bottom:14px; }
-    .modal-label { font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px; }
+    .modal-label { font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px; }
     .modal-input { width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-size:15px;outline:none;font-family:inherit; }
     .modal-input:focus { border-color:var(--accent); }
     .modal-chips { display:flex;gap:8px;margin-top:4px; }
@@ -99,6 +99,11 @@
     .mesa-win-sets { font-size:12px;color:var(--muted); }
     .btn-undo-win { background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer; }
     .btn-undo-win:hover { color:var(--text);border-color:var(--muted); }
+    /* Áreas táctiles mínimas de 44 px */
+    .btn-mesa-sm, .btn-undo-sm { min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center; }
+    .btn-nav, .btn-add-mesa, .btn-reset-mesa, .btn-undo-win { min-height:44px;display:inline-flex;align-items:center;justify-content:center; }
+    .mchip { min-height:44px; }
+    .nav-brand { display:inline-flex;align-items:center;min-height:44px; }
     button:focus-visible { outline:2px solid var(--accent);outline-offset:2px; }
 
     @keyframes pulse { 0%,100%{transform:scale(1)}50%{transform:scale(1.08)} }
@@ -274,7 +279,7 @@ function buildMesaHTML(m) {
         <div class="mesa-sets-count${sa >= setsNeeded ? ' winning' : ''}">${sa}</div>
       </button>
       <button class="mesa-player" aria-label="Punto para ${p2}" onclick="addMesaPoint(${m.id},1)" ${m.status === 'finished' ? 'disabled' : ''}>
-        <div class="mesa-player-name" style="color:var(--red);">${srv === 1 ? '<span class="srv-dot" title="Saque"></span>' : ''}${p2}</div>
+        <div class="mesa-player-name" style="color:var(--red-text);">${srv === 1 ? '<span class="srv-dot" title="Saque"></span>' : ''}${p2}</div>
         <div class="mesa-big-score" style="color:var(--red);">${b}</div>
         <div class="mesa-set-pips">${p2pips}</div>
         <div class="mesa-sets-count${sb >= setsNeeded ? ' winning' : ''}">${sb}</div>
