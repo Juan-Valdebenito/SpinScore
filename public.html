@@ -21,7 +21,7 @@
   <link rel="icon" href="images/favicon.ico" sizes="48x48">
   <link rel="icon" href="images/favicon-32.png" type="image/png" sizes="32x32">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap');
     :root { --bg:#0D2818;--surface:#163524;--card:#1E4A30;--accent:#F5C518;--red:#E63946;--blue:#4FC3F7;--green:#22C55E;--text:#F0F4F0;--muted:#9DBFA5;--red-text:#FF8F97;--border:#2A5C3A;--win:#3DDC79; }
     *,*::before,*::after { box-sizing:border-box; }
     body { margin:0; background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh; }
@@ -106,6 +106,9 @@
     .elim-match.bye { background:transparent;border-style:dashed; }
     .podio-title { margin-top:24px; }
     .gplayer-name, .match-p, .elim-name { overflow-wrap:anywhere;min-width:0; }
+
+    /* Números con cero sin barra */
+    .match-score, .elim-sets { font-family:'Chakra Petch','Orbitron',sans-serif;font-weight:700;font-variant-numeric:tabular-nums; }
 
     /* Áreas táctiles mínimas de 44 px */
     .gtab { min-height:44px; }

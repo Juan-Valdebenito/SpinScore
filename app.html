@@ -134,13 +134,13 @@
   </div>
 
   <!-- ══ SCORE ══ -->
-  <div id="screen-score" class="screen" style="overflow:hidden;">
-    <div class="ss-header" style="padding:10px 14px;">
+  <div id="screen-score" class="screen">
+    <div class="ss-header">
       <button class="btn-back" aria-label="Volver" onclick="confirmBack()">←</button>
       <div id="score-format-label" class="ss-header-sub">3 sets · 11 pts</div>
-      <button onclick="undoPoint()" class="btn-undo" aria-label="Deshacer último punto" title="Deshacer (Ctrl+Z)">↩</button>
+      <div class="header-spacer"></div>
     </div>
-    <div id="set-dots" class="set-dots-bar"></div>
+    <div id="set-dots" class="set-strip" role="list" aria-label="Resultado por set"></div>
     <div id="score-area" class="score-area">
       <button class="player-side left" id="score-p1-btn" onclick="addPoint(0)">
         <div class="player-name score-blue" id="score-p1-name">J1</div>
@@ -156,37 +156,39 @@
       </button>
       <div id="deuce-banner" class="deuce-banner">DEUCE</div>
     </div>
-    <div class="score-hint">
-      Toca el lado del jugador para sumar · ↩ deshacer · <span class="serve-dot-inline" aria-hidden="true"></span> saque
-      <button id="btn-swap-serve" class="btn-swap-serve" onclick="swapFirstServer()">⇄ Cambiar saque inicial</button>
+    <div class="score-hint" id="score-hint">
+      Toca el lado de cada jugador para sumar · <span class="serve-dot-inline" aria-hidden="true"></span> = saque
     </div>
-    <div class="cards-bar">
-      <div class="card-player-section">
-        <div class="card-counters">
-          <span class="card-badge card-badge-yellow" id="card-y-0" style="display:none;">0</span>
-          <span class="card-badge card-badge-red"    id="card-r-0" style="display:none;">0</span>
-        </div>
-        <span id="card-p1-name" class="card-player-name"></span>
-        <div class="card-btn-wrapper" oncontextmenu="showCardTooltip(event,'yellow');return false;">
-          <button class="btn-card btn-card-yellow" onclick="showCardModal(0,'yellow')" title="Tarjeta Amarilla ITTF (clic derecho: ver regla)" aria-label="Tarjeta amarilla a jugador 1"><span class="card-icon card-icon-yellow"></span></button>
-        </div>
-        <div class="card-btn-wrapper" oncontextmenu="showCardTooltip(event,'red');return false;">
-          <button class="btn-card btn-card-red" onclick="showCardModal(0,'red')" title="Tarjeta Roja ITTF (clic derecho: ver regla)" aria-label="Tarjeta roja a jugador 1"><span class="card-icon card-icon-red"></span></button>
-        </div>
+    <div class="score-controls">
+      <div class="card-group p1" role="group" aria-label="Tarjetas jugador 1">
+        <button class="btn-card btn-card-yellow" id="card-btn-y-0" onclick="showCardModal(0,'yellow')" oncontextmenu="showCardTooltip(event,'yellow');return false;" title="Tarjeta amarilla (clic derecho o mantener presionado: ver regla ITTF)" aria-label="Tarjeta amarilla a jugador 1">
+          <span class="card-icon card-icon-yellow" aria-hidden="true"></span>
+          <span class="card-count" id="card-y-0" style="display:none;">0</span>
+        </button>
+        <button class="btn-card btn-card-red" id="card-btn-r-0" onclick="showCardModal(0,'red')" oncontextmenu="showCardTooltip(event,'red');return false;" title="Tarjeta roja (clic derecho o mantener presionado: ver regla ITTF)" aria-label="Tarjeta roja a jugador 1">
+          <span class="card-icon card-icon-red" aria-hidden="true"></span>
+          <span class="card-count" id="card-r-0" style="display:none;">0</span>
+        </button>
       </div>
-      <div class="cards-divider"></div>
-      <div class="card-player-section right">
-        <div class="card-counters">
-          <span class="card-badge card-badge-yellow" id="card-y-1" style="display:none;">0</span>
-          <span class="card-badge card-badge-red"    id="card-r-1" style="display:none;">0</span>
-        </div>
-        <span id="card-p2-name" class="card-player-name text-right"></span>
-        <div class="card-btn-wrapper" oncontextmenu="showCardTooltip(event,'yellow');return false;">
-          <button class="btn-card btn-card-yellow" onclick="showCardModal(1,'yellow')" title="Tarjeta Amarilla ITTF (clic derecho: ver regla)" aria-label="Tarjeta amarilla a jugador 2"><span class="card-icon card-icon-yellow"></span></button>
-        </div>
-        <div class="card-btn-wrapper" oncontextmenu="showCardTooltip(event,'red');return false;">
-          <button class="btn-card btn-card-red" onclick="showCardModal(1,'red')" title="Tarjeta Roja ITTF (clic derecho: ver regla)" aria-label="Tarjeta roja a jugador 2"><span class="card-icon card-icon-red"></span></button>
-        </div>
+      <div class="score-main-action">
+        <button id="btn-swap-serve" class="btn-swap-serve" onclick="swapFirstServer()">⇄ Cambiar saque</button>
+        <button id="btn-undo-main" class="btn-undo-main d-none" onclick="undoPoint()" title="Deshacer (Ctrl+Z)">
+          <span class="undo-icon" aria-hidden="true">↩</span>
+          <span class="undo-text">
+            <span class="undo-title">Deshacer</span>
+            <span class="undo-detail" id="undo-detail"></span>
+          </span>
+        </button>
+      </div>
+      <div class="card-group p2" role="group" aria-label="Tarjetas jugador 2">
+        <button class="btn-card btn-card-red" id="card-btn-r-1" onclick="showCardModal(1,'red')" oncontextmenu="showCardTooltip(event,'red');return false;" title="Tarjeta roja (clic derecho o mantener presionado: ver regla ITTF)" aria-label="Tarjeta roja a jugador 2">
+          <span class="card-icon card-icon-red" aria-hidden="true"></span>
+          <span class="card-count" id="card-r-1" style="display:none;">0</span>
+        </button>
+        <button class="btn-card btn-card-yellow" id="card-btn-y-1" onclick="showCardModal(1,'yellow')" oncontextmenu="showCardTooltip(event,'yellow');return false;" title="Tarjeta amarilla (clic derecho o mantener presionado: ver regla ITTF)" aria-label="Tarjeta amarilla a jugador 2">
+          <span class="card-icon card-icon-yellow" aria-hidden="true"></span>
+          <span class="card-count" id="card-y-1" style="display:none;">0</span>
+        </button>
       </div>
     </div>
   </div>

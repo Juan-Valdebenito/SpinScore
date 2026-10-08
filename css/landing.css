@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
   --bg: #0D2818; --surface: #163524; --accent: #F5C518;
@@ -119,3 +119,6 @@ section[id] { scroll-margin-top: 72px; }
 .nav-logo, .footer-links a { min-height: 44px; display: inline-flex; align-items: center; }
 .btn-launch { min-height: 44px; display: inline-flex; align-items: center; }
 .nav-links a { min-height: 44px; display: inline-flex; align-items: center; }
+
+/* Números con cero sin barra (Orbitron queda para el logotipo) */
+.stat-num { font-family:'Chakra Petch','Orbitron',sans-serif;font-weight:700;font-variant-numeric:tabular-nums; font-size: 36px; }

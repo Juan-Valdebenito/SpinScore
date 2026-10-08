@@ -79,8 +79,10 @@ function _showScoreScreen() {
   document.getElementById('win-screen').classList.remove('show');
   document.getElementById('score-format-label').textContent =
     `Al mejor de ${MATCH.cfg.sets} set${MATCH.cfg.sets > 1 ? 's' : ''} · ${MATCH.cfg.pts} pts`;
-  document.getElementById('card-p1-name').textContent = MATCH.p[0];
-  document.getElementById('card-p2-name').textContent = MATCH.p[1];
+  [0, 1].forEach(i => {
+    document.getElementById(`card-btn-y-${i}`).setAttribute('aria-label', `Tarjeta amarilla a ${MATCH.p[i]}`);
+    document.getElementById(`card-btn-r-${i}`).setAttribute('aria-label', `Tarjeta roja a ${MATCH.p[i]}`);
+  });
   document.getElementById('score-p1-btn').setAttribute('aria-label', `Punto para ${MATCH.p[0]}`);
   document.getElementById('score-p2-btn').setAttribute('aria-label', `Punto para ${MATCH.p[1]}`);
   renderScoreUI();
@@ -107,16 +109,30 @@ function _isMatchOver() {
 }
 
 // ── DESHACER ──
-function _pushUndo() {
+/** Guarda el estado previo junto con una descripción de la acción (se muestra en el botón). */
+function _pushUndo(label) {
   MATCH.undo.push(JSON.stringify({
-    pts: MATCH.pts, sets: MATCH.sets, setHistory: MATCH.setHistory, cards: MATCH.cards,
+    pts: MATCH.pts, sets: MATCH.sets, setHistory: MATCH.setHistory, cards: MATCH.cards, label,
   }));
   if (MATCH.undo.length > 500) MATCH.undo.shift();
 }
 
+/** Primer nombre del jugador (cabe en el botón de deshacer, que es angosto en celulares). */
+function _shortName(player) {
+  return MATCH.p[player].trim().split(/\s+/)[0];
+}
+
+/** Descripción de la última acción deshacible ('' si no hay o si viene de una versión anterior). */
+function _lastUndoLabel() {
+  if (!MATCH.undo.length) return '';
+  try { return JSON.parse(MATCH.undo[MATCH.undo.length - 1]).label || ''; } catch { return ''; }
+}
+
 function undoPoint() {
   if (!MATCH.undo.length) { showToast('Nada que deshacer'); return; }
-  Object.assign(MATCH, JSON.parse(MATCH.undo.pop()));
+  const { label, ...prev } = JSON.parse(MATCH.undo.pop());
+  Object.assign(MATCH, prev);
+  if (label) showToast(`Deshecho: ${label}`);
   clearTimeout(_winTimer);
   document.getElementById('win-screen').classList.remove('show');
   renderScoreUI();
@@ -127,7 +143,7 @@ function undoPoint() {
 // ── PUNTOS ──
 function addPoint(player) {
   if (_isMatchOver()) return;
-  _pushUndo();
+  _pushUndo(`punto de ${_shortName(player)}`);
   _scorePoint(player);
   _persistLive();
 }
@@ -183,10 +199,12 @@ function showCardModal(player, type) {
 }
 
 function applyCard(player, type) {
-  _pushUndo(); // deshacer revierte la tarjeta y, si es roja, también el punto
+  // deshacer revierte la tarjeta y, si es roja, también el punto
+  _pushUndo(`tarjeta ${type === 'yellow' ? 'amarilla' : 'roja'} a ${_shortName(player)}`);
   MATCH.cards[player][type]++;
   // Tarjeta roja: punto al rival (regla ITTF)
   if (type === 'red') _scorePoint(1 - player);
+  else renderScoreUI(); // actualiza el botón de deshacer
   renderCardsUI();
   _persistLive();
   showToast(type === 'yellow'
@@ -244,23 +262,36 @@ function renderScoreUI() {
     el.classList.toggle('serving', srv === i);
   });
 
-  const swap = document.getElementById('btn-swap-serve');
-  if (swap) swap.classList.toggle('d-none', MATCH.undo.length > 0);
+  const started = MATCH.undo.length > 0;
+  document.getElementById('btn-swap-serve').classList.toggle('d-none', started);
+  document.getElementById('btn-undo-main').classList.toggle('d-none', !started);
+  document.getElementById('score-hint').classList.toggle('d-none', started);
+  const last = _lastUndoLabel();
+  document.getElementById('undo-detail').textContent = last;
+  document.getElementById('btn-undo-main').setAttribute('aria-label', last ? `Deshacer ${last}` : 'Deshacer');
 
   const deuceBanner = document.getElementById('deuce-banner');
   if (deuceBanner) deuceBanner.classList.toggle('show', isDeuce(a, b, MATCH.cfg.pts));
 }
 
+/** Fila superior: resultado de cada set jugado (color del ganador), el set en curso y los restantes. */
 function renderSetDots() {
   const [sa, sb] = MATCH.sets;
-  const c = document.getElementById('set-dots'); c.innerHTML = '';
-  // Se colorea cada set jugado según quién lo ganó, en orden.
+  const c = document.getElementById('set-dots');
+  const current = MATCH.setHistory.length;
+  let html = '';
   for (let i = 0; i < MATCH.cfg.sets; i++) {
-    const d = document.createElement('div'); d.className = 'pip';
     const s = MATCH.setHistory[i];
-    if (s) d.classList.add(s[0] > s[1] ? 'filled-blue' : 'filled-red');
-    c.appendChild(d);
+    if (s) {
+      const w = s[0] > s[1] ? 'p1' : 'p2';
+      html += `<span class="set-chip played ${w}" role="listitem" aria-label="Set ${i + 1}: ${s[0]} a ${s[1]}">${s[0]}-${s[1]}</span>`;
+    } else if (i === current && !_isMatchOver()) {
+      html += `<span class="set-chip current" role="listitem" aria-label="Set ${i + 1} en juego">Set ${i + 1}</span>`;
+    } else {
+      html += `<span class="set-chip pending" role="listitem" aria-label="Set ${i + 1} por jugar"></span>`;
+    }
   }
+  c.innerHTML = html;
   c.setAttribute('aria-label', `Sets: ${sa} a ${sb}`);
 }
 

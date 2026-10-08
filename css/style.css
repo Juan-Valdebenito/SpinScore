@@ -2,7 +2,7 @@
    SpinScore — style.css
    3 temas: standard (verde), dark (negro+azul), light (blanco)
 ════════════════════════════════════════════ */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* ── TEMA ESTÁNDAR (verde oscuro, por defecto) ── */
 :root, [data-theme="standard"] {
@@ -111,7 +111,6 @@ button:active { transform:scale(.94); opacity:.85; }
 .ss-header-title { flex:1; text-align:center; font-weight:700; font-size:17px; }
 .ss-header-sub { flex:1; text-align:center; font-size:12px; color:var(--ss-muted); }
 .btn-back { background:none; border:none; color:var(--ss-muted); font-size:24px; padding:4px 8px; cursor:pointer; }
-.btn-undo { background:none; border:none; color:var(--ss-muted); font-size:20px; padding:4px 8px; cursor:pointer; }
 
 /* ── TABS ── */
 .ss-tabs { display:flex; border-bottom:1px solid var(--ss-border); flex-shrink:0; overflow-x:auto; background:var(--ss-header-bg); }
@@ -192,7 +191,6 @@ button:active { transform:scale(.94); opacity:.85; }
 .active-torneo-arrow { color:var(--ss-green); font-size:14px; }
 
 /* ── SCORE ── */
-.set-dots-bar { display:flex; justify-content:center; gap:7px; padding:8px 0; border-bottom:1px solid var(--ss-border); flex-shrink:0; }
 .score-area { flex:1; display:flex; position:relative; }
 .player-side { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:16px 8px; background:none; border:none; cursor:pointer; }
 .player-side:active { background:color-mix(in srgb,var(--ss-text) 4%,transparent); transform:none; opacity:1; }
@@ -214,9 +212,6 @@ button:active { transform:scale(.94); opacity:.85; }
 .deuce-banner.show { display:block; }
 
 /* CARDS BAR */
-.cards-bar { display:flex; justify-content:space-around; padding:8px 12px; border-top:1px solid var(--ss-border); flex-shrink:0; background:var(--ss-bg); gap:8px; }
-.card-player-section { display:flex; align-items:center; gap:8px; flex:1; }
-.card-player-section.right { flex-direction:row-reverse; }
 .btn-card { display:flex; align-items:center; gap:5px; padding:6px 10px; border-radius:8px; border:1.5px solid; font-size:12px; font-weight:700; cursor:pointer; background:none; transition:transform .08s; }
 .btn-card:active { transform:scale(.92); }
 .btn-card-yellow { border-color:color-mix(in srgb,#F5C518 50%,transparent); color:#F5C518; }
@@ -226,10 +221,6 @@ button:active { transform:scale(.94); opacity:.85; }
 .card-icon { width:14px; height:18px; border-radius:2px; display:inline-block; flex-shrink:0; }
 .card-icon-yellow { background:#F5C518; }
 .card-icon-red { background:var(--ss-red); }
-.card-counters { display:flex; gap:4px; align-items:center; }
-.card-badge { font-size:12px; font-weight:700; padding:1px 6px; border-radius:6px; min-width:20px; text-align:center; }
-.card-badge-yellow { background:color-mix(in srgb,#F5C518 15%,transparent); color:#F5C518; }
-.card-badge-red { background:color-mix(in srgb,var(--ss-red) 15%,transparent); color:var(--ss-red-text); }
 
 /* CARD MODAL */
 .card-modal { position:fixed; inset:0; background:rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; z-index:250; animation:ss-fadeIn .15s ease; }
@@ -416,7 +407,6 @@ button:active { transform:scale(.94); opacity:.85; }
 /* ══ v1.9.5 ADDITIONS ═══════════════════════ */
 
 /* ── CARD TOOLTIP (regla ITTF) ── */
-.card-btn-wrapper { position: relative; display: inline-flex; }
 
 .card-tooltip {
   position: fixed;
@@ -521,8 +511,8 @@ button:active { transform:scale(.94); opacity:.85; }
 
 /* ── PRINT / PDF STYLES ── */
 @media print {
-  nav, .ss-header, .action-bar, .btn-back, .btn-undo,
-  .cards-bar, .score-hint, .home-footer, .install-banner,
+  nav, .ss-header, .action-bar, .btn-back,
+  .score-controls, .score-hint, .home-footer, .install-banner,
   #toast, .btn-primary, .btn-secondary, .btn-add,
   .btn-add-set, .btn-remove, .btn-remove-set { display: none !important; }
 
@@ -623,8 +613,6 @@ button:active { transform:scale(.94); opacity:.85; }
 .serve-dot-inline { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--ss-accent); vertical-align:middle; }
 .btn-swap-serve { display:block; margin:6px auto 0; background:none; border:1px dashed var(--ss-border); color:var(--ss-muted); border-radius:8px; padding:4px 10px; font-size:12px; font-weight:600; }
 .btn-swap-serve:hover { color:var(--ss-accent); border-color:var(--ss-accent); }
-.card-player-name { font-size:12px; color:var(--ss-muted); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
-.cards-divider { width:1px; background:var(--ss-border); margin:0 6px; }
 .card-modal-btns { display:flex; gap:10px; justify-content:center; }
 .card-modal-btns > button { flex:1; }
 
@@ -718,10 +706,9 @@ button.elim-match, button.b-match { display:block; width:100%; }
 .big-score.score-red { color:var(--ss-red); }
 
 /* Áreas táctiles mínimas de 44×44 px */
-.btn-back, .btn-undo, .btn-remove, .btn-remove-set, .btn-delete-torneo, .install-close {
+.btn-back, .btn-remove, .btn-remove-set, .btn-delete-torneo, .install-close {
   min-width:44px; min-height:44px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
 }
-.btn-undo { font-size:24px; }
 .btn-card { min-width:44px; min-height:44px; justify-content:center; }
 .btn-swap-serve { min-height:44px; padding:0 16px; }
 .btn-action { min-height:44px; padding:0 16px; }
@@ -742,10 +729,55 @@ button.elim-match, button.b-match { display:block; width:100%; }
 /* Píldora "VS": borde en vez de relleno para que el texto conserve contraste */
 .match-vs { background:transparent; border:1px solid var(--ss-border); color:var(--ss-muted); }
 
-/* Tema claro: contadores de tarjetas legibles sobre fondo claro */
-[data-theme="light"] .card-badge-yellow { color:#6B4F00; background:#FDF1C4; }
-[data-theme="light"] .card-badge-red { color:#9B1C1C; }
 
-/* Barra de tarjetas: con botones de 44 px, cada mitad debe poder encogerse (el nombre se recorta con …) */
-.card-player-section { min-width:0; gap:6px; }
-.cards-bar { gap:4px; padding:8px 10px; }
+
+/* ══ v2.4 — marcador ════════════════════════════════════ */
+
+/* Números: Chakra Petch (cero sin barra, dígitos de ancho fijo). Orbitron queda para el logotipo. */
+:root { --ss-font-num: 'Chakra Petch', 'Orbitron', system-ui, sans-serif; }
+.big-score, .sets-count, .set-input, .elim-player-sets, .b-score, .match-score .orb, .win-sets, .set-chip {
+  font-family:var(--ss-font-num); font-variant-numeric:tabular-nums;
+}
+.big-score { font-weight:700; font-size:124px; letter-spacing:-2px; }
+@media(min-width:768px) { .big-score { font-size:168px; } }
+.sets-count { font-weight:700; }
+
+/* Fila superior: resultado de cada set */
+.set-strip { display:flex; justify-content:center; flex-wrap:wrap; gap:6px; padding:8px 12px; border-bottom:1px solid var(--ss-border); flex-shrink:0; }
+.set-chip { min-width:48px; height:30px; padding:0 8px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center;
+  font-size:15px; font-weight:700; border:1px solid var(--ss-border); color:var(--ss-muted); }
+.set-chip.played.p1 { color:var(--ss-blue); border-color:color-mix(in srgb,var(--ss-blue) 55%,var(--ss-border)); background:color-mix(in srgb,var(--ss-blue) 10%,transparent); }
+.set-chip.played.p2 { color:var(--ss-red-text); border-color:color-mix(in srgb,var(--ss-red) 55%,var(--ss-border)); background:color-mix(in srgb,var(--ss-red) 10%,transparent); }
+.set-chip.current { color:var(--ss-accent); border-color:var(--ss-accent); font-family:'Inter',sans-serif; font-size:12px; letter-spacing:.5px; }
+.set-chip.pending { min-width:30px; border-style:dashed; }
+
+/* Ayuda: solo antes del primer punto */
+.score-hint { padding:8px 16px; font-size:13px; }
+
+/* Zona inferior al alcance del pulgar: tarjetas en los bordes, acción principal al centro */
+.score-controls { display:flex; align-items:center; gap:8px; padding:10px 10px calc(10px + env(safe-area-inset-bottom)); border-top:1px solid var(--ss-border); background:var(--ss-bg); flex-shrink:0; }
+.card-group { display:flex; gap:6px; padding:4px; border-radius:14px; flex-shrink:0;
+  border:1.5px solid color-mix(in srgb,var(--ss-blue) 45%,var(--ss-border)); }
+.card-group.p2 { border-color:color-mix(in srgb,var(--ss-red) 45%,var(--ss-border)); }
+.btn-card { position:relative; width:46px; height:46px; padding:0; border-radius:10px; justify-content:center; }
+.card-icon { width:16px; height:22px; }
+.card-count { position:absolute; top:-7px; right:-7px; min-width:20px; height:20px; padding:0 5px; border-radius:10px;
+  font-size:12px; font-weight:800; line-height:20px; text-align:center; box-shadow:0 0 0 2px var(--ss-bg); }
+.btn-card-yellow .card-count { background:#F5C518; color:#0D2818; }
+.btn-card-red .card-count { background:#B91C1C; color:#FFFFFF; }
+
+.score-main-action { flex:1; min-width:0; display:flex; }
+.btn-undo-main, .btn-swap-serve { width:100%; min-height:56px; margin:0; border-radius:14px; }
+.btn-undo-main { display:flex; align-items:center; justify-content:center; gap:10px; padding:6px 12px;
+  background:var(--ss-surface); border:1.5px solid var(--ss-border); color:var(--ss-text); }
+.btn-undo-main:hover { border-color:var(--ss-accent); }
+.undo-icon { font-size:24px; line-height:1; color:var(--ss-accent); flex-shrink:0; }
+.undo-text { display:flex; flex-direction:column; align-items:flex-start; min-width:0; text-align:left; }
+.undo-title { font-weight:800; font-size:15px; line-height:1.2; }
+.undo-detail { font-size:12px; color:var(--ss-muted); line-height:1.3; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.undo-detail:empty { display:none; }
+.btn-swap-serve { display:flex; align-items:center; justify-content:center; padding:0 12px; font-size:14px; }
+
+/* DEUCE arriba de la zona de puntaje: en el centro tapaba los números de dos dígitos */
+.deuce-banner { top:14px; transform:translateX(-50%); }
+.big-score { margin-top:8px; }
