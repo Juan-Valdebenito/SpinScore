@@ -17,7 +17,7 @@
   border-radius: 18px;
   padding: 22px 20px 18px;
   box-shadow: 0 12px 40px rgba(0,0,0,.45);
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
 }
 .ss-dialog-title { font-weight: 800; font-size: 17px; margin-bottom: 6px; }
 .ss-dialog-msg { font-size: 14px; color: var(--ss-muted, var(--muted, #8BAF94)); line-height: 1.5; margin-bottom: 16px; }

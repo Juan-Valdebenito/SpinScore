@@ -17,6 +17,6 @@
   "screenshots": [
     { "src": "images/screens/marcador.webp", "sizes": "600x1200", "type": "image/webp", "form_factor": "narrow", "label": "Marcador en vivo" },
     { "src": "images/screens/grupos.webp", "sizes": "600x1200", "type": "image/webp", "form_factor": "narrow", "label": "Fase de grupos" },
-    { "src": "images/screens/cuadro.webp", "sizes": "1400x596", "type": "image/webp", "form_factor": "wide", "label": "Cuadro eliminatorio" }
+    { "src": "images/screens/cuadro.webp", "sizes": "1400x591", "type": "image/webp", "form_factor": "wide", "label": "Cuadro eliminatorio" }
   ]
 }

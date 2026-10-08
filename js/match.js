@@ -345,12 +345,12 @@ async function confirmBack() {
 // ── ITTF CARD TOOLTIPS ──────────────────────
 const ITTF_RULES = {
   yellow: {
-    header: '🟨 Tarjeta Amarilla',
+    header: 'Tarjeta amarilla',
     rule: 'La tarjeta amarilla es una advertencia oficial. Se emite por comportamiento antideportivo leve, como protestar decisiones, tardar en servir, o interrumpir el juego innecesariamente. No conlleva penalización de puntos inmediata, pero una segunda tarjeta amarilla al mismo jugador puede resultar en tarjeta roja.',
     ref: 'Reglamento ITTF — Regla 3.4.3: Advertencias y penalizaciones de conducta'
   },
   red: {
-    header: '🟥 Tarjeta Roja',
+    header: 'Tarjeta roja',
     rule: 'La tarjeta roja implica una penalización inmediata: se otorga un punto al rival. Se emite por comportamiento antideportivo grave, insultos, o como segunda infracción tras una tarjeta amarilla. Una segunda tarjeta roja en el mismo partido puede resultar en descalificación.',
     ref: 'Reglamento ITTF — Regla 3.4.4: Penalización de puntos por conducta'
   }

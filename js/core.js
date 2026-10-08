@@ -167,11 +167,16 @@ function showToast(msg) {
 
 // ── PODIO ──
 const PODIO_META = {
-  1: { cls: 'gold-card',   color: '#F5C518', sym: '🥇', label: '1° Lugar' },
-  2: { cls: 'silver-card', color: '#C0C8D8', sym: '🥈', label: '2° Lugar' },
-  3: { cls: 'bronze-card', color: '#CD7F32', sym: '🥉', label: '3° Lugar' },
-  4: { cls: '',            color: 'var(--ss-muted)', sym: '4°', label: '4° Lugar' },
+  1: { cls: 'gold-card',   color: '#F5C518', label: '1° Lugar' },
+  2: { cls: 'silver-card', color: '#C9D1DC', label: '2° Lugar' },
+  3: { cls: 'bronze-card', color: '#D98C4A', label: '3° Lugar' },
+  4: { cls: '',            color: 'var(--ss-muted)', label: '4° Lugar' },
 };
+
+/** Medalla con el número del lugar (reemplaza los emojis 🥇🥈🥉). */
+function medalHTML(place, small = false) {
+  return `<span class="medal medal-${Math.min(place, 4)}${small ? ' medal-sm' : ''}" aria-hidden="true">${place}</span>`;
+}
 
 /**
  * Muestra la pantalla de podio (solo presentación; quien llama persiste el resultado).
@@ -186,9 +191,9 @@ function mostrarPodio(names, tournamentName, places = [1, 2, 3, 4]) {
     .filter(Boolean);
   document.getElementById('podio-tournament-name').textContent = tournamentName || '';
   document.getElementById('podio-cards').innerHTML = names.slice(0, 4).map((name, i) => {
-    const m = PODIO_META[places[i] || 4];
+    const place = places[i] || 4, m = PODIO_META[place];
     return `<div class="podio-card ${m.cls}">
-      <div class="podio-sym">${m.sym}</div>
+      <div class="podio-sym">${medalHTML(place)}</div>
       <div>
         <div class="podio-name">${esc(name)}</div>
         <div class="podio-label" style="color:${m.color};">${m.label}</div>
@@ -215,7 +220,7 @@ function renderMisTorneos() {
 
   if (!all.length) {
     container.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">📋</div>
+      <div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
       <div class="empty-title">Sin torneos aún</div>
       <div class="empty-sub">Crea un Torneo por Grupos desde el inicio</div>
     </div>`;
@@ -254,7 +259,7 @@ function renderMisTorneos() {
           <button class="btn-delete-torneo" aria-label="Eliminar torneo ${esc(t.name)}" onclick="eliminarTorneo('${esc(t.id)}')">✕</button>
         </div>
         <div class="torneo-podio-preview">
-          ${(t.podio || []).slice(0, 3).map((n, i) => `<span class="torneo-podio-item">${['🥇', '🥈', '🥉'][i]} ${esc(n)}</span>`).join('')}
+          ${(t.podio || []).slice(0, 3).map((n, i) => `<span class="torneo-podio-item">${medalHTML(i + 1, true)}${esc(n)}</span>`).join('')}
         </div>
         <button class="btn-secondary mt-3 w-100" onclick="reanudarTorneo('${esc(t.id)}')">Ver torneo</button>
       </div>`;
@@ -303,7 +308,7 @@ function renderCategorias() {
   if (!container) return;
   if (!cats.length) {
     container.innerHTML = `<div class="empty-state empty-state-sm">
-      <div class="empty-icon">📂</div>
+      <div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
       <div class="empty-title">Sin categorías</div>
       <div class="empty-sub">Agrega categorías para organizar tus torneos</div>
     </div>`;
@@ -316,7 +321,7 @@ function renderCategorias() {
     const terminados = deCat.filter(t => t.status === 'finished').length;
     return `<div class="player-item cat-item">
       <div class="cat-item-row">
-        <div class="cat-icon" aria-hidden="true">📂</div>
+        <div class="cat-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
         <div class="flex-1">
           <div class="cat-name">${esc(cat.name)}</div>
           <div class="cat-meta">${activos} activo${activos !== 1 ? 's' : ''} · ${terminados} finalizado${terminados !== 1 ? 's' : ''}</div>

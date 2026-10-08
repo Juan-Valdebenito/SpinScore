@@ -21,10 +21,10 @@
   <link rel="icon" href="images/favicon.ico" sizes="48x48">
   <link rel="icon" href="images/favicon-32.png" type="image/png" sizes="32x32">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;500;600;700&family=Chakra+Petch:wght@600;700&family=Orbitron:wght@700;900&display=swap');
     :root { --bg:#0D2818;--surface:#163524;--card:#1E4A30;--accent:#F5C518;--red:#E63946;--blue:#4FC3F7;--green:#22C55E;--text:#F0F4F0;--muted:#9DBFA5;--red-text:#FF8F97;--border:#2A5C3A;--win:#3DDC79; }
     *,*::before,*::after { box-sizing:border-box; }
-    body { margin:0; background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh; }
+    body { margin:0; background:var(--bg);color:var(--text);font-family:'Barlow',system-ui,sans-serif;min-height:100vh; }
     .orb { font-family:'Orbitron',monospace;font-weight:900; }
     nav { display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:10; }
     .nav-brand { text-decoration:none;font-family:'Orbitron',monospace;font-size:16px;color:var(--accent);letter-spacing:2px; }
@@ -107,6 +107,10 @@
     .podio-title { margin-top:24px; }
     .gplayer-name, .match-p, .elim-name { overflow-wrap:anywhere;min-width:0; }
 
+    /* Medallas (reemplazan emojis) */
+    .medal { display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:19px;color:#0D2818; }
+    .medal-1 { background:#F5C518; } .medal-2 { background:#C9D1DC; } .medal-3 { background:#D98C4A; }
+
     /* Números con cero sin barra */
     .match-score, .elim-sets { font-family:'Chakra Petch','Orbitron',sans-serif;font-weight:700;font-variant-numeric:tabular-nums; }
 
@@ -185,8 +189,8 @@ function render() {
   document.getElementById('pub-meta').textContent =
     `${data.players.length} jugadores · ${data.phase === 'elimination' ? 'Fase Eliminatoria' : 'Fase de Grupos'}${fmt}`;
   refresh.textContent = fromLink
-    ? (data.sharedAt ? `📸 Estado al ${new Date(data.sharedAt).toLocaleString('es-CL')} · pide un link nuevo para ver resultados posteriores` : '')
-    : '🔄 Esta página se actualiza cada 30 segundos';
+    ? (data.sharedAt ? `Estado al ${new Date(data.sharedAt).toLocaleString('es-CL')} · pide un link nuevo para ver resultados posteriores` : '')
+    : 'Esta página se actualiza cada 30 segundos';
 
   const groups = data.groups || [];
   const tabs = document.getElementById('pub-tabs');
@@ -324,14 +328,14 @@ function renderElim(c) {
   if (data.podio?.length) {
     html += `<div class="round-title podio-title">Podio Final</div>`;
     const medals = [
-      { cls: 'gold-card', sym: '🥇', label: '1° Lugar' },
-      { cls: '', sym: '🥈', label: '2° Lugar' },
-      { cls: '', sym: '🥉', label: '3° Lugar' },
-      { cls: '', sym: '🥉', label: '3° Lugar' },
+      { cls: 'gold-card', place: 1, label: '1° Lugar' },
+      { cls: '', place: 2, label: '2° Lugar' },
+      { cls: '', place: 3, label: '3° Lugar' },
+      { cls: '', place: 3, label: '3° Lugar' },
     ];
     data.podio.slice(0, 4).forEach((n, i) => {
       const m = medals[i];
-      html += `<div class="podio-card ${m.cls}"><div class="podio-sym">${m.sym}</div><div><div class="podio-name">${esc(n)}</div><div class="podio-pos">${m.label}</div></div></div>`;
+      html += `<div class="podio-card ${m.cls}"><div class="podio-sym"><span class="medal medal-${m.place}" aria-hidden="true">${m.place}</span></div><div><div class="podio-name">${esc(n)}</div><div class="podio-pos">${m.label}</div></div></div>`;
     });
   }
   c.innerHTML = html;

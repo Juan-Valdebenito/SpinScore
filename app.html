@@ -32,71 +32,83 @@
 
   <!-- ══ HOME ══ -->
   <div id="screen-home" class="screen active">
-    <div class="home-hero">
-      <svg class="home-logo-svg" aria-hidden="true" viewBox="0 0 64 64" fill="none">
-        <line x1="4" y1="44" x2="60" y2="44" stroke="#2A5C3A" stroke-width="3.5" stroke-linecap="round"/>
-        <line x1="32" y1="33" x2="32" y2="44" stroke="#8BAF94" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="22" y1="33" x2="42" y2="33" stroke="#8BAF94" stroke-width="2" stroke-linecap="round"/>
-        <ellipse cx="17" cy="25" rx="12" ry="13" transform="rotate(-25 17 25)" fill="#E63946"/>
-        <ellipse cx="16" cy="24" rx="7" ry="8" transform="rotate(-25 16 24)" fill="#C1121F"/>
-        <line x1="25" y1="35" x2="31" y2="46" stroke="#8BAF94" stroke-width="3.5" stroke-linecap="round"/>
-        <circle cx="47" cy="20" r="8.5" fill="#F5C518"/>
-        <path d="M43 15 Q47 20 43 25" stroke="#D4A012" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-        <path d="M51 15 Q47 20 51 25" stroke="#D4A012" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-      </svg>
-      <div class="orb home-title">SPINSCORE</div>
-      <div class="home-subtitle">Marcador Profesional de Tenis de Mesa</div>
-    </div>
+    <div class="home-wrap">
+      <header class="home-top">
+        <svg class="home-logo-svg" aria-hidden="true" viewBox="0 0 64 64" fill="none">
+          <line x1="4" y1="44" x2="60" y2="44" stroke="#3DDC79" stroke-width="3.5" stroke-linecap="round"/>
+          <ellipse cx="17" cy="25" rx="12" ry="13" transform="rotate(-25 17 25)" fill="#E63946"/>
+          <ellipse cx="16" cy="24" rx="7" ry="8" transform="rotate(-25 16 24)" fill="#C1121F"/>
+          <line x1="25" y1="35" x2="31" y2="46" stroke="#8BAF94" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="47" cy="20" r="8.5" fill="#F5C518"/>
+        </svg>
+        <div>
+          <h1 class="orb home-title">SPINSCORE</h1>
+          <div class="home-subtitle">Marcador de tenis de mesa</div>
+        </div>
+      </header>
 
-    <div id="install-banner" class="install-banner d-none">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="2.5"><path d="M12 2v13M7 10l5 5 5-5"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
-      <span class="flex-1" id="install-text">Instalar app · Menú del navegador → "Añadir a pantalla de inicio"</span>
-      <button id="install-btn" class="install-action d-none" onclick="instalarApp()">Instalar</button>
-      <button onclick="document.getElementById('install-banner').classList.add('d-none')" class="install-close" aria-label="Cerrar aviso de instalación">×</button>
-    </div>
+      <div id="install-banner" class="install-banner d-none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 2v13M7 10l5 5 5-5"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
+        <span class="flex-1" id="install-text">Instalar app · Menú del navegador → "Añadir a pantalla de inicio"</span>
+        <button id="install-btn" class="install-action d-none" onclick="instalarApp()">Instalar</button>
+        <button onclick="document.getElementById('install-banner').classList.add('d-none')" class="install-close" aria-label="Cerrar aviso de instalación">×</button>
+      </div>
 
-    <div id="home-active-torneos" class="home-active"></div>
+      <div id="home-active-torneos" class="home-active"></div>
 
-    <nav class="home-menu">
-      <button class="menu-card menu-card-blue" onclick="goTo('screen-quicksetup')">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FC3F7" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        <span class="menu-card-title">Partido Rápido</span>
-        <span class="menu-card-sub" id="home-cfg-label">3 sets · 11 puntos</span>
+      <button class="home-play" onclick="goTo('screen-quicksetup')">
+        <span class="home-play-kicker">Partido rápido</span>
+        <span class="home-play-title">Empezar partido</span>
+        <span class="home-play-sub" id="home-cfg-label">3 sets · 11 puntos</span>
+        <svg class="home-play-arrow" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </button>
-      <button class="menu-card menu-card-gold" onclick="nuevaLiga()">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--ss-accent)" stroke-width="2"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
-        <span class="menu-card-title">Torneo Liga</span>
-        <span class="menu-card-sub">Todos contra todos</span>
-      </button>
-      <button class="menu-card menu-card-green" onclick="nuevoTorneoGrupos()">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2"><rect x="2" y="3" width="9" height="8" rx="1"/><rect x="13" y="3" width="9" height="8" rx="1"/><rect x="2" y="13" width="9" height="8" rx="1"/><rect x="13" y="13" width="9" height="8" rx="1"/></svg>
-        <span class="menu-card-title">Nuevo Torneo</span>
-        <span class="menu-card-sub">Grupos + Eliminación</span>
-      </button>
-      <button class="menu-card menu-card-purple" onclick="goTo('screen-mis-torneos')">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        <span class="menu-card-title">Mis Torneos</span>
-        <span class="menu-card-sub">Historial y activos</span>
-      </button>
-      <button class="menu-card menu-card-rose" onclick="goTo('screen-categorias')">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        <span class="menu-card-title">Categorías</span>
-        <span class="menu-card-sub">Organiza por nivel o edad</span>
-      </button>
-      <button class="menu-card menu-card-orange" onclick="window.open('multimesa.html','_blank')">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FB923C" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        <span class="menu-card-title">Multimesa</span>
-        <span class="menu-card-sub">Varios partidos en paralelo</span>
-      </button>
-      <button class="menu-card menu-card-muted full-row" onclick="goTo('screen-settings')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ss-muted)" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        <div><div class="menu-card-title-sm">Configuración</div><div class="menu-card-sub">Sets, puntos, temas y más</div></div>
-      </button>
-    </nav>
 
-    <div class="home-footer">
-      SpinScore v<span class="app-version"></span> · <a href="index.html" class="ittf-link">Inicio</a> · By: JP · <a href="https://spinscore.cl" class="ittf-link" target="_blank">spinscore.cl</a> ·
-      Reglamento basado en <a href="https://www.ittf.com/sports/rules/" target="_blank" class="ittf-link">ITTF</a>
+      <section class="home-section" aria-labelledby="home-torneos-label">
+        <h2 class="home-section-label" id="home-torneos-label">Torneos</h2>
+        <div class="home-list">
+        <button class="home-row" onclick="nuevaLiga()">
+          <span class="home-row-icon" style="--c:var(--ss-accent)" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg></span>
+          <span class="home-row-text"><span class="home-row-title">Liga</span><span class="home-row-sub">Todos contra todos, con tabla</span></span>
+          <span class="home-row-chev" aria-hidden="true">›</span>
+        </button>
+        <button class="home-row" onclick="nuevoTorneoGrupos()">
+          <span class="home-row-icon" style="--c:var(--ss-green)" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="9" height="8" rx="1"/><rect x="13" y="3" width="9" height="8" rx="1"/><rect x="2" y="13" width="9" height="8" rx="1"/><rect x="13" y="13" width="9" height="8" rx="1"/></svg></span>
+          <span class="home-row-text"><span class="home-row-title">Grupos + eliminación</span><span class="home-row-sub">Sorteo en grupos y cuadro eliminatorio</span></span>
+          <span class="home-row-chev" aria-hidden="true">›</span>
+        </button>
+        <button class="home-row" onclick="window.open('multimesa.html','_blank')">
+          <span class="home-row-icon" style="--c:var(--ss-blue)" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="12" y1="4" x2="12" y2="17"/><line x1="8" y1="21" x2="16" y2="21"/></svg></span>
+          <span class="home-row-text"><span class="home-row-title">Multimesa</span><span class="home-row-sub">Varios partidos a la vez en una pantalla</span></span>
+          <span class="home-row-chev" aria-hidden="true">›</span>
+        </button>
+        </div>
+      </section>
+
+      <section class="home-section" aria-labelledby="home-club-label">
+        <h2 class="home-section-label" id="home-club-label">Tu club</h2>
+        <div class="home-list">
+        <button class="home-row" onclick="goTo('screen-mis-torneos')">
+          <span class="home-row-icon" style="--c:var(--ss-purple)" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+          <span class="home-row-text"><span class="home-row-title">Mis torneos</span><span class="home-row-sub">En curso e historial con podios</span></span>
+          <span class="home-row-chev" aria-hidden="true">›</span>
+        </button>
+        <button class="home-row" onclick="goTo('screen-categorias')">
+          <span class="home-row-icon" style="--c:var(--ss-red-text)" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+          <span class="home-row-text"><span class="home-row-title">Categorías</span><span class="home-row-sub">Organiza por nivel o edad</span></span>
+          <span class="home-row-chev" aria-hidden="true">›</span>
+        </button>
+        <button class="home-row" onclick="goTo('screen-settings')">
+          <span class="home-row-icon" style="--c:var(--ss-muted)" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+          <span class="home-row-text"><span class="home-row-title">Configuración</span><span class="home-row-sub">Formato de sets y puntos, tema</span></span>
+          <span class="home-row-chev" aria-hidden="true">›</span>
+        </button>
+        </div>
+      </section>
+
+      <div class="home-footer">
+        SpinScore v<span class="app-version"></span> · By: JP · <a href="index.html" class="ittf-link">Inicio</a> · <a href="#" class="ittf-link" onclick="goTo('screen-contact');return false;">Contacto</a> ·
+        Reglas basadas en <a href="https://www.ittf.com/sports/rules/" target="_blank" rel="noopener" class="ittf-link">ITTF</a>
+      </div>
     </div>
   </div>
 
@@ -291,18 +303,18 @@
     </div>
     <div class="scroll-body">
       <div class="contact-card mb-3">
-        <div class="contact-icon" aria-hidden="true">📧</div>
+        <div class="contact-icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22 6 12 13 2 6"/></svg></div>
         <div class="contact-title">Escríbenos</div>
         <div class="contact-text mb-3">¿Tienes dudas, sugerencias o quieres SpinScore para tu organización?</div>
         <a href="mailto:contacto@spinscore.cl" class="contact-link">contacto@spinscore.cl</a>
       </div>
       <div class="contact-card mb-3">
-        <div class="contact-icon" aria-hidden="true">🌐</div>
+        <div class="contact-icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
         <div class="contact-title">Sitio web</div>
         <a href="https://spinscore.cl" target="_blank" class="contact-link">spinscore.cl</a>
       </div>
       <div class="contact-card">
-        <div class="contact-icon" aria-hidden="true">🏓</div>
+        <div class="contact-icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><line x1="13.2" y1="13.2" x2="20" y2="20"/><circle cx="19" cy="5" r="2"/></svg></div>
         <div class="contact-title">Acerca de SpinScore</div>
         <div class="contact-text">SpinScore es una plataforma profesional de marcador y gestión de torneos de Tenis de Mesa, diseñada para federaciones, clubes y eventos de todos los niveles. Reglamento basado en estándares <a href="https://www.ittf.com/sports/rules/" target="_blank" class="contact-link">ITTF</a>.</div>
       </div>

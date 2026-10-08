@@ -34,165 +34,191 @@
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <a href="index.html" class="nav-logo">
-    <svg width="28" height="28" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-      <ellipse cx="17" cy="25" rx="12" ry="13" transform="rotate(-25 17 25)" fill="#E63946"/>
-      <circle cx="47" cy="20" r="8.5" fill="#F5C518"/>
-      <line x1="4" y1="44" x2="60" y2="44" stroke="#2A5C3A" stroke-width="3.5" stroke-linecap="round"/>
-    </svg>
-    <span class="nav-logo-text">SPINSCORE</span>
-  </a>
-  <div class="nav-links">
-    <a href="#features">Funciones</a>
-    <a href="#capturas">Capturas</a>
-    <a href="#modos">Modos</a>
-    <a href="mailto:contacto@spinscore.cl">Contacto</a>
-    <a href="./app.html" class="btn-launch">Abrir App →</a>
+<nav aria-label="Principal">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo" aria-label="SpinScore, inicio">
+      <svg width="28" height="28" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <ellipse cx="17" cy="25" rx="12" ry="13" transform="rotate(-25 17 25)" fill="#E63946"/>
+        <circle cx="47" cy="20" r="8.5" fill="#F5C518"/>
+        <line x1="4" y1="44" x2="60" y2="44" stroke="#3DDC79" stroke-width="3.5" stroke-linecap="round"/>
+      </svg>
+      <span class="nav-logo-text">SPINSCORE</span>
+    </a>
+    <div class="nav-links">
+      <a href="#modos">Modos</a>
+      <a href="#capturas">Capturas</a>
+      <a href="#detalles">Reglas</a>
+      <a href="mailto:contacto@spinscore.cl">Contacto</a>
+      <a href="./app.html" class="btn-launch">Abrir app</a>
+    </div>
   </div>
 </nav>
 
+<main>
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-badge">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-    <span>SpinScore v<span class="app-version">2.4.0</span> — Plataforma Profesional</span>
+  <div class="hero-inner">
+    <div>
+      <p class="kicker">Tenis de mesa · Reglas ITTF</p>
+      <h1 class="hero-title">Cada punto<em>cuenta.</em></h1>
+      <p class="hero-sub">Lleva el marcador desde el celular y organiza <strong>ligas, grupos y cuadros eliminatorios</strong> sin papel ni planillas. Saque, deuce y tarjetas se calculan solos.</p>
+      <div class="hero-btns">
+        <a href="./app.html" class="btn btn-solid">Empezar un partido</a>
+        <a href="#capturas" class="btn btn-line">Ver la app</a>
+      </div>
+      <ul class="hero-facts">
+        <li>Gratis</li>
+        <li>Sin registro</li>
+        <li>Funciona sin conexión</li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="scorebug" id="scorebug" role="img"
+           aria-label="Ejemplo de marcador: Soto y Rojas empatados 1 a 1 en sets, tercer set en juego">
+        <div class="scorebug-top" aria-hidden="true">
+          <span class="live">En vivo</span>
+          <span id="sb-set-label">Set 3 · al mejor de 5</span>
+        </div>
+        <div class="scorebug-row p1" aria-hidden="true">
+          <span class="sb-serve on" id="sb-serve-1"></span>
+          <span class="sb-name">M. Soto</span>
+          <span class="sb-set won">11</span><span class="sb-set">9</span><span class="sb-set" id="sb-s3-1">–</span>
+          <span class="sb-pts" id="sb-pts-1">9</span>
+        </div>
+        <div class="scorebug-row p2" aria-hidden="true">
+          <span class="sb-serve" id="sb-serve-2"></span>
+          <span class="sb-name">D. Rojas</span>
+          <span class="sb-set">7</span><span class="sb-set won">11</span><span class="sb-set" id="sb-s3-2">–</span>
+          <span class="sb-pts" id="sb-pts-2">9</span>
+        </div>
+        <div class="scorebug-foot" aria-hidden="true">
+          <span>Sets 1 – 1</span>
+          <span class="sb-flag" id="sb-flag">Deuce</span>
+        </div>
+      </div>
+      <p class="scorebug-caption">Así se ve un partido en curso en SpinScore.</p>
+    </div>
   </div>
-  <h1 class="hero-title">El marcador de<br><span>Tenis de Mesa</span><br>que necesitas</h1>
-  <p class="hero-sub">Gestiona torneos, grupos, eliminatorias y marcadores en tiempo real. Diseñado para federaciones, clubes y eventos de todos los niveles.</p>
-  <div class="hero-btns">
-    <a href="./app.html" class="btn-primary-lg">Comenzar gratis →</a>
-    <a href="#features" class="btn-secondary-lg">Ver funciones</a>
-  </div>
-  <div class="stats-bar">
-    <div class="stat-item"><div class="stat-num">32</div><div class="stat-label">Jugadores por torneo</div></div>
-    <div class="stat-item"><div class="stat-num">8</div><div class="stat-label">Grupos simultáneos</div></div>
-    <div class="stat-item"><div class="stat-num">3</div><div class="stat-label">Modos de torneo</div></div>
-    <div class="stat-item"><div class="stat-num">100%</div><div class="stat-label">Offline después de instalar</div></div>
+</section>
+
+<!-- FRANJA -->
+<div class="ticker">
+  <ul aria-label="Funciones principales">
+    <li>Saque automático</li>
+    <li>Deuce</li>
+    <li>Tarjetas</li>
+    <li>Ligas</li>
+    <li>Grupos</li>
+    <li>Cuadro eliminatorio</li>
+    <li>Multimesa</li>
+    <li>Sin conexión</li>
+  </ul>
+</div>
+
+<!-- MODOS -->
+<section class="section" id="modos">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 class="section-title">Cuatro formas<br>de <em>jugar</em></h2>
+      <p class="section-sub">Desde un partido en el patio hasta el torneo del club con categorías. Elige el formato de sets y puntos una vez y la app se encarga del resto.</p>
+    </div>
+    <ul class="modes">
+      <li class="mode" style="--c:var(--blue)">
+        <div class="mode-num">01</div>
+        <h3 class="mode-title">Partido rápido</h3>
+        <p class="mode-desc">Dos jugadores, un toque por punto. Sets de 7, 11, 15 o 21 puntos.</p>
+        <p class="mode-meta">Al mejor de 1 a 7 sets</p>
+      </li>
+      <li class="mode" style="--c:var(--accent)">
+        <div class="mode-num">02</div>
+        <h3 class="mode-title">Liga</h3>
+        <p class="mode-desc">Todos contra todos, con tabla de posiciones y podio al final.</p>
+        <p class="mode-meta">Desempate ITTF</p>
+      </li>
+      <li class="mode" style="--c:var(--green)">
+        <div class="mode-num">03</div>
+        <h3 class="mode-title">Grupos + cuadro</h3>
+        <p class="mode-desc">Sorteo en grupos, clasifican los dos primeros y el cuadro se arma solo, con BYE si hace falta.</p>
+        <p class="mode-meta">2 a 8 grupos · hasta 32 jugadores</p>
+      </li>
+      <li class="mode" style="--c:var(--red-text)">
+        <div class="mode-num">04</div>
+        <h3 class="mode-title">Multimesa</h3>
+        <p class="mode-desc">Varios marcadores en una sola pantalla, para cuando se juega en muchas mesas a la vez.</p>
+        <p class="mode-meta">Ideal en un notebook</p>
+      </li>
+    </ul>
   </div>
 </section>
 
 <!-- CAPTURAS -->
-<section class="section showcase" id="capturas">
-  <div class="section-label">Así se ve</div>
-  <h2 class="section-title">Hecho para usarse junto a la mesa</h2>
-  <p class="section-sub">Números grandes, un toque por punto y el saque siempre a la vista. En el computador, el cuadro completo del torneo.</p>
+<section class="section" id="capturas">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 class="section-title">Hecho para usarse<br><em>junto a la mesa</em></h2>
+      <p class="section-sub">Números grandes, deshacer a mano y el saque siempre a la vista. En el computador, el cuadro completo del torneo.</p>
+    </div>
 
-  <div class="showcase-phones">
-    <figure class="phone-frame">
-      <img src="images/screens/marcador.webp" width="600" height="1200" loading="lazy" decoding="async"
-           alt="Marcador en deuce 10-10, con sets 1-1, indicador de saque y tarjeta amarilla">
-      <figcaption>Marcador en vivo · deuce, saque y tarjetas</figcaption>
-    </figure>
-    <figure class="phone-frame phone-frame-offset">
-      <img src="images/screens/grupos.webp" width="600" height="1200" loading="lazy" decoding="async"
-           alt="Tabla de un grupo con puntos, partidos ganados y perdidos, y resultados por set">
-      <figcaption>Grupos · tabla con desempate ITTF</figcaption>
-    </figure>
-  </div>
+    <div class="showcase-phones">
+      <figure class="phone-frame">
+        <img src="images/screens/marcador.webp" width="600" height="1200" loading="lazy" decoding="async"
+             alt="Marcador en deuce 10-10 con el resultado de cada set, indicador de saque, tarjetas y botón de deshacer">
+        <figcaption>Marcador en vivo</figcaption>
+      </figure>
+      <figure class="phone-frame phone-frame-offset">
+        <img src="images/screens/grupos.webp" width="600" height="1200" loading="lazy" decoding="async"
+             alt="Tabla de un grupo con puntos, partidos ganados y perdidos, y resultados por set">
+        <figcaption>Tabla de grupo</figcaption>
+      </figure>
+    </div>
 
-  <div class="showcase-wide">
-    <figure class="browser-frame">
-      <div class="browser-bar" aria-hidden="true"><span></span><span></span><span></span></div>
-      <img src="images/screens/cuadro.webp" width="1400" height="596" loading="lazy" decoding="async"
-           alt="Cuadro eliminatorio en espejo: cuartos de final, semifinales y final">
-      <figcaption>Cuadro eliminatorio en espejo</figcaption>
-    </figure>
-    <figure class="browser-frame">
-      <div class="browser-bar" aria-hidden="true"><span></span><span></span><span></span></div>
-      <img src="images/screens/multimesa.webp" width="1400" height="372" loading="lazy" decoding="async"
-           alt="Panel multimesa con tres partidos simultáneos">
-      <figcaption>Multimesa · varios partidos a la vez</figcaption>
-    </figure>
-  </div>
-</section>
-
-<!-- FEATURES -->
-<section class="section" id="features">
-  <div class="section-label">Funcionalidades</div>
-  <h2 class="section-title">Todo lo que necesitas para tu torneo</h2>
-  <p class="section-sub">Desde un partido casual hasta un torneo profesional con múltiples categorías.</p>
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-icon feature-icon-blue">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4FC3F7" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      </div>
-      <div class="feature-title">Marcador en tiempo real</div>
-      <div class="feature-desc">Toca el lado del jugador para sumar punto. Indicador de saque automático según reglas ITTF. Tarjetas amarillas y rojas integradas.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon feature-icon-gold">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="2"><rect x="2" y="3" width="9" height="8" rx="1"/><rect x="13" y="3" width="9" height="8" rx="1"/><rect x="2" y="13" width="9" height="8" rx="1"/><rect x="13" y="13" width="9" height="8" rx="1"/></svg>
-      </div>
-      <div class="feature-title">Torneo por Grupos</div>
-      <div class="feature-desc">Hasta 8 grupos con 4 jugadores cada uno. Sorteo automático, tabla de posiciones en vivo y clasificación a fase eliminatoria.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon feature-icon-green">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2"><path d="M6 9H4a2 2 0 0 0-2 2v1a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-1a2 2 0 0 0-2-2h-2"/><rect x="6" y="2" width="12" height="10" rx="2"/></svg>
-      </div>
-      <div class="feature-title">Bracket Eliminatorio</div>
-      <div class="feature-desc">Cuadro visual tipo espejo. Octavos, Cuartos, Semifinal y Final. Podio automático al terminar con clasificaciones.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon feature-icon-purple">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      </div>
-      <div class="feature-title">Historial de Torneos</div>
-      <div class="feature-desc">Todos los torneos se guardan localmente. Retoma torneos en curso, revisa el historial y los podios anteriores.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon feature-icon-red">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E63946" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      </div>
-      <div class="feature-title">Múltiples Mesas</div>
-      <div class="feature-desc">Panel multimesa para ver varios partidos simultáneos. Perfecto para torneos con muchas canchas en paralelo.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon feature-icon-orange">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FB923C" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-      </div>
-      <div class="feature-title">Vista Pública del Bracket</div>
-      <div class="feature-desc">Comparte un link de solo lectura con el estado del torneo: los jugadores ven grupos y cuadro desde cualquier dispositivo, sin poder editar nada.</div>
+    <div class="showcase-wide">
+      <figure class="browser-frame">
+        <div class="browser-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+        <img src="images/screens/cuadro.webp" width="1400" height="591" loading="lazy" decoding="async"
+             alt="Cuadro eliminatorio en espejo: cuartos de final, semifinales y final">
+        <figcaption>Cuadro eliminatorio</figcaption>
+      </figure>
+      <figure class="browser-frame">
+        <div class="browser-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+        <img src="images/screens/multimesa.webp" width="1400" height="372" loading="lazy" decoding="async"
+             alt="Panel multimesa con tres partidos simultáneos">
+        <figcaption>Multimesa</figcaption>
+      </figure>
     </div>
   </div>
 </section>
 
-<!-- MODOS -->
-<section class="section section-compact-top" id="modos">
-  <div class="section-label">Modos de juego</div>
-  <h2 class="section-title">Para cada tipo de evento</h2>
-  <div class="modes-grid">
-    <div class="mode-card">
-      <div class="mode-icon">⚡</div>
-      <div class="mode-title">Partido Rápido</div>
-      <div class="mode-desc">Un partido entre dos jugadores. Configurable en sets y puntos.</div>
+<!-- DETALLES -->
+<section class="section" id="detalles">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 class="section-title">Los detalles que<br>un <em>árbitro</em> nota</h2>
+      <p class="section-sub">Las reglas que más discusiones generan en la mesa, resueltas por la app.</p>
     </div>
-    <div class="mode-card">
-      <div class="mode-icon">🏆</div>
-      <div class="mode-title">Torneo Liga</div>
-      <div class="mode-desc">Todos contra todos. Tabla de posiciones en vivo.</div>
-    </div>
-    <div class="mode-card">
-      <div class="mode-icon">🗂️</div>
-      <div class="mode-title">Grupos + Eliminación</div>
-      <div class="mode-desc">Hasta 32 jugadores en 8 grupos. Los mejores pasan al cuadro.</div>
-    </div>
-    <div class="mode-card">
-      <div class="mode-icon">📺</div>
-      <div class="mode-title">Multimesa</div>
-      <div class="mode-desc">Varios partidos en pantalla simultáneamente.</div>
-    </div>
+    <ul class="details">
+      <li><h3>Saque automático</h3><p>Cambia cada 2 puntos y, desde el deuce, en cada punto. Puedes elegir quién saca primero.</p></li>
+      <li><h3>Tarjetas amarilla y roja</h3><p>La roja suma el punto al rival. Mantén presionado el botón para ver la regla.</p></li>
+      <li><h3>Deshacer cualquier acción</h3><p>Incluso el punto que cerró un set o una tarjeta. El botón dice qué vas a deshacer.</p></li>
+      <li><h3>Desempate ITTF</h3><p>Primero el enfrentamiento directo entre empatados, después sets y puntos.</p></li>
+      <li><h3>Link para los jugadores</h3><p>Comparte grupos y cuadro en solo lectura. Se abre en cualquier celular, sin instalar nada.</p></li>
+      <li><h3>Sin conexión</h3><p>Instálala desde el navegador y funciona en el gimnasio aunque no haya señal.</p></li>
+    </ul>
   </div>
 </section>
 
-<!-- CTA -->
-<section class="cta-section">
-  <h2 class="cta-title">Listo para empezar</h2>
-  <p class="cta-sub">Gratuito, sin registro, funciona offline. Instálalo en tu dispositivo en segundos.</p>
-  <a href="./app.html" class="btn-primary-lg">Abrir SpinScore →</a>
+<!-- CIERRE -->
+<section class="cta">
+  <div class="cta-inner">
+    <div>
+      <h2 class="cta-title">¿Listo para el<br>primer saque?</h2>
+      <p class="cta-sub">Gratis y sin registro. Se abre en el navegador.</p>
+    </div>
+    <a href="./app.html" class="btn btn-dark">Abrir SpinScore</a>
+  </div>
 </section>
+</main>
 
 <!-- FOOTER -->
 <footer>
@@ -201,9 +227,9 @@
     <div class="footer-links">
       <a href="./app.html">App</a>
       <a href="mailto:contacto@spinscore.cl">Contacto</a>
-      <a href="https://www.ittf.com/sports/rules/" target="_blank">Reglamento ITTF</a>
+      <a href="https://www.ittf.com/sports/rules/" target="_blank" rel="noopener">Reglamento ITTF</a>
     </div>
-    <div class="footer-copy">© <span id="year">2026</span> SpinScore · spinscore.cl · By JP</div>
+    <div class="footer-copy">© <span id="year">2026</span> SpinScore · v<span class="app-version">2.5.0</span> · By JP</div>
   </div>
 </footer>
 
@@ -212,6 +238,34 @@
   applyVersionLabels();
   registerServiceWorker();
   document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Marcador de ejemplo: juega un deuce y cierra el set, en bucle (sin animación si el usuario la redujo).
+  (function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const seq = [[9, 9], [10, 9], [10, 10], [11, 10], [11, 11], [12, 11], [13, 11]];
+    const $ = id => document.getElementById(id);
+    let i = 0;
+    function show() {
+      const [a, b] = seq[i];
+      $('sb-pts-1').textContent = a;
+      $('sb-pts-2').textContent = b;
+      const total = a + b, deuce = a >= 10 && b >= 10;
+      // Saque ITTF: cada 2 puntos; desde el deuce, cada punto (empezó sacando Soto en el set 3)
+      const turns = total < 20 ? Math.floor(total / 2) : 10 + (total - 20);
+      const srv = turns % 2;
+      $('sb-serve-1').classList.toggle('on', srv === 0);
+      $('sb-serve-2').classList.toggle('on', srv === 1);
+      const done = a === 13;
+      $('sb-flag').textContent = done ? 'Set Soto' : 'Deuce';
+      $('sb-flag').classList.toggle('show', deuce || done);
+      $('sb-s3-1').textContent = done ? '13' : '–';
+      $('sb-s3-2').textContent = done ? '11' : '–';
+      $('sb-s3-1').classList.toggle('won', done);
+      i = (i + 1) % seq.length;
+    }
+    show();
+    setInterval(show, 1800);
+  })();
 </script>
 </body>
 </html>

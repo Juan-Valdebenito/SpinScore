@@ -2,7 +2,7 @@
    Permite usar la app sin conexión una vez abierta por primera vez.
    Cambia CACHE en cada versión para que los clientes reciban los archivos nuevos.
 */
-const CACHE = 'spinscore-2.4.0';
+const CACHE = 'spinscore-2.5.0';
 
 const CORE = [
   './',
@@ -33,15 +33,26 @@ const CORE = [
 const RUNTIME_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
+  // cache: 'reload' evita guardar copias viejas que estén en la caché HTTP del navegador
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(c => c.addAll(CORE.map(u => new Request(u, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
-  );
+  e.waitUntil((async () => {
+    const old = (await caches.keys()).filter(k => k !== CACHE);
+    await Promise.all(old.map(k => caches.delete(k)));
+    await self.clients.claim();
+    // Si es una actualización (había una versión anterior), recargar las pestañas abiertas una vez:
+    // así nunca se muestra el HTML nuevo con CSS/JS de la versión anterior.
+    if (old.length) {
+      const wins = await self.clients.matchAll({ type: 'window' });
+      wins.forEach(w => w.navigate(w.url).catch(() => {}));
+    }
+  })());
 });
 
 self.addEventListener('fetch', e => {
@@ -68,17 +79,27 @@ self.addEventListener('fetch', e => {
   const sameOrigin = url.origin === self.location.origin;
   if (!sameOrigin && !RUNTIME_HOSTS.includes(url.hostname)) return;
 
-  // Recursos: responde desde caché y actualiza en segundo plano.
+  // CSS, JS e imágenes propios: red primero (siempre la versión publicada); caché solo sin conexión.
+  if (sameOrigin) {
+    e.respondWith(
+      fetch(req)
+        .then(res => {
+          if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
+          return res;
+        })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Fuentes de Google (no cambian): caché primero.
   e.respondWith(
     caches.open(CACHE).then(async cache => {
       const cached = await cache.match(req);
-      const network = fetch(req)
-        .then(res => {
-          if (res.ok || res.type === 'opaque') cache.put(req, res.clone());
-          return res;
-        })
-        .catch(() => cached);
-      return cached || network;
+      if (cached) return cached;
+      const res = await fetch(req);
+      if (res.ok || res.type === 'opaque') cache.put(req, res.clone());
+      return res;
     })
   );
 });
