@@ -131,6 +131,11 @@ function _tournamentCfg() {
   return GT.cfg || STATE.cfg;
 }
 
+/** Formato del partido cuyo resultado se está ingresando (torneo por grupos o liga). */
+function _resultCfg() {
+  return _rmc === 'liga' ? (LIGA.cfg || STATE.cfg) : _tournamentCfg();
+}
+
 function renderGroupsMain() {
   document.getElementById('gt-header-name').textContent = GT.name;
   document.getElementById('print-torneo-name').textContent = GT.name;
@@ -278,6 +283,9 @@ function abrirResultado(matchIdx, context) {
   if (context === 'group') {
     const m = GT.groupMatches[matchIdx];
     p1name = GT.players[m.p1]; p2name = GT.players[m.p2]; existing = m.setScores || [];
+  } else if (context === 'liga') {
+    const m = LIGA.matches.find(x => x.id === matchIdx);
+    p1name = LIGA.players[m.p1]; p2name = LIGA.players[m.p2]; existing = m.setHistory || [];
   } else {
     const { ri, mi } = matchIdx, m = GT.elimRounds[ri][mi];
     p1name = m.p1name; p2name = m.p2name; existing = m.setScores || [];
@@ -286,7 +294,7 @@ function abrirResultado(matchIdx, context) {
     <div class="result-player-name left">${esc(p1name)}</div>
     <div class="result-vs">VS</div>
     <div class="result-player-name right">${esc(p2name)}</div>`;
-  const cfg = _tournamentCfg();
+  const cfg = _resultCfg();
   document.getElementById('result-format').textContent =
     `Al mejor de ${cfg.sets} · sets a ${cfg.pts} pts con 2 de diferencia. Ingresa solo los sets jugados.`;
   document.getElementById('result-sets-container').innerHTML = '';
@@ -296,15 +304,16 @@ function abrirResultado(matchIdx, context) {
   else for (let i = 0; i < setsNeededFor(cfg.sets); i++) addSetRow();
 
   const btn = document.getElementById('result-back-btn');
-  if (btn) btn.onclick = () => goTo(context === 'elim' ? 'screen-elimination' : 'screen-groups-main');
+  const volver = { elim: 'screen-elimination', liga: 'screen-tournament-bracket' }[context] || 'screen-groups-main';
+  if (btn) btn.onclick = () => goTo(volver);
   goTo('screen-result-entry');
   document.querySelector('#result-sets-container .set-input')?.focus();
 }
 
 function addSetRow(valA = null, valB = null) {
   const container = document.getElementById('result-sets-container');
-  if (container.children.length >= _tournamentCfg().sets) {
-    showToast(`Máximo ${_tournamentCfg().sets} sets`); return;
+  if (container.children.length >= _resultCfg().sets) {
+    showToast(`Máximo ${_resultCfg().sets} sets`); return;
   }
   _src++;
   const id = _src;
@@ -337,11 +346,13 @@ function guardarResultado() {
     if (rawA === '' || rawB === '') { showToast('Completa ambos puntajes de cada set'); return; }
     setScores.push([Number(rawA), Number(rawB)]);
   }
-  const res = validateMatchScores(setScores, _tournamentCfg());
+  const res = validateMatchScores(setScores, _resultCfg());
   if (!res.ok) { showToast(res.error); return; }
   const { sets1, sets2 } = res;
 
-  if (_rmc === 'group') {
+  if (_rmc === 'liga') {
+    ligaCorregirResultado(_crm, sets1, sets2, setScores);
+  } else if (_rmc === 'group') {
     const m = GT.groupMatches[_crm];
     Object.assign(m, { sets1, sets2, setScores, done: true });
     storageSnapshot();

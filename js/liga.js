@@ -170,7 +170,7 @@ function _renderMatchesTab() {
     done.forEach(m => {
       const w1 = m.sets1 > m.sets2;
       const detail = (m.setHistory || []).map(([a, b]) => `${a}-${b}`).join(' | ');
-      html += `<div class="match-row done match-row-stack">
+      html += `<button class="match-row done match-row-stack editable" onclick="abrirResultado('${m.id}','liga')" aria-label="Corregir resultado ${esc(LIGA.players[m.p1])} contra ${esc(LIGA.players[m.p2])}">
         <div class="match-row-line">
           <div class="match-p ${w1 ? 'is-winner' : 'is-loser'}">${esc(LIGA.players[m.p1])}</div>
           <div class="match-score">
@@ -181,8 +181,9 @@ function _renderMatchesTab() {
           <div class="match-p text-right ${!w1 ? 'is-winner' : 'is-loser'}">${esc(LIGA.players[m.p2])}</div>
         </div>
         ${detail ? `<div class="match-detail">${detail}</div>` : ''}
-      </div>`;
+      </button>`;
     });
+    html += `<div class="standings-footer">Toca un partido jugado para corregir su resultado</div>`;
   }
   document.getElementById('bracket-content').innerHTML = html;
 }
@@ -228,6 +229,23 @@ function _ligaPartidoCoincide(m, ligaId, players) {
   if (!m) return false;
   if (ligaId && ligaId !== LIGA.id) return false;
   return !players || (LIGA.players[m.p1] === players[0] && LIGA.players[m.p2] === players[1]);
+}
+
+/** Corrige el resultado de un partido ya jugado (desde la pantalla "Ingresar resultado"). */
+function ligaCorregirResultado(matchId, sets1, sets2, setScores) {
+  const m = LIGA.matches.find(x => x.id === matchId);
+  if (!m) return;
+  Object.assign(m, { sets1, sets2, setHistory: setScores, done: true });
+  let aviso = 'Resultado corregido';
+  if (LIGA.status === 'finished') {
+    // La tabla puede cambiar: el podio se recalcula
+    const podio = _standings().slice(0, 4).map(s => LIGA.players[s.idx]);
+    if (JSON.stringify(podio) !== JSON.stringify(LIGA.podio)) aviso += ' · podio actualizado';
+    LIGA.podio = podio;
+  }
+  _ligaPersist();
+  goTo('screen-tournament-bracket');
+  showToast(aviso);
 }
 
 /** Llamado por el marcador al terminar un partido de liga. */
