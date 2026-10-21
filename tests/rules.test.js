@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   serverFor, isSetWon, isDeuce, validateMatchScores,
-  rankPlayers, nextPow2, buildFirstRound,
+  rankPlayers, nextPow2, buildFirstRound, elimDependientesJugados, elimReabrirDependientes,
 } = require('../js/rules.js');
 const { esc, encodeShare, decodeShare } = require('../js/utils.js');
 
@@ -163,4 +163,51 @@ test('link compartido: ida y vuelta con tildes y ñ', async () => {
 test('link compartido: formato antiguo en base64', async () => {
   const old = Buffer.from(JSON.stringify({ name: 'Viejo' })).toString('base64');
   assert.deepEqual(await decodeShare(old), { name: 'Viejo' });
+});
+
+// ── Corregir el ganador en la eliminatoria ──
+/** Cuadro de 8: cuartos (4), semis (2), final (1). Los cuartos 0 y 1 alimentan la semi 0. */
+const cuadro = () => {
+  const m = (p1, p2, done = false, winner = null) => ({
+    p1, p1name: p1 === null ? null : 'J' + p1, p2, p2name: p2 === null ? null : 'J' + p2,
+    sets1: done ? 2 : 0, sets2: 0, setScores: done ? [[11, 5], [11, 5]] : [], done,
+    winner, winnername: winner === null ? null : 'J' + winner,
+  });
+  return [
+    [m(0, 1, true, 0), m(2, 3, true, 2), m(4, 5, true, 4), m(6, 7, true, 6)],
+    [m(0, 2, true, 0), m(4, 6, true, 4)],
+    [m(0, 4, true, 0)],
+  ];
+};
+
+test('dependientes: un cuarto con semi y final jugadas afecta a ambas', () => {
+  assert.deepEqual(elimDependientesJugados(cuadro(), 0, 1), [{ ri: 1, mi: 0 }, { ri: 2, mi: 0 }]);
+});
+
+test('dependientes: si la ronda siguiente no se jugó, no hay nada que borrar', () => {
+  const r = cuadro();
+  r[1][0].done = false; r[2][0].done = false;
+  assert.deepEqual(elimDependientesJugados(r, 0, 1), []);
+});
+
+test('dependientes: la final no tiene partidos posteriores', () => {
+  assert.deepEqual(elimDependientesJugados(cuadro(), 2, 0), []);
+});
+
+test('reabrir: borra resultados y vacía solo el cupo que ocupaba cada ganador', () => {
+  const r = cuadro();
+  elimReabrirDependientes(r, elimDependientesJugados(r, 0, 1));
+  // Semi 0: sin resultado, conserva a sus jugadores (el cupo de J2 lo reemplaza luego el ganador corregido)
+  assert.equal(r[1][0].done, false);
+  assert.equal(r[1][0].winner, null);
+  assert.deepEqual(r[1][0].setScores, []);
+  assert.equal(r[1][0].p1name, 'J0');
+  // Final: sin resultado; el cupo que venía de la semi 0 queda vacío y el de la semi 1 se mantiene
+  assert.equal(r[2][0].done, false);
+  assert.equal(r[2][0].p1, null);
+  assert.equal(r[2][0].p1name, null);
+  assert.equal(r[2][0].p2name, 'J4');
+  // Lo que no depende del cambio queda igual
+  assert.equal(r[1][1].done, true);
+  assert.equal(r[0][2].done, true);
 });

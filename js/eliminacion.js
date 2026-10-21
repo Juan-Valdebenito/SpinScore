@@ -67,7 +67,7 @@ function renderElimination() {
   if (!total) { container.innerHTML = ''; return; }
   window.innerWidth >= 768 ? _renderDesktop(container, total) : _renderMobile(container, total);
   if (GT.elimRounds.flat().some(m => m.done && !m.bye))
-    container.insertAdjacentHTML('beforeend', '<div class="standings-footer">Toca un partido jugado para corregir sus puntos</div>');
+    container.insertAdjacentHTML('beforeend', '<div class="standings-footer">Toca un partido jugado para corregir su resultado</div>');
 }
 
 function _renderMobile(container, total) {

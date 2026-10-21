@@ -201,9 +201,41 @@ function buildFirstRound(classified) {
   return units;
 }
 
+/**
+ * Partidos ya jugados que dependen del ganador del partido (ri, mi): el de la ronda siguiente
+ * donde avanzó y, si también se jugó, los posteriores. Orden: de la ronda más cercana a la final.
+ * @param {Array<Array<{done:boolean}>>} rounds cuadro (rondas → partidos)
+ * @returns {Array<{ri:number, mi:number}>}
+ */
+function elimDependientesJugados(rounds, ri, mi) {
+  const out = [];
+  for (let r = ri, i = mi; r + 1 < rounds.length; ) {
+    const nr = r + 1, ni = Math.floor(i / 2);
+    if (!rounds[nr][ni].done) break;
+    out.push({ ri: nr, mi: ni });
+    r = nr; i = ni;
+  }
+  return out;
+}
+
+/**
+ * Deja pendientes esos partidos: borra su resultado y vacía el cupo que su ganador ocupaba
+ * en la ronda siguiente. El otro jugador de cada partido se mantiene.
+ */
+function elimReabrirDependientes(rounds, deps) {
+  for (const { ri, mi } of deps) {
+    Object.assign(rounds[ri][mi], { sets1: 0, sets2: 0, setScores: [], done: false, winner: null, winnername: null });
+    if (ri + 1 < rounds.length) {
+      const up = rounds[ri + 1][Math.floor(mi / 2)];
+      if (mi % 2 === 0) { up.p1 = null; up.p1name = null; }
+      else              { up.p2 = null; up.p2name = null; }
+    }
+  }
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     serverFor, isSetWon, isDeuce, setsNeededFor, validateMatchScores,
-    rankPlayers, nextPow2, buildFirstRound,
+    rankPlayers, nextPow2, buildFirstRound, elimDependientesJugados, elimReabrirDependientes,
   };
 }

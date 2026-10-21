@@ -337,7 +337,7 @@ function _renumberSets() {
   });
 }
 
-function guardarResultado() {
+async function guardarResultado() {
   const setScores = [];
   for (const row of document.querySelectorAll('#result-sets-container .set-row')) {
     const [ia, ib] = row.querySelectorAll('.set-input');
@@ -359,22 +359,39 @@ function guardarResultado() {
     goTo('screen-groups-main');
   } else {
     const { ri, mi } = _crm, m = GT.elimRounds[ri][mi];
+    const total = GT.elimRounds.length;
     const eraJugado = m.done;
-    if (eraJugado && (sets1 > sets2 ? m.p1 : m.p2) !== m.winner) {
-      // Cambiar el ganador obliga a rehacer el cuadro hacia adelante: por ahora solo se corrigen los puntos.
-      showToast('Ese resultado cambia el ganador. Por ahora solo se pueden corregir los puntos.');
-      return;
+    const cambiaGanador = eraJugado && (sets1 > sets2 ? m.p1 : m.p2) !== m.winner;
+    let deps = [];
+    if (cambiaGanador) {
+      // Los partidos posteriores ya jugados dependían del ganador anterior: se reabren (previa confirmación).
+      deps = elimDependientesJugados(GT.elimRounds, ri, mi);
+      if (deps.length) {
+        const lista = deps.map(d => {
+          const x = GT.elimRounds[d.ri][d.mi];
+          return `${_rn(d.ri, total)} (${x.p1name} vs ${x.p2name})`;
+        }).join(', ');
+        const ok = await ssConfirm(`Se borrará el resultado de: ${lista}. Esos partidos quedarán pendientes con el ganador corregido.`,
+          { title: '¿Cambiar el ganador?', okText: 'Cambiar ganador', danger: true });
+        if (!ok) return;
+      }
+      elimReabrirDependientes(GT.elimRounds, deps);
     }
     Object.assign(m, { sets1, sets2, setScores, done: true });
     m.winner     = sets1 > sets2 ? m.p1 : m.p2;
     m.winnername = sets1 > sets2 ? m.p1name : m.p2name;
     propagateElimWinner(ri, mi);
-    const isFinal = ri === GT.elimRounds.length - 1;
-    if (isFinal) GT.podio = _podioEliminacion();
+    const isFinal = ri === total - 1;
+    if (GT.elimRounds[total - 1][0].done) GT.podio = _podioEliminacion();
+    else { GT.podio = null; GT.finishedAt = null; }   // sin final jugada el torneo está en curso
     storageSnapshot();
     goTo('screen-elimination');
-    if (eraJugado) showToast('Resultado corregido');
-    else if (isFinal) setTimeout(() => mostrarPodio(GT.podio, GT.name, [1, 2, 3, 3]), 300);
+    if (!eraJugado) {
+      if (isFinal) setTimeout(() => mostrarPodio(GT.podio, GT.name, [1, 2, 3, 3]), 300);
+    } else if (!cambiaGanador) showToast('Resultado corregido');
+    else if (deps.some(d => d.ri === total - 1)) showToast('Ganador corregido · el torneo vuelve a estar en curso');
+    else if (isFinal) showToast('Ganador corregido · podio actualizado');
+    else showToast('Ganador corregido');
   }
 }
 
