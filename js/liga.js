@@ -16,6 +16,38 @@ function _ligaPersist() {
 // Ligas creadas antes de existir el historial: se copian a él al abrir la app (una sola vez).
 if (LIGA.id && !ligasGetAll().some(l => l.id === LIGA.id)) _ligaPersist();
 
+const LIGA_VACIA = { id: null, name: '', players: [], matches: [], cfg: null, status: 'active', podio: null, createdAt: null, finishedAt: null };
+
+/** Abre una liga del historial (para continuarla o ver sus resultados). */
+function ligaAbrir(id) {
+  const l = ligasGetAll().find(x => x.id === id);
+  if (!l) return;
+  Object.assign(LIGA, LIGA_VACIA, l, { currentTab: 'matches' });
+  _ligaPersist();
+  switchTab('matches');
+  goTo('screen-tournament-bracket');
+}
+
+/** Elimina una liga del historial; si es la abierta, deja de estar abierta. */
+async function ligaEliminar(id) {
+  const l = ligasGetAll().find(x => x.id === id);
+  if (!l) return;
+  if (!await ssConfirm('Se borrarán todos sus resultados.', { title: '¿Eliminar esta liga?', okText: 'Eliminar', danger: true })) return;
+  ligaHistDelete(id);
+  const live = liveMatchGet();
+  if (live && live.source === 'liga' && live.ligaId === id) liveMatchClear();
+  if (LIGA.id === id) {
+    Object.assign(LIGA, LIGA_VACIA, { currentTab: 'matches' });
+    ligaClearOpen();
+  }
+  renderMisTorneos(); renderHomeButtons();
+}
+
+/** Fecha de creación de una liga (las antiguas la tienen solo en el id: 'L' + timestamp). */
+function ligaFecha(l) {
+  return l.createdAt || Number(String(l.id).slice(1)) || 0;
+}
+
 /** Abre el formulario de una liga nueva (la liga en curso se sigue viendo desde el inicio). */
 function nuevaLiga() {
   _ligaDraft = [];
@@ -61,9 +93,9 @@ async function startTournament() {
   const enVivo = LIGA.id && LIGA.status === 'active' ? _partidoEnVivoDeLiga() : null;
   const conResultados = LIGA.id && LIGA.status === 'active' && LIGA.matches.some(m => m.done);
   if (conResultados || enVivo) {
-    const msg = `La liga "${LIGA.name}" está en curso y se reemplazará.` +
-      (enVivo ? ` También se descartará el partido sin terminar ${enVivo.p[0]} vs ${enVivo.p[1]}.` : '');
-    const ok = await ssConfirm(msg, { title: '¿Iniciar nueva liga?', okText: 'Reemplazar', danger: true });
+    const msg = `La liga "${LIGA.name}" quedará guardada en Mis torneos y podrás continuarla después.` +
+      (enVivo ? ` El partido sin terminar ${enVivo.p[0]} vs ${enVivo.p[1]} se descartará.` : '');
+    const ok = await ssConfirm(msg, { title: '¿Crear nueva liga?', okText: 'Crear liga', danger: !!enVivo });
     if (!ok) return;
   }
   // El partido a medias de la liga anterior ya no tendría dónde guardarse

@@ -209,20 +209,47 @@ function cerrarPodio() {
 }
 
 // ── MIS TORNEOS ──
-function renderMisTorneos() {
-  const all = storageGetAll();
+/**
+ * Torneos por grupos y ligas en una sola lista, con lo necesario para dibujar su tarjeta.
+ * Más recientes primero.
+ */
+function _misTorneosItems() {
   const cats = new Map(catsGetAll().map(c => [c.id, c.name]));
+  const torneos = storageGetAll().map(t => ({
+    kind: 'grupos', id: t.id, name: t.name, status: t.status, podio: t.podio,
+    fecha: t.createdAt || 0, finishedAt: t.finishedAt,
+    meta: `${t.players.length} jugadores · ${t.phase === 'elimination' ? 'Fase eliminatoria' : 'Fase de grupos'}` +
+          (t.catId && cats.has(t.catId) ? ` · ${cats.get(t.catId)}` : ''),
+    metaFin: `${t.players.length} jugadores` + (t.catId && cats.has(t.catId) ? ` · ${cats.get(t.catId)}` : ''),
+    pct: _torneoProgress(t),
+    abrir: `reanudarTorneo('${esc(t.id)}')`, eliminar: `eliminarTorneo('${esc(t.id)}')`,
+  }));
+  const ligas = ligasGetAll().map(l => {
+    const done = l.matches.filter(m => m.done).length;
+    return {
+      kind: 'liga', id: l.id, name: l.name, status: l.status, podio: l.podio,
+      fecha: ligaFecha(l), finishedAt: l.finishedAt,
+      meta: `Liga · ${l.players.length} jugadores · ${done}/${l.matches.length} partidos`,
+      metaFin: `Liga · ${l.players.length} jugadores`,
+      pct: l.matches.length ? Math.round(done / l.matches.length * 100) : 0,
+      abrir: `ligaAbrir('${esc(l.id)}')`, eliminar: `ligaEliminar('${esc(l.id)}')`,
+    };
+  });
+  return [...torneos, ...ligas].sort((a, b) => b.fecha - a.fecha);
+}
+
+function renderMisTorneos() {
+  const all = _misTorneosItems();
   const activos    = all.filter(t => t.status === 'active');
   const terminados = all.filter(t => t.status === 'finished');
   const container  = document.getElementById('mis-torneos-content');
-  const catLabel = t => t.catId && cats.has(t.catId) ? ` · ${cats.get(t.catId)}` : '';
   let html = '';
 
   if (!all.length) {
     container.innerHTML = `<div class="empty-state">
       <div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
       <div class="empty-title">Sin torneos aún</div>
-      <div class="empty-sub">Crea un Torneo por Grupos desde el inicio</div>
+      <div class="empty-sub">Crea una liga o un torneo por grupos desde el inicio</div>
     </div>`;
     return;
   }
@@ -230,18 +257,17 @@ function renderMisTorneos() {
   if (activos.length) {
     html += `<div class="ss-section-label">En curso (${activos.length})</div>`;
     activos.forEach(t => {
-      const pct = _torneoProgress(t);
       html += `<div class="torneo-card torneo-active">
         <div class="torneo-card-header">
           <div>
             <div class="torneo-card-name">${esc(t.name)}</div>
-            <div class="torneo-card-meta">${t.players.length} jugadores · ${t.phase === 'elimination' ? 'Fase eliminatoria' : 'Fase de grupos'}${esc(catLabel(t))}</div>
+            <div class="torneo-card-meta">${esc(t.meta)}</div>
           </div>
-          <button class="btn-delete-torneo" aria-label="Eliminar torneo ${esc(t.name)}" onclick="eliminarTorneo('${esc(t.id)}')">✕</button>
+          <button class="btn-delete-torneo" aria-label="Eliminar ${esc(t.name)}" onclick="${t.eliminar}">✕</button>
         </div>
-        <div class="torneo-progress-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><div class="torneo-progress-fill" style="width:${pct}%"></div></div>
-        <div class="torneo-progress-label">${pct}% completado</div>
-        <button class="btn-primary mt-2" onclick="reanudarTorneo('${esc(t.id)}')">Continuar torneo</button>
+        <div class="torneo-progress-bar" role="progressbar" aria-valuenow="${t.pct}" aria-valuemin="0" aria-valuemax="100"><div class="torneo-progress-fill" style="width:${t.pct}%"></div></div>
+        <div class="torneo-progress-label">${t.pct}% completado</div>
+        <button class="btn-primary mt-2" onclick="${t.abrir}">Continuar ${t.kind === 'liga' ? 'liga' : 'torneo'}</button>
       </div>`;
     });
   }
@@ -249,19 +275,19 @@ function renderMisTorneos() {
   if (terminados.length) {
     html += `<div class="ss-section-label mt-section">Historial (${terminados.length})</div>`;
     terminados.forEach(t => {
-      const fecha = t.finishedAt ? new Date(t.finishedAt).toLocaleDateString('es-CL') : '';
+      const fecha = t.finishedAt ? ` · ${new Date(t.finishedAt).toLocaleDateString('es-CL')}` : '';
       html += `<div class="torneo-card">
         <div class="torneo-card-header">
           <div>
             <div class="torneo-card-name">${esc(t.name)}</div>
-            <div class="torneo-card-meta">${t.players.length} jugadores · ${fecha}${esc(catLabel(t))}</div>
+            <div class="torneo-card-meta">${esc(t.metaFin)}${fecha}</div>
           </div>
-          <button class="btn-delete-torneo" aria-label="Eliminar torneo ${esc(t.name)}" onclick="eliminarTorneo('${esc(t.id)}')">✕</button>
+          <button class="btn-delete-torneo" aria-label="Eliminar ${esc(t.name)}" onclick="${t.eliminar}">✕</button>
         </div>
         <div class="torneo-podio-preview">
           ${(t.podio || []).slice(0, 3).map((n, i) => `<span class="torneo-podio-item">${medalHTML(i + 1, true)}${esc(n)}</span>`).join('')}
         </div>
-        <button class="btn-secondary mt-3 w-100" onclick="reanudarTorneo('${esc(t.id)}')">Ver torneo</button>
+        <button class="btn-secondary mt-3 w-100" onclick="${t.abrir}">Ver ${t.kind === 'liga' ? 'liga' : 'torneo'}</button>
       </div>`;
     });
     html += `<button class="btn-secondary mt-3 w-100" onclick="limpiarHistorial()">Limpiar historial</button>`;
@@ -284,8 +310,11 @@ async function eliminarTorneo(id) {
 }
 
 async function limpiarHistorial() {
-  if (!await ssConfirm('Se borrarán todos los torneos terminados.', { title: '¿Limpiar historial?', okText: 'Limpiar', danger: true })) return;
+  if (!await ssConfirm('Se borrarán todos los torneos y ligas terminados.', { title: '¿Limpiar historial?', okText: 'Limpiar', danger: true })) return;
   storageClearFinished();
+  ligaHistClearFinished();
+  // Si la liga abierta estaba terminada, deja de estar abierta
+  if (LIGA.id && LIGA.status === 'finished') { Object.assign(LIGA, LIGA_VACIA, { currentTab: 'matches' }); ligaClearOpen(); }
   renderMisTorneos();
 }
 

@@ -153,6 +153,14 @@ function ligaHistDelete(id) {
   writeJSON(LIGAS_KEY, ligasGetAll().filter(l => l.id !== id));
 }
 
+/** Elimina del historial todas las ligas terminadas. */
+function ligaHistClearFinished() {
+  writeJSON(LIGAS_KEY, ligasGetAll().filter(l => l.status !== 'finished'));
+}
+
+/** Deja de tener una liga abierta (el historial no cambia). */
+function ligaClearOpen() { removeKey(LIGA_KEY); }
+
 // ── PARTIDO EN VIVO ────────────────────────
 
 function liveMatchGet()      { return readJSON(LIVE_KEY, null); }
