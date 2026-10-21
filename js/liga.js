@@ -46,12 +46,25 @@ function renderTPlayerList() {
   document.getElementById('btn-start-tournament').disabled = n < 2;
 }
 
+/** Partido en vivo (a medias) que pertenece a la liga cargada, o null. */
+function _partidoEnVivoDeLiga() {
+  const live = liveMatchGet();
+  if (!live || live.source !== 'liga') return null;
+  const m = LIGA.matches.find(x => x.id === live.matchId);
+  return _ligaPartidoCoincide(m, live.ligaId, live.p) ? live : null;
+}
+
 async function startTournament() {
-  if (LIGA.id && LIGA.status === 'active' && LIGA.matches.some(m => m.done)) {
-    const ok = await ssConfirm(`La liga "${LIGA.name}" está en curso y se reemplazará.`,
-      { title: '¿Iniciar nueva liga?', okText: 'Reemplazar', danger: true });
+  const enVivo = LIGA.id && LIGA.status === 'active' ? _partidoEnVivoDeLiga() : null;
+  const conResultados = LIGA.id && LIGA.status === 'active' && LIGA.matches.some(m => m.done);
+  if (conResultados || enVivo) {
+    const msg = `La liga "${LIGA.name}" está en curso y se reemplazará.` +
+      (enVivo ? ` También se descartará el partido sin terminar ${enVivo.p[0]} vs ${enVivo.p[1]}.` : '');
+    const ok = await ssConfirm(msg, { title: '¿Iniciar nueva liga?', okText: 'Reemplazar', danger: true });
     if (!ok) return;
   }
+  // El partido a medias de la liga anterior ya no tendría dónde guardarse
+  if (enVivo) liveMatchClear();
   Object.assign(LIGA, {
     id: 'L' + Date.now(),
     name: document.getElementById('t-name').value.trim() || 'Liga',
