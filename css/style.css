@@ -808,3 +808,8 @@ html, body { font-size:16px; }
 .medal-sm { width:22px; height:22px; font-size:12px; margin-right:6px; vertical-align:middle; }
 .podio-sym { width:auto; font-size:inherit; }
 .ss-dialog-title { font-size:22px; }
+
+/* Eliminatoria: partidos jugados que se pueden tocar para corregir */
+.elim-match.editable, .b-match.b-editable { cursor:pointer; }
+.elim-match.editable:hover, .b-match.b-editable:hover { border-color:var(--ss-muted); }
+.btn-final-edit { background:transparent; color:var(--ss-text); border:1.5px solid var(--ss-border); }

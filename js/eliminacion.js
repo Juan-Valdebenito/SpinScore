@@ -66,6 +66,8 @@ function renderElimination() {
   document.getElementById('elim-header-name').textContent = GT.name;
   if (!total) { container.innerHTML = ''; return; }
   window.innerWidth >= 768 ? _renderDesktop(container, total) : _renderMobile(container, total);
+  if (GT.elimRounds.flat().some(m => m.done && !m.bye))
+    container.insertAdjacentHTML('beforeend', '<div class="standings-footer">Toca un partido jugado para corregir sus puntos</div>');
 }
 
 function _renderMobile(container, total) {
@@ -81,11 +83,11 @@ function _renderMobile(container, total) {
         </div>`;
       } else if (m.done) {
         const w1 = m.sets1 > m.sets2, detail = m.setScores.map(([a, b]) => `${a}-${b}`).join(' | ');
-        html += `<div class="elim-match">
+        html += `<button class="elim-match editable" onclick="abrirResultadoElim(${ri},${mi})" aria-label="Corregir resultado ${n1.html} contra ${n2.html}">
           <div class="elim-player"><div class="elim-player-name${w1 ? ' winner' : ''}">${n1.html}</div><div class="elim-player-sets${w1 ? ' winner' : ''}">${m.sets1}</div></div>
           <div class="elim-player"><div class="elim-player-name${!w1 ? ' winner' : ''}">${n2.html}</div><div class="elim-player-sets${!w1 ? ' winner' : ''}">${m.sets2}</div></div>
           ${detail ? `<div class="elim-result-detail">${detail}</div>` : ''}
-        </div>`;
+        </button>`;
         if (ri === total - 1) {
           html += `<div class="champion-banner mt-3">
             <div class="champion-banner-title">Campeón</div>
@@ -129,6 +131,7 @@ function _renderDesktop(container, total) {
       ${champion.done ? `<div class="b-detail">${champion.setScores.map(([a, b]) => `${a}-${b}`).join(' | ')}</div>` : ''}
     </div>
     ${_canPlay(champion) ? `<button class="btn-final" onclick="abrirResultadoElim(${total - 1},0)">Ingresar resultado</button>` : ''}
+    ${champion.done ? `<button class="btn-final btn-final-edit" onclick="abrirResultadoElim(${total - 1},0)">Corregir final</button>` : ''}
   </div>`;
 
   html += `<div class="bracket-half bracket-right">`;
@@ -167,8 +170,10 @@ function _bcard(m, ri, mi) {
   const can = _canPlay(m);
   const w1 = m.done && m.sets1 > m.sets2, w2 = m.done && m.sets2 > m.sets1;
   const detail = m.done ? m.setScores.map(([a, b]) => `${a}-${b}`).join(' | ') : '';
-  const tag = can ? 'button' : 'div';
-  return `<${tag} class="b-match${can ? ' b-clickable' : ''}${m.done ? ' b-done' : ''}" ${can ? `onclick="abrirResultadoElim(${ri},${mi})" aria-label="Ingresar resultado ${n1.html} contra ${n2.html}"` : ''}>
+  // Jugable (ingresar) o ya jugado (corregir): ambos abren "Ingresar resultado"
+  const tag = can || m.done ? 'button' : 'div';
+  const accion = can ? 'Ingresar' : 'Corregir';
+  return `<${tag} class="b-match${can ? ' b-clickable' : ''}${m.done ? ' b-done b-editable' : ''}" ${tag === 'button' ? `onclick="abrirResultadoElim(${ri},${mi})" aria-label="${accion} resultado ${n1.html} contra ${n2.html}"` : ''}>
     <div class="b-team${w1 ? ' b-winner' : ''}"><div class="b-name${n1.cls}">${n1.html}</div><div class="b-score${w1 ? ' b-winner' : ''}">${m.done ? m.sets1 : '–'}</div></div>
     <div class="b-team${w2 ? ' b-winner' : ''}"><div class="b-name${n2.cls}">${n2.html}</div><div class="b-score${w2 ? ' b-winner' : ''}">${m.done ? m.sets2 : '–'}</div></div>
     ${detail ? `<div class="b-detail">${detail}</div>` : ''}

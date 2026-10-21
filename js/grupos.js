@@ -359,6 +359,12 @@ function guardarResultado() {
     goTo('screen-groups-main');
   } else {
     const { ri, mi } = _crm, m = GT.elimRounds[ri][mi];
+    const eraJugado = m.done;
+    if (eraJugado && (sets1 > sets2 ? m.p1 : m.p2) !== m.winner) {
+      // Cambiar el ganador obliga a rehacer el cuadro hacia adelante: por ahora solo se corrigen los puntos.
+      showToast('Ese resultado cambia el ganador. Por ahora solo se pueden corregir los puntos.');
+      return;
+    }
     Object.assign(m, { sets1, sets2, setScores, done: true });
     m.winner     = sets1 > sets2 ? m.p1 : m.p2;
     m.winnername = sets1 > sets2 ? m.p1name : m.p2name;
@@ -367,7 +373,8 @@ function guardarResultado() {
     if (isFinal) GT.podio = _podioEliminacion();
     storageSnapshot();
     goTo('screen-elimination');
-    if (isFinal) setTimeout(() => mostrarPodio(GT.podio, GT.name, [1, 2, 3, 3]), 300);
+    if (eraJugado) showToast('Resultado corregido');
+    else if (isFinal) setTimeout(() => mostrarPodio(GT.podio, GT.name, [1, 2, 3, 3]), 300);
   }
 }
 
