@@ -13,6 +13,9 @@ function _ligaPersist() {
   ligaSave(data);
 }
 
+// Ligas creadas antes de existir el historial: se copian a él al abrir la app (una sola vez).
+if (LIGA.id && !ligasGetAll().some(l => l.id === LIGA.id)) _ligaPersist();
+
 /** Abre el formulario de una liga nueva (la liga en curso se sigue viendo desde el inicio). */
 function nuevaLiga() {
   _ligaDraft = [];
@@ -65,8 +68,12 @@ async function startTournament() {
   }
   // El partido a medias de la liga anterior ya no tendría dónde guardarse
   if (enVivo) liveMatchClear();
+  // La liga anterior queda en el historial; si no tenía ningún resultado, no vale la pena guardarla.
+  if (LIGA.id && !LIGA.matches.some(m => m.done)) ligaHistDelete(LIGA.id);
   Object.assign(LIGA, {
     id: 'L' + Date.now(),
+    createdAt: Date.now(),
+    finishedAt: null,
     name: document.getElementById('t-name').value.trim() || 'Liga',
     players: [..._ligaDraft],
     matches: _rr(_ligaDraft),
@@ -206,6 +213,7 @@ function ligaRegistrarResultado(matchId, sets, setHistory, ligaId = null, player
   const allDone = LIGA.matches.length > 0 && LIGA.matches.every(x => x.done);
   if (allDone && LIGA.status !== 'finished') {
     LIGA.status = 'finished';
+    LIGA.finishedAt = Date.now();
     LIGA.podio = _standings().slice(0, 4).map(s => LIGA.players[s.idx]);
     _ligaPersist();
     goTo('screen-tournament-bracket');

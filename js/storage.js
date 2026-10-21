@@ -6,6 +6,7 @@
 const SS_KEY     = 'spinscore_torneos';
 const CAT_KEY    = 'spinscore_cats';
 const LIGA_KEY   = 'spinscore_liga';
+const LIGAS_KEY  = 'spinscore_ligas';
 const LIVE_KEY   = 'spinscore_live_match';
 const CFG_KEY    = 'spinscore_cfg';
 
@@ -123,8 +124,34 @@ function catNewId() {
 
 // ── LIGA ───────────────────────────────────
 
+// LIGA_KEY guarda la liga abierta; LIGAS_KEY, el historial de todas las ligas (incluida la abierta).
+// Así, al crear una liga nueva, la anterior no se pierde.
+
 function ligaGet()       { return readJSON(LIGA_KEY, null); }
-function ligaSave(liga)  { writeJSON(LIGA_KEY, liga); }
+
+/** Guarda la liga abierta y la actualiza en el historial. */
+function ligaSave(liga) {
+  writeJSON(LIGA_KEY, liga);
+  ligaHistUpsert(liga);
+}
+
+/** Historial de ligas, la más reciente primero. */
+function ligasGetAll() {
+  const all = readJSON(LIGAS_KEY, []);
+  return Array.isArray(all) ? all : [];
+}
+
+function ligaHistUpsert(liga) {
+  if (!liga || !liga.id) return;
+  const all = ligasGetAll();
+  const idx = all.findIndex(l => l.id === liga.id);
+  if (idx >= 0) all[idx] = liga; else all.unshift(liga);
+  writeJSON(LIGAS_KEY, all);
+}
+
+function ligaHistDelete(id) {
+  writeJSON(LIGAS_KEY, ligasGetAll().filter(l => l.id !== id));
+}
 
 // ── PARTIDO EN VIVO ────────────────────────
 
