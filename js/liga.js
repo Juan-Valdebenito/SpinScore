@@ -165,16 +165,31 @@ function _standings() {
 async function playTournamentMatch(id) {
   const m = LIGA.matches.find(x => x.id === id); if (!m) return;
   if (!await _confirmReplaceLive()) return;
-  initMatch(LIGA.players[m.p1], LIGA.players[m.p2], { source: 'liga', matchId: id, cfg: LIGA.cfg || STATE.cfg });
+  initMatch(LIGA.players[m.p1], LIGA.players[m.p2], { source: 'liga', matchId: id, ligaId: LIGA.id, cfg: LIGA.cfg || STATE.cfg });
+}
+
+/**
+ * ¿El partido en vivo pertenece a la liga cargada? Compara el id de la liga y los jugadores.
+ * Los partidos guardados por versiones anteriores no tienen ligaId: se validan solo por jugadores.
+ */
+function _ligaPartidoCoincide(m, ligaId, players) {
+  if (!m) return false;
+  if (ligaId && ligaId !== LIGA.id) return false;
+  return !players || (LIGA.players[m.p1] === players[0] && LIGA.players[m.p2] === players[1]);
 }
 
 /** Llamado por el marcador al terminar un partido de liga. */
-function ligaRegistrarResultado(matchId, sets, setHistory) {
+function ligaRegistrarResultado(matchId, sets, setHistory, ligaId = null, players = null) {
   const m = LIGA.matches.find(x => x.id === matchId);
-  if (m) {
-    m.sets1 = sets[0]; m.sets2 = sets[1];
-    m.setHistory = [...setHistory]; m.done = true;
+  if (!_ligaPartidoCoincide(m, ligaId, players)) {
+    // La liga de este partido fue reemplazada: no escribir el resultado en otra liga.
+    goTo('screen-home');
+    ssConfirm('La liga de este partido ya no existe porque se creó una nueva. El resultado no se guardó.',
+      { title: 'Partido sin liga', okText: 'Entendido' });
+    return;
   }
+  m.sets1 = sets[0]; m.sets2 = sets[1];
+  m.setHistory = [...setHistory]; m.done = true;
   const allDone = LIGA.matches.length > 0 && LIGA.matches.every(x => x.done);
   if (allDone && LIGA.status !== 'finished') {
     LIGA.status = 'finished';

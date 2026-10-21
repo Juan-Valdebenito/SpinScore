@@ -13,6 +13,7 @@ const MATCH = {
   firstServer: 0,
   source: 'quick',       // 'quick' | 'liga'
   matchId: null,         // id del partido de liga
+  ligaId: null,          // liga a la que pertenece el partido (evita guardarlo en otra liga)
   cards: [{ yellow: 0, red: 0 }, { yellow: 0, red: 0 }],
   undo: [],              // pila de estados previos
 };
@@ -54,7 +55,7 @@ async function _confirmReplaceLive() {
 /**
  * @param {string} p1
  * @param {string} p2
- * @param {{source?:'quick'|'liga', matchId?:string, cfg?:{sets:number,pts:number}, firstServer?:0|1}} opts
+ * @param {{source?:'quick'|'liga', matchId?:string, ligaId?:string, cfg?:{sets:number,pts:number}, firstServer?:0|1}} opts
  */
 function initMatch(p1, p2, opts = {}) {
   const cfg = { ...(opts.cfg || STATE.cfg) };
@@ -67,6 +68,7 @@ function initMatch(p1, p2, opts = {}) {
     firstServer: opts.firstServer || 0,
     source: opts.source || 'quick',
     matchId: opts.matchId ?? null,
+    ligaId: opts.ligaId ?? null,
     cards: [{ yellow: 0, red: 0 }, { yellow: 0, red: 0 }],
     undo: [],
   });
@@ -95,7 +97,8 @@ function _showScoreScreen() {
 function resumeLiveMatch() {
   const live = liveMatchGet();
   if (!live || !live.p) return;
-  Object.assign(MATCH, live);
+  // ligaId: null primero, para que un partido guardado por una versión anterior no herede el de otro partido
+  Object.assign(MATCH, { ligaId: null }, live);
   _showScoreScreen();
   if (_isMatchOver()) showWinScreen();
 }
@@ -326,7 +329,7 @@ function finishMatch() {
   document.getElementById('win-screen').classList.remove('show');
   liveMatchClear();
   if (MATCH.source === 'liga') {
-    ligaRegistrarResultado(MATCH.matchId, MATCH.sets, MATCH.setHistory);
+    ligaRegistrarResultado(MATCH.matchId, MATCH.sets, MATCH.setHistory, MATCH.ligaId, MATCH.p);
   } else {
     goTo('screen-home');
   }
