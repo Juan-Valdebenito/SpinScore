@@ -6,11 +6,13 @@ const ROUND_NAMES = ['Dieciseisavos', 'Octavos de Final', 'Cuartos de Final', 'S
 
 function iniciarEliminacion() {
   const classified = [];
-  GT.groups.forEach((_, gi) =>
-    calcGroupStats(gi).slice(0, 2).forEach((s, pos) =>
-      classified.push({ id: s.idx, group: gi, pos })));
+  GT.groups.forEach((_, gi) => {
+    const standings = calcGroupStats(gi);
+    standings.slice(0, 2).forEach((s, pos) =>
+      classified.push({ id: s.idx, group: gi, pos, stats: s }));
+  });
 
-  const firstRound = buildFirstRound(classified).map(([a, b]) => {
+  const firstRound = buildFirstRound(classified, GT.seededMode).map(([a, b]) => {
     if (!b) {
       // BYE: pasa directo a la siguiente ronda
       return Object.assign(_nm(a.id, GT.players[a.id], null, 'BYE'),

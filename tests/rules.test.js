@@ -147,6 +147,16 @@ test('cuadro con 6 grupos: 16 cupos, 4 BYEs a primeros y todos juegan', () => {
     assert.ok(!(r[i][1] === null && r[i + 1][1] === null));
 });
 
+test('modo cabeza de serie: los BYE se asignan a los ganadores con mejor rendimiento', () => {
+  const players = classify(6).map(p => ({ ...p, stats: {
+    pts: p.pos === 0 ? p.group : 0, won: p.group, setW: p.group, setL: 0, ptW: p.group, ptL: 0,
+  } }));
+  const r = buildFirstRound(players, true);
+  const byeIds = r.filter(([, b]) => b === null).map(([a]) => a.id).sort((a, b) => a - b);
+  // Con seis grupos hay cuatro BYE; se los llevan los primeros de los grupos 2 a 5.
+  assert.deepEqual(byeIds, [20, 30, 40, 50]);
+});
+
 // ── Utilidades ─────────────────────────────
 test('esc escapa HTML', () => {
   assert.equal(esc(`<img src=x onerror="alert('x')">`), '&lt;img src=x onerror=&quot;alert(&#39;x&#39;)&quot;&gt;');

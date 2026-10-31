@@ -10,7 +10,7 @@ const MAX_PER_GROUP = 4;
 
 const GT = {
   id: null, name: '', catId: null, cfg: null, numGroups: 4, players: [], groups: [],
-  confirmed: false, phase: 'groups', currentGroupTab: 0,
+  confirmed: false, phase: 'groups', currentGroupTab: 0, seededMode: false,
   groupMatches: [], elimRounds: [], podio: null, createdAt: null, finishedAt: null,
 };
 
@@ -22,14 +22,28 @@ function isPendingName(name) { return !name || name === 'TBD'; }
 function nuevoTorneoGrupos(catId = null, defaultName = 'Torneo') {
   Object.assign(GT, {
     id: null, name: '', catId, cfg: null, numGroups: 4, players: [], groups: [],
-    confirmed: false, phase: 'groups', currentGroupTab: 0,
+    confirmed: false, phase: 'groups', currentGroupTab: 0, seededMode: false,
     groupMatches: [], elimRounds: [], podio: null, createdAt: null, finishedAt: null,
   });
   document.getElementById('gt-name').value = defaultName;
   document.getElementById('gp-input').value = '';
   selectGroups(4);
+  renderSeedMode();
   renderGPList();
   goTo('screen-groups-setup');
+}
+
+/** Activa la siembra para priorizar a los ganadores de grupo al armar el cuadro. */
+function toggleSeedMode() {
+  GT.seededMode = !GT.seededMode;
+  renderSeedMode();
+}
+
+function renderSeedMode() {
+  const toggle = document.getElementById('seed-mode-toggle');
+  if (!toggle) return;
+  toggle.classList.toggle('active', GT.seededMode);
+  toggle.setAttribute('aria-checked', String(GT.seededMode));
 }
 
 function selectGroups(n) {

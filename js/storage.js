@@ -71,6 +71,7 @@ function storageSnapshot() {
     players:      GT.players,
     groups:       GT.groups,
     confirmed:    GT.confirmed,
+    seededMode:   GT.seededMode === true,
     phase:        GT.phase,
     groupMatches: GT.groupMatches,
     elimRounds:   GT.elimRounds,
@@ -91,6 +92,7 @@ function storageLoad(snap) {
   GT.players      = snap.players;
   GT.groups       = snap.groups;
   GT.confirmed    = snap.confirmed;
+  GT.seededMode   = snap.seededMode === true;
   GT.phase        = snap.phase;
   GT.groupMatches = snap.groupMatches;
   GT.elimRounds   = snap.elimRounds || [];

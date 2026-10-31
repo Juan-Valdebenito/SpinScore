@@ -157,10 +157,20 @@ function nextPow2(n) {
  * Completa el cuadro a potencia de 2 con BYEs (pase directo) para los mejores
  * clasificados y evita que dos jugadores del mismo grupo se crucen en primera ronda.
  * @param {Array<{id:number, group:number, pos:0|1}>} classified pos 0 = 1° del grupo
+ * @param {boolean} seededMode cuando está activo, ordena los ganadores por rendimiento
+ *   antes de otorgar los BYE disponibles.
  * @returns {Array<[object, object|null]>} pares; null = BYE
  */
-function buildFirstRound(classified) {
-  const firsts  = classified.filter(c => c.pos === 0);
+function buildFirstRound(classified, seededMode = false) {
+  const seedCompare = (a, b) => {
+    const A = a.stats || {}, B = b.stats || {};
+    return (B.pts || 0) - (A.pts || 0)
+      || (B.won || 0) - (A.won || 0)
+      || ((B.setW || 0) - (B.setL || 0)) - ((A.setW || 0) - (A.setL || 0))
+      || ((B.ptW || 0) - (B.ptL || 0)) - ((A.ptW || 0) - (A.ptL || 0))
+      || a.group - b.group;
+  };
+  const firsts  = classified.filter(c => c.pos === 0).sort(seededMode ? seedCompare : () => 0);
   const seconds = classified.filter(c => c.pos === 1);
   const n = classified.length;
   if (n < 2) return n ? [[classified[0], null]] : [];

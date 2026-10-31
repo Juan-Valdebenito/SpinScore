@@ -393,6 +393,15 @@
         <button class="ss-chip" data-val="6" onclick="selectGroups(6)">6</button>
         <button class="ss-chip" data-val="8" onclick="selectGroups(8)">8</button>
       </div>
+      <div class="seed-mode-row mb-3">
+        <div>
+          <div class="seed-mode-title">Modo cabeza de serie</div>
+          <div class="seed-mode-help">Los ganadores de grupo tienen prioridad para los BYE de la eliminatoria.</div>
+        </div>
+        <button type="button" id="seed-mode-toggle" class="seed-mode-toggle" role="switch" aria-checked="false" onclick="toggleSeedMode()">
+          <span class="seed-mode-knob"></span>
+        </button>
+      </div>
       <label class="ss-label label-green" for="gp-input">Jugadores (<span id="gp-count">0</span> / <span id="gp-max">16</span>)</label>
       <div class="input-row mb-3">
         <input type="text" class="ss-input" id="gp-input" maxlength="40" placeholder="Nombre del jugador" onkeydown="if(event.key==='Enter')addGPlayer()">
