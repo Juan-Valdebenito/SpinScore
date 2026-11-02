@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   serverFor, isSetWon, isDeuce, validateMatchScores,
-  rankPlayers, nextPow2, buildFirstRound, elimDependientesJugados, elimReabrirDependientes,
+  rankPlayers, nextPow2, buildFirstRound, bracketSeedOrder, elimDependientesJugados, elimReabrirDependientes,
 } = require('../js/rules.js');
 const { esc, encodeShare, decodeShare } = require('../js/utils.js');
 
@@ -175,6 +175,43 @@ test('modo cabeza de serie: nunca cruza en primera ronda al 1.° y 2.° del mism
       }
     }
   }
+});
+
+test('orden estándar de sembrados en el cuadro', () => {
+  assert.deepEqual(bracketSeedOrder(2), [1, 2]);
+  assert.deepEqual(bracketSeedOrder(4), [1, 4, 2, 3]);
+  assert.deepEqual(bracketSeedOrder(8), [1, 8, 4, 5, 2, 7, 3, 6]);
+});
+
+test('modo cabeza de serie: los sembrados 1 y 2 quedan en mitades opuestas del cuadro', () => {
+  const perms = a => a.length <= 1 ? [a] : a.flatMap((x, i) => perms([...a.slice(0, i), ...a.slice(i + 1)]).map(p => [x, ...p]));
+  const conRanking = (groups, ranking) => classify(groups).map(p => ({ ...p, stats: {
+    pts: p.pos === 0 ? 100 - ranking.indexOf(p.group) : 0, won: 0, setW: 0, setL: 0, ptW: 0, ptL: 0,
+  } }));
+  const ordenes = n => n <= 6 ? perms([...Array(n).keys()])
+    : Array.from({ length: 500 }, () => [...Array(n).keys()].sort(() => Math.random() - .5));
+  for (const n of [2, 4, 6, 8]) {
+    for (const ranking of ordenes(n)) {
+      const r = buildFirstRound(conRanking(n, ranking), true);
+      const half = r.length / 2;
+      const mitad = g => r.findIndex(([a, b]) => (a.group === g && a.pos === 0) || (b && b.group === g && b.pos === 0)) < half;
+      const [s1, s2] = ranking;   // grupos de los dos mejores 1.°
+      assert.notEqual(mitad(s1), mitad(s2), `${n} grupos, ranking ${ranking}: sembrados 1 y 2 en la misma mitad`);
+      // Lo de A2 se mantiene: nunca el mismo grupo en primera ronda
+      for (const [a, b] of r) if (b) assert.notEqual(a.group, b.group);
+      if (n === 6) {
+        // Los BYE siguen yendo a los 4 mejores 1.° y nunca hay dos BYE que se enfrenten en la ronda 2
+        const byeGroups = r.filter(([, b]) => b === null).map(([a]) => a.group).sort();
+        assert.deepEqual(byeGroups, ranking.slice(0, 4).sort());
+        for (let i = 0; i < r.length; i += 2) assert.ok(!(r[i][1] === null && r[i + 1][1] === null));
+      }
+    }
+  }
+});
+
+test('sin cabeza de serie el cuadro no cambia', () => {
+  const pl = classify(4).map(p => ({ ...p, stats: { pts: p.group } }));
+  assert.deepEqual(buildFirstRound(pl, false).map(([a, b]) => [a.id, b && b.id]), [[0, 11], [20, 31], [10, 1], [30, 21]]);
 });
 
 // ── Utilidades ─────────────────────────────

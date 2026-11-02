@@ -185,10 +185,15 @@ function buildFirstRound(classified, seededMode = false) {
   // Usa siempre el orden de grupos: con los primeros reordenados, el 1° y el 2°
   // de un mismo grupo podían cruzarse en primera ronda.
   if (byes === 0 && firstsByGroup.length === seconds.length && firstsByGroup.length % 2 === 0) {
+    // Con cabezas de serie, los grupos se ordenan por el rendimiento de su 1.°: el grupo del
+    // sembrado 1 queda arriba (índice 0) y el del sembrado 2 abajo (índice 1).
+    const groupOrder = (seededMode ? firsts : firstsByGroup).map(f => f.group);
+    const F = groupOrder.map(g => firstsByGroup.find(f => f.group === g));
+    const S = groupOrder.map(g => seconds.find(s => s.group === g));
     const top = [], bottom = [];
-    for (let i = 0; i < firstsByGroup.length; i += 2) {
-      top.push([firstsByGroup[i], seconds[i + 1]]);
-      bottom.push([firstsByGroup[i + 1], seconds[i]]);
+    for (let i = 0; i < F.length; i += 2) {
+      top.push([F[i], S[i + 1]]);
+      bottom.push([F[i + 1], S[i]]);
     }
     return [...top, ...bottom];
   }
@@ -213,7 +218,26 @@ function buildFirstRound(classified, seededMode = false) {
     if (byeUnits.length) units.push(byeUnits.shift());
     if (matchUnits.length) units.push(matchUnits.shift());
   }
-  return units;
+  if (!seededMode || units.length < 4) return units;
+
+  // Con cabezas de serie: cada bloque [BYE del sembrado k, partido] se ubica según el orden
+  // estándar de un cuadro (1 y 4 arriba, 2 y 3 abajo…), así 1 y 2 solo pueden cruzarse en la final.
+  const blocks = [];
+  for (let i = 0; i < units.length; i += 2) blocks.push(units.slice(i, i + 2));
+  return bracketSeedOrder(blocks.length).flatMap(seed => blocks[seed - 1]);
+}
+
+/**
+ * Orden estándar de los sembrados en un cuadro de `size` posiciones (potencia de 2):
+ * 2 → [1,2] · 4 → [1,4,2,3] · 8 → [1,8,4,5,2,7,3,6]. Los sembrados 1 y 2 quedan en mitades opuestas.
+ */
+function bracketSeedOrder(size) {
+  let order = [1];
+  while (order.length < size) {
+    const n = order.length * 2;
+    order = order.flatMap(s => [s, n + 1 - s]);
+  }
+  return order;
 }
 
 /**
@@ -251,6 +275,6 @@ function elimReabrirDependientes(rounds, deps) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     serverFor, isSetWon, isDeuce, setsNeededFor, validateMatchScores,
-    rankPlayers, nextPow2, buildFirstRound, elimDependientesJugados, elimReabrirDependientes,
+    rankPlayers, nextPow2, buildFirstRound, bracketSeedOrder, elimDependientesJugados, elimReabrirDependientes,
   };
 }
