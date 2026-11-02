@@ -157,6 +157,26 @@ test('modo cabeza de serie: los BYE se asignan a los ganadores con mejor rendimi
   assert.deepEqual(byeIds, [20, 30, 40, 50]);
 });
 
+test('modo cabeza de serie: nunca cruza en primera ronda al 1.° y 2.° del mismo grupo', () => {
+  const perms = a => a.length <= 1 ? [a] : a.flatMap((x, i) => perms([...a.slice(0, i), ...a.slice(i + 1)]).map(p => [x, ...p]));
+  // Ranking de grupos: el primero de la lista tiene al mejor 1.°
+  const conRanking = (groups, ranking) => classify(groups).map(p => ({ ...p, stats: {
+    pts: p.pos === 0 ? 100 - ranking.indexOf(p.group) : 0, won: 0, setW: 0, setL: 0, ptW: 0, ptL: 0,
+  } }));
+  const ordenes = n => n <= 6 ? perms([...Array(n).keys()])
+    : Array.from({ length: 500 }, () => [...Array(n).keys()].sort(() => Math.random() - .5));
+  for (const n of [2, 4, 6, 8]) {
+    for (const ranking of ordenes(n)) {
+      const r = buildFirstRound(conRanking(n, ranking), true);
+      for (const [a, b] of r) if (b) assert.notEqual(a.group, b.group, `${n} grupos, ranking ${ranking}: mismo grupo en primera ronda`);
+      if (n !== 6) {   // sin BYE: el 1.° y el 2.° de cada grupo van a mitades opuestas
+        const top = new Set(r.slice(0, r.length / 2).flat().map(p => `${p.group}-${p.pos}`));
+        for (let g = 0; g < n; g++) assert.ok(!(top.has(`${g}-0`) && top.has(`${g}-1`)), `${n} grupos, ranking ${ranking}: grupo ${g} en la misma mitad`);
+      }
+    }
+  }
+});
+
 // ── Utilidades ─────────────────────────────
 test('esc escapa HTML', () => {
   assert.equal(esc(`<img src=x onerror="alert('x')">`), '&lt;img src=x onerror=&quot;alert(&#39;x&#39;)&quot;&gt;');

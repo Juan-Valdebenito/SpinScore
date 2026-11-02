@@ -170,7 +170,10 @@ function buildFirstRound(classified, seededMode = false) {
       || ((B.ptW || 0) - (B.ptL || 0)) - ((A.ptW || 0) - (A.ptL || 0))
       || a.group - b.group;
   };
-  const firsts  = classified.filter(c => c.pos === 0).sort(seededMode ? seedCompare : () => 0);
+  // Primeros en orden de grupo (A, B, C…): el emparejamiento clásico depende de ese orden.
+  const firstsByGroup = classified.filter(c => c.pos === 0);
+  // Primeros ordenados por rendimiento si hay cabezas de serie: decide quién recibe los BYE.
+  const firsts  = seededMode ? [...firstsByGroup].sort(seedCompare) : firstsByGroup;
   const seconds = classified.filter(c => c.pos === 1);
   const n = classified.length;
   if (n < 2) return n ? [[classified[0], null]] : [];
@@ -179,11 +182,13 @@ function buildFirstRound(classified, seededMode = false) {
 
   // Caso clásico (2, 4 u 8 grupos completos): 1°A vs 2°B y 1°B vs 2°A, y cada
   // grupo queda con su 1° y su 2° en mitades opuestas del cuadro.
-  if (byes === 0 && firsts.length === seconds.length && firsts.length % 2 === 0) {
+  // Usa siempre el orden de grupos: con los primeros reordenados, el 1° y el 2°
+  // de un mismo grupo podían cruzarse en primera ronda.
+  if (byes === 0 && firstsByGroup.length === seconds.length && firstsByGroup.length % 2 === 0) {
     const top = [], bottom = [];
-    for (let i = 0; i < firsts.length; i += 2) {
-      top.push([firsts[i], seconds[i + 1]]);
-      bottom.push([firsts[i + 1], seconds[i]]);
+    for (let i = 0; i < firstsByGroup.length; i += 2) {
+      top.push([firstsByGroup[i], seconds[i + 1]]);
+      bottom.push([firstsByGroup[i + 1], seconds[i]]);
     }
     return [...top, ...bottom];
   }
