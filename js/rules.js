@@ -146,6 +146,16 @@ function rankPlayers(playerIds, matches) {
 
 // ── CUADRO ELIMINATORIO ────────────────────
 
+/**
+ * Cupos de un grupo de `n` jugadores en modo cabeza de serie.
+ *  - Grupo par: clasifica directo la mitad y el siguiente va a la llave previa.
+ *  - Grupo impar: clasifica directo la mitad redondeada hacia arriba; el resto queda fuera.
+ * Ej.: 2 → 1 + previa · 3 → 2 · 4 → 2 + previa · 5 → 3.
+ */
+function cuposGrupo(n) {
+  return n % 2 === 0 ? { directos: n / 2, previa: 1 } : { directos: Math.ceil(n / 2), previa: 0 };
+}
+
 function nextPow2(n) {
   let s = 1;
   while (s < n) s *= 2;
@@ -184,7 +194,8 @@ function buildFirstRound(classified, seededMode = false) {
   // grupo queda con su 1° y su 2° en mitades opuestas del cuadro.
   // Usa siempre el orden de grupos: con los primeros reordenados, el 1° y el 2°
   // de un mismo grupo podían cruzarse en primera ronda.
-  if (byes === 0 && firstsByGroup.length === seconds.length && firstsByGroup.length % 2 === 0) {
+  if (byes === 0 && classified.every(c => c.pos <= 1) &&
+      firstsByGroup.length === seconds.length && firstsByGroup.length % 2 === 0) {
     // Con cabezas de serie, los grupos se ordenan por el rendimiento de su 1.°: el grupo del
     // sembrado 1 queda arriba (índice 0) y el del sembrado 2 abajo (índice 1).
     const groupOrder = (seededMode ? firsts : firstsByGroup).map(f => f.group);
@@ -198,8 +209,8 @@ function buildFirstRound(classified, seededMode = false) {
     return [...top, ...bottom];
   }
 
-  // Con cabezas de serie y BYE: ranking completo (1.° por rendimiento, luego 2.° por rendimiento).
-  if (seededMode) return _cuadroSembrado([...firsts, ...[...seconds].sort(seedCompare)], size);
+  // Con cabezas de serie: ranking completo (todos los 1.° por rendimiento, luego los 2.°, luego los 3.°…).
+  if (seededMode) return _cuadroSembrado([...classified].sort((a, b) => a.pos - b.pos || seedCompare(a, b)), size);
 
   // Caso general: los mejores sembrados reciben BYE; el resto se empareja
   // prefiriendo 1° vs 2° de grupos distintos.
@@ -345,6 +356,6 @@ function elimReabrirDependientes(rounds, deps) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     serverFor, isSetWon, isDeuce, setsNeededFor, validateMatchScores,
-    rankPlayers, nextPow2, buildFirstRound, bracketSeedOrder, elimDependientesJugados, elimReabrirDependientes,
+    rankPlayers, cuposGrupo, nextPow2, buildFirstRound, bracketSeedOrder, elimDependientesJugados, elimReabrirDependientes,
   };
 }

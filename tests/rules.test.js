@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   serverFor, isSetWon, isDeuce, validateMatchScores,
-  rankPlayers, nextPow2, buildFirstRound, bracketSeedOrder, elimDependientesJugados, elimReabrirDependientes,
+  rankPlayers, cuposGrupo, nextPow2, buildFirstRound, bracketSeedOrder, elimDependientesJugados, elimReabrirDependientes,
 } = require('../js/rules.js');
 const { esc, encodeShare, decodeShare } = require('../js/utils.js');
 
@@ -248,6 +248,32 @@ test('cabeza de serie con BYE: reglas generales con 3, 5, 6 y 7 grupos', () => {
       const half = r.length / 2;
       const mitad = g => r.findIndex(([a]) => a.group === g && a.pos === 0) < half;
       assert.notEqual(mitad(ranking[0]), mitad(ranking[1]), `${n} grupos: sembrados 1 y 2 en la misma mitad`);
+    }
+  }
+});
+
+test('cupos por tamaño de grupo (cabeza de serie)', () => {
+  // par: la mitad directo + el siguiente a la llave previa · impar: la mitad redondeada hacia arriba
+  assert.deepEqual(cuposGrupo(2), { directos: 1, previa: 1 });
+  assert.deepEqual(cuposGrupo(3), { directos: 2, previa: 0 });
+  assert.deepEqual(cuposGrupo(4), { directos: 2, previa: 1 });
+  assert.deepEqual(cuposGrupo(5), { directos: 3, previa: 0 });
+});
+
+test('cabeza de serie con 3.° en el cuadro (p. ej. 4 grupos de 4): todos entran, sin cruces del mismo grupo', () => {
+  for (const n of [2, 4, 8]) {
+    for (let k = 0; k < 200; k++) {
+      const pl = [];
+      for (let g = 0; g < n; g++) for (const pos of [0, 1, 2]) pl.push({ id: g * 10 + pos, group: g, pos, stats: { pts: Math.random() * 10 } });
+      const r = buildFirstRound(pl, true);
+      assert.equal(r.length, nextPow2(3 * n) / 2);
+      assert.deepEqual(r.flat().filter(Boolean).map(p => p.id).sort((a, b) => a - b), pl.map(p => p.id).sort((a, b) => a - b));
+      for (const [a, b] of r) if (b) assert.notEqual(a.group, b.group, `${n} grupos de 4: mismo grupo en primera ronda`);
+      // Los BYE van primero a los 1.°; un 3.° nunca tiene BYE si algún 1.° o 2.° no lo tiene
+      const byes = r.filter(([, b]) => b === null).map(([a]) => a);
+      const sinBye = r.filter(([, b]) => b !== null).flat();
+      if (byes.some(p => p.pos === 2)) assert.ok(sinBye.every(p => p.pos === 2));
+      if (byes.some(p => p.pos === 1)) assert.ok(sinBye.every(p => p.pos >= 1));
     }
   }
 });

@@ -7,6 +7,10 @@ const GROUP_COLORS = ['#4FC3F7', '#F5C518', '#F87171', '#22C55E', '#A78BFA', '#F
 const GROUP_NAMES  = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 const MIN_PER_GROUP = 2;
 const MAX_PER_GROUP = 4;
+const MAX_PER_GROUP_SEEDED = 5;   // con cabeza de serie se permiten grupos de 5 (pasan los 3 primeros)
+
+/** Máximo de jugadores por grupo según el modo. */
+function maxPorGrupo() { return GT.seededMode ? MAX_PER_GROUP_SEEDED : MAX_PER_GROUP; }
 
 const GT = {
   id: null, name: '', catId: null, cfg: null, numGroups: 4, players: [], groups: [],
@@ -37,6 +41,21 @@ function nuevoTorneoGrupos(catId = null, defaultName = 'Torneo') {
 function toggleSeedMode() {
   GT.seededMode = !GT.seededMode;
   renderSeedMode();
+  document.getElementById('gp-max').textContent = GT.numGroups * maxPorGrupo();
+  _updateGPInfo();
+}
+
+/** Cupos del grupo `gi`: con cabeza de serie dependen del tamaño; si no, pasan siempre 1.° y 2.°. */
+function cuposDeGrupo(gi) {
+  return GT.seededMode ? cuposGrupo(GT.groups[gi].length) : { directos: 2, previa: 0 };
+}
+
+/** Estado de quien terminó en el puesto `rank` (0 = 1.°) de un grupo ya completo. */
+function _estadoPuesto(gi, rank) {
+  const { directos, previa } = cuposDeGrupo(gi);
+  if (rank < directos) return 'pasa';
+  if (rank < directos + previa) return 'previa';
+  return '';
 }
 
 function renderSeedMode() {
@@ -50,14 +69,14 @@ function selectGroups(n) {
   GT.numGroups = n;
   document.querySelectorAll('#chips-groups .ss-chip').forEach(c =>
     c.classList.toggle('active', +c.dataset.val === n));
-  document.getElementById('gp-max').textContent = n * MAX_PER_GROUP;
+  document.getElementById('gp-max').textContent = n * maxPorGrupo();
   _updateGPInfo();
 }
 
 function addGPlayer() {
   const input = document.getElementById('gp-input');
   const name  = input.value.trim(); if (!name) return;
-  const max = GT.numGroups * MAX_PER_GROUP;
+  const max = GT.numGroups * maxPorGrupo();
   if (GT.players.length >= max) { showToast(`Máximo ${max} jugadores para ${GT.numGroups} grupos`); return; }
   if (GT.players.some(p => p.toLowerCase() === name.toLowerCase())) { showToast('Jugador ya existe'); return; }
   GT.players.push(name); input.value = ''; input.focus();
@@ -79,18 +98,26 @@ function renderGPList() {
 
 function _updateGPInfo() {
   const n = GT.players.length, g = GT.numGroups;
-  const min = g * MIN_PER_GROUP, max = g * MAX_PER_GROUP;
+  const min = g * MIN_PER_GROUP, max = g * maxPorGrupo();
   const info = document.getElementById('gp-info');
   const btn = document.getElementById('btn-sortear');
   btn.disabled = n < min || n > max;
   info.classList.remove('d-none', 'warn');
   if (n > max) {
     info.classList.add('warn');
-    info.textContent = `Hay ${n} jugadores: con ${g} grupos el máximo es ${max}. Elige más grupos o quita jugadores.`;
+    const pista = !GT.seededMode && n <= g * MAX_PER_GROUP_SEEDED ? ' Con el modo cabeza de serie se permiten 5 por grupo.' : '';
+    info.textContent = `Hay ${n} jugadores: con ${g} grupos el máximo es ${max}. Elige más grupos o quita jugadores.${pista}`;
   } else if (n < min) {
     info.textContent = `Faltan ${min - n} jugador${min - n === 1 ? '' : 'es'}: se necesitan al menos ${MIN_PER_GROUP} por grupo (${min}).`;
   } else {
-    info.textContent = `${n} jugadores en ${g} grupos (~${Math.ceil(n / g)} por grupo) · clasifican ${2 * g} · ${formatLabel(STATE.cfg)}`;
+    let clasifican = `clasifican ${2 * g}`;
+    if (GT.seededMode) {
+      // Tamaños que tendrán los grupos al sortear (se reparten de a uno)
+      const tam = Array.from({ length: g }, (_, i) => Math.floor(n / g) + (i < n % g ? 1 : 0));
+      const d = tam.reduce((s, t) => s + cuposGrupo(t).directos, 0), p = tam.reduce((s, t) => s + cuposGrupo(t).previa, 0);
+      clasifican = `clasifican ${d} directo${p ? ` + ${p} a la llave previa` : ''}`;
+    }
+    info.textContent = `${n} jugadores en ${g} grupos (~${Math.ceil(n / g)} por grupo) · ${clasifican} · ${formatLabel(STATE.cfg)}`;
   }
 }
 
@@ -199,9 +226,9 @@ function _renderSingleGroupTab(content, idx) {
     </div>`;
 
   stats.forEach((s, rank) => {
-    const passing = rank < 2 && allDone;
-    html += `<div class="group-player${passing ? ' passing' : ''}">
-      <div class="group-player-num">${rank + 1}${passing ? '*' : ''}</div>
+    const estado = allDone ? _estadoPuesto(idx, rank) : '';
+    html += `<div class="group-player${estado === 'pasa' ? ' passing' : estado === 'previa' ? ' previa' : ''}">
+      <div class="group-player-num">${rank + 1}${estado === 'pasa' ? '*' : estado === 'previa' ? ' P' : ''}</div>
       <div class="group-player-name${rank < 2 ? ' top' : ''}">${esc(GT.players[s.idx])}</div>
       <div class="group-player-stats cols">
         <span class="col-pts stat-val">${s.pts}</span>
@@ -241,8 +268,12 @@ function _renderSingleGroupTab(content, idx) {
   });
   html += `</div>`;
   if (allDone) {
-    const top2 = stats.slice(0, 2).map(s => esc(GT.players[s.idx]));
-    html += `<div class="advance-banner mt-3">Clasifican: <b>${top2.join(' y ')}</b></div>`;
+    const { directos, previa } = cuposDeGrupo(idx);
+    const pasan = stats.slice(0, directos).map(s => esc(GT.players[s.idx]));
+    const aPrevia = stats.slice(directos, directos + previa).map(s => esc(GT.players[s.idx]));
+    const lista = pasan.length > 1 ? `${pasan.slice(0, -1).join(', ')} y ${pasan.at(-1)}` : pasan[0];
+    html += `<div class="advance-banner mt-3">Clasifica${pasan.length > 1 ? 'n' : ''}: <b>${lista}</b>` +
+      (aPrevia.length ? `<br>Llave previa: <b>${aPrevia.join(', ')}</b>` : '') + `</div>`;
   }
   content.innerHTML = html;
 }
@@ -260,9 +291,9 @@ function _renderGeneralTab(content) {
         ${done ? `<span class="group-status">Listo</span>` : ''}
       </div>`;
     stats.forEach((s, rank) => {
-      const passing = rank < 2 && done;
-      html += `<div class="group-player${passing ? ' passing' : ''}">
-        <div class="group-player-num">${rank + 1}${passing ? '*' : ''}</div>
+      const estado = done ? _estadoPuesto(gi, rank) : '';
+      html += `<div class="group-player${estado === 'pasa' ? ' passing' : estado === 'previa' ? ' previa' : ''}">
+        <div class="group-player-num">${rank + 1}${estado === 'pasa' ? '*' : estado === 'previa' ? ' P' : ''}</div>
         <div class="group-player-name small${rank < 2 ? ' top' : ''}">${esc(GT.players[s.idx])}</div>
         <div class="group-player-stats">
           <span><span class="stat-val g">${s.won}</span>G</span>

@@ -121,7 +121,7 @@ function abrirVistaPublica() {
 /** Datos mínimos que necesita public.html para mostrar el torneo. */
 function _publicPayload(GT) {
   return {
-    name: GT.name, cfg: GT.cfg, phase: GT.phase, players: GT.players,
+    name: GT.name, cfg: GT.cfg, phase: GT.phase, players: GT.players, seededMode: GT.seededMode === true,
     groups: GT.groups, groupMatches: GT.groupMatches, elimRounds: GT.elimRounds,
     podio: GT.podio || null, sharedAt: Date.now(),
   };

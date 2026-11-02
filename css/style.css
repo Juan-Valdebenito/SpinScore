@@ -822,3 +822,7 @@ html, body { font-size:16px; }
 .elim-match.editable, .b-match.b-editable { cursor:pointer; }
 .elim-match.editable:hover, .b-match.b-editable:hover { border-color:var(--ss-muted); }
 .btn-final-edit { background:transparent; color:var(--ss-text); border:1.5px solid var(--ss-border); }
+
+/* Cabeza de serie: puesto que va a la llave previa */
+.group-player.previa { background:color-mix(in srgb,var(--ss-accent) 8%,transparent); }
+.group-player.previa .group-player-num { color:var(--ss-accent); }

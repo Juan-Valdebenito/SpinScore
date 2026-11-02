@@ -92,6 +92,8 @@
     .gstats span { min-width:28px;text-align:center; }
     .gplayer.pass { background:rgba(34,197,94,.06); }
     .gplayer.pass .gplayer-num { color:var(--win); }
+    .gplayer.previa { background:rgba(245,197,24,.07); }
+    .gplayer.previa .gplayer-num { color:var(--accent); }
     .gplayer-name.top { font-weight:600; }
     .gplayer-name.small { font-size:13px; }
     .gdone { margin-left:auto;font-size:12px;color:var(--win); }
@@ -223,6 +225,16 @@ function renderContent() {
   renderGroup(c, currentTab);
 }
 
+/** Cupos del grupo: con cabeza de serie dependen del tamaño (ver cuposGrupo en rules.js). */
+function cupos(gi) {
+  return data.seededMode ? cuposGrupo(data.groups[gi].length) : { directos: 2, previa: 0 };
+}
+function marca(gi, rank, done) {
+  if (!done) return '';
+  const { directos, previa } = cupos(gi);
+  return rank < directos ? 'pass' : rank < directos + previa ? 'previa' : '';
+}
+
 function calcStats(gi) {
   return rankPlayers(data.groups[gi], (data.groupMatches || []).filter(m => m.groupIdx === gi));
 }
@@ -241,9 +253,9 @@ function renderGroup(c, gi) {
       <div class="gstats"><span>PTS</span><span>G</span><span>P</span><span>SETS</span></div>
     </div>`;
   stats.forEach((s, rank) => {
-    const pass = rank < 2 && allDone;
-    html += `<div class="gplayer${pass ? ' pass' : ''}">
-      <div class="gplayer-num">${rank + 1}${pass ? '*' : ''}</div>
+    const m = marca(gi, rank, allDone);
+    html += `<div class="gplayer${m ? ' ' + m : ''}">
+      <div class="gplayer-num">${rank + 1}${m === 'pass' ? '*' : m === 'previa' ? ' P' : ''}</div>
       <div class="gplayer-name${rank < 2 ? ' top' : ''}">${pname(s.idx)}</div>
       <div class="gstats">
         <span>${s.pts}</span>
@@ -269,8 +281,12 @@ function renderGroup(c, gi) {
   });
 
   if (allDone) {
-    const top2 = stats.slice(0, 2).map(s => pname(s.idx));
-    html += `<div class="advance">Clasifican: <b>${top2.join(' y ')}</b></div>`;
+    const { directos, previa } = cupos(gi);
+    const pasan = stats.slice(0, directos).map(s => pname(s.idx));
+    const aPrevia = stats.slice(directos, directos + previa).map(s => pname(s.idx));
+    const lista = pasan.length > 1 ? `${pasan.slice(0, -1).join(', ')} y ${pasan.at(-1)}` : pasan[0];
+    html += `<div class="advance">Clasifica${pasan.length > 1 ? 'n' : ''}: <b>${lista}</b>` +
+      (aPrevia.length ? `<br>Llave previa: <b>${aPrevia.join(', ')}</b>` : '') + `</div>`;
   }
   c.innerHTML = html;
 }
@@ -283,9 +299,9 @@ function renderGeneral(c) {
     html += `<div class="group-card">
       <div class="group-header"><div class="gbadge" style="background:${GROUP_COLORS[gi]};">G${GROUP_NAMES[gi]}</div>Grupo ${GROUP_NAMES[gi]}${done ? '<span class="gdone">✓ Completo</span>' : ''}</div>`;
     stats.forEach((s, rank) => {
-      const pass = rank < 2 && done;
-      html += `<div class="gplayer${pass ? ' pass' : ''}">
-        <div class="gplayer-num">${rank + 1}${pass ? '*' : ''}</div>
+      const m = marca(gi, rank, done);
+      html += `<div class="gplayer${m ? ' ' + m : ''}">
+        <div class="gplayer-num">${rank + 1}${m === 'pass' ? '*' : m === 'previa' ? ' P' : ''}</div>
         <div class="gplayer-name small${rank < 2 ? ' top' : ''}">${pname(s.idx)}</div>
         <div class="gstats"><span class="gstat-g">${s.won}G</span><span class="gstat-p">${s.lost}P</span><span>${s.pts}pts</span></div>
       </div>`;

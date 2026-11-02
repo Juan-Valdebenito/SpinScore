@@ -7,9 +7,10 @@ const ROUND_NAMES = ['Dieciseisavos', 'Octavos de Final', 'Cuartos de Final', 'S
 function iniciarEliminacion() {
   const classified = [];
   GT.groups.forEach((_, gi) => {
-    const standings = calcGroupStats(gi);
-    standings.slice(0, 2).forEach((s, pos) =>
-      classified.push({ id: s.idx, group: gi, pos, stats: s }));
+    const { directos, previa } = cuposDeGrupo(gi);
+    // Por ahora quienes van a la llave previa entran directo al cuadro, como los últimos sembrados.
+    calcGroupStats(gi).slice(0, directos + previa).forEach((s, pos) =>
+      classified.push({ id: s.idx, group: gi, pos, stats: s, previa: pos >= directos }));
   });
 
   const firstRound = buildFirstRound(classified, GT.seededMode).map(([a, b]) => {
