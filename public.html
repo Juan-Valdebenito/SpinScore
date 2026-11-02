@@ -197,7 +197,7 @@ function render() {
   const groups = data.groups || [];
   const tabs = document.getElementById('pub-tabs');
   if (groups.length) {
-    const hasElim = (data.elimRounds || []).length > 0;
+    const hasElim = (data.elimRounds || []).length > 0 || (data.prelimMatches || []).length > 0;
     const maxTab = groups.length + (hasElim ? 1 : 0);
     if (currentTab > maxTab) currentTab = 0;
     tabs.innerHTML = groups.map((_, gi) =>
@@ -220,7 +220,7 @@ function renderContent() {
   const c = document.getElementById('pub-content');
   if (!data) return;
   const groups = data.groups || [];
-  if (data.elimRounds?.length && currentTab === groups.length + 1) { renderElim(c); return; }
+  if (((data.elimRounds?.length) || (data.prelimMatches?.length)) && currentTab === groups.length + 1) { renderElim(c); return; }
   if (currentTab === groups.length) { renderGeneral(c); return; }
   renderGroup(c, currentTab);
 }
@@ -308,7 +308,7 @@ function renderGeneral(c) {
     });
     html += `</div>`;
   });
-  if (data.elimRounds?.length) {
+  if (data.elimRounds?.length || data.prelimMatches?.length) {
     html += `<button class="btn-elim" onclick="switchTab(${data.groups.length + 1})">Ver Cuadro Eliminatorio →</button>`;
   }
   c.innerHTML = html;
@@ -323,6 +323,18 @@ function slot(n) {
 function renderElim(c) {
   const rounds = data.elimRounds || [], total = rounds.length;
   let html = '';
+  if (!rounds.length && data.prelimMatches?.length) {
+    const directo = (data.prelimDirect || []).map(p => pname(p.id)).join(', ');
+    html += '<div class="round-title">Ronda previa</div><div class="match-detail">Los ganadores entran al cuadro eliminatorio.</div>';
+    if (directo) html += `<div class="match-detail"><b>${directo}</b> pasa directo por ser el mejor clasificado.</div>`;
+    data.prelimMatches.forEach(m => {
+      const n1 = slot(m.p1name), n2 = slot(m.p2name), w1 = m.done && m.winner === m.p1;
+      const detail = m.done ? (m.setScores || []).map(([a, b]) => `${a}-${b}`).join(' | ') : '';
+      html += `<div class="elim-match"><div class="elim-player"><span class="${w1 ? 'win' : ''}">${n1.html}</span><b>${m.done ? m.sets1 : '–'}</b></div><div class="elim-player"><span class="${m.done && !w1 ? 'win' : ''}">${n2.html}</span><b>${m.done ? m.sets2 : '–'}</b></div>${detail ? `<div class="match-detail">${detail}</div>` : ''}</div>`;
+    });
+    c.innerHTML = html;
+    return;
+  }
   rounds.forEach((round, ri) => {
     const fe = total - 1 - ri;
     html += `<div class="round-title">${fe < ROUND_NAMES.length ? ROUND_NAMES[ROUND_NAMES.length - 1 - fe] : `Ronda ${ri + 1}`}</div>`;

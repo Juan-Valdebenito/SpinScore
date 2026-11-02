@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   serverFor, isSetWon, isDeuce, validateMatchScores,
-  rankPlayers, cuposGrupo, nextPow2, buildFirstRound, bracketSeedOrder, elimDependientesJugados, elimReabrirDependientes,
+  rankPlayers, cuposGrupo, nextPow2, buildPreliminaryRound, buildFirstRound, bracketSeedOrder, elimDependientesJugados, elimReabrirDependientes,
 } = require('../js/rules.js');
 const { esc, encodeShare, decodeShare } = require('../js/utils.js');
 
@@ -258,6 +258,15 @@ test('cupos por tamaño de grupo (cabeza de serie)', () => {
   assert.deepEqual(cuposGrupo(3), { directos: 2, previa: 0 });
   assert.deepEqual(cuposGrupo(4), { directos: 2, previa: 1 });
   assert.deepEqual(cuposGrupo(5), { directos: 3, previa: 0 });
+});
+
+test('llave previa: P juega contra otro grupo y el mejor pasa directo si queda impar', () => {
+  const p = (id, group, pts) => ({ id, group, stats: { pts } });
+  const r = buildPreliminaryRound([p(1, 0, 8), p(2, 0, 3), p(3, 1, 7), p(4, 2, 5), p(5, 3, 4)]);
+  assert.deepEqual(r.direct.map(x => x.id), [1], 'el mejor P avanza directo');
+  assert.equal(r.matches.length, 2);
+  for (const [a, b] of r.matches) assert.notEqual(a.group, b.group, 'no hay cruces del mismo grupo');
+  assert.deepEqual([...r.direct, ...r.matches.flat()].map(x => x.id).sort(), [1, 2, 3, 4, 5]);
 });
 
 test('cabeza de serie con 3.° en el cuadro (p. ej. 4 grupos de 4): todos entran, sin cruces del mismo grupo', () => {

@@ -15,7 +15,7 @@ function maxPorGrupo() { return GT.seededMode ? MAX_PER_GROUP_SEEDED : MAX_PER_G
 const GT = {
   id: null, name: '', catId: null, cfg: null, numGroups: 4, players: [], groups: [],
   confirmed: false, phase: 'groups', currentGroupTab: 0, seededMode: false,
-  groupMatches: [], elimRounds: [], podio: null, createdAt: null, finishedAt: null,
+  groupMatches: [], prelimMatches: [], prelimDirect: [], elimDirect: [], elimRounds: [], podio: null, createdAt: null, finishedAt: null,
 };
 
 function getGT() { return GT; }
@@ -27,7 +27,7 @@ function nuevoTorneoGrupos(catId = null, defaultName = 'Torneo') {
   Object.assign(GT, {
     id: null, name: '', catId, cfg: null, numGroups: 4, players: [], groups: [],
     confirmed: false, phase: 'groups', currentGroupTab: 0, seededMode: false,
-    groupMatches: [], elimRounds: [], podio: null, createdAt: null, finishedAt: null,
+    groupMatches: [], prelimMatches: [], prelimDirect: [], elimDirect: [], elimRounds: [], podio: null, createdAt: null, finishedAt: null,
   });
   document.getElementById('gt-name').value = defaultName;
   document.getElementById('gp-input').value = '';
@@ -158,6 +158,9 @@ function confirmarGrupos() {
   GT.cfg = { ...STATE.cfg };
   GT.confirmed = true; GT.phase = 'groups'; GT.currentGroupTab = 0;
   GT.groupMatches = [];
+  GT.prelimMatches = [];
+  GT.prelimDirect = [];
+  GT.elimDirect = [];
   GT.elimRounds = [];
   GT.groups.forEach((group, gi) => {
     for (let i = 0; i < group.length; i++)
@@ -331,6 +334,9 @@ function abrirResultado(matchIdx, context) {
   } else if (context === 'liga') {
     const m = LIGA.matches.find(x => x.id === matchIdx);
     p1name = LIGA.players[m.p1]; p2name = LIGA.players[m.p2]; existing = m.setHistory || [];
+  } else if (context === 'previa') {
+    const m = GT.prelimMatches[matchIdx];
+    p1name = m.p1name; p2name = m.p2name; existing = m.setScores || [];
   } else {
     const { ri, mi } = matchIdx, m = GT.elimRounds[ri][mi];
     p1name = m.p1name; p2name = m.p2name; existing = m.setScores || [];
@@ -349,7 +355,7 @@ function abrirResultado(matchIdx, context) {
   else for (let i = 0; i < setsNeededFor(cfg.sets); i++) addSetRow();
 
   const btn = document.getElementById('result-back-btn');
-  const volver = { elim: 'screen-elimination', liga: 'screen-tournament-bracket' }[context] || 'screen-groups-main';
+  const volver = { elim: 'screen-elimination', previa: 'screen-elimination', liga: 'screen-tournament-bracket' }[context] || 'screen-groups-main';
   if (btn) btn.onclick = () => goTo(volver);
   goTo('screen-result-entry');
   document.querySelector('#result-sets-container .set-input')?.focus();
@@ -402,6 +408,14 @@ async function guardarResultado() {
     Object.assign(m, { sets1, sets2, setScores, done: true });
     storageSnapshot();
     goTo('screen-groups-main');
+  } else if (_rmc === 'previa') {
+    const m = GT.prelimMatches[_crm];
+    Object.assign(m, { sets1, sets2, setScores, done: true });
+    m.winner = sets1 > sets2 ? m.p1 : m.p2;
+    m.winnername = sets1 > sets2 ? m.p1name : m.p2name;
+    if (GT.prelimMatches.every(x => x.done)) _generarCuadroDesdePrevia();
+    else storageSnapshot();
+    goTo('screen-elimination');
   } else {
     const { ri, mi } = _crm, m = GT.elimRounds[ri][mi];
     const total = GT.elimRounds.length;

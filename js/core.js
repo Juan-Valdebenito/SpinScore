@@ -122,7 +122,7 @@ function abrirVistaPublica() {
 function _publicPayload(GT) {
   return {
     name: GT.name, cfg: GT.cfg, phase: GT.phase, players: GT.players, seededMode: GT.seededMode === true,
-    groups: GT.groups, groupMatches: GT.groupMatches, elimRounds: GT.elimRounds,
+    groups: GT.groups, groupMatches: GT.groupMatches, prelimMatches: GT.prelimMatches || [], prelimDirect: GT.prelimDirect || [], elimRounds: GT.elimRounds,
     podio: GT.podio || null, sharedAt: Date.now(),
   };
 }

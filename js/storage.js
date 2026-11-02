@@ -74,6 +74,9 @@ function storageSnapshot() {
     seededMode:   GT.seededMode === true,
     phase:        GT.phase,
     groupMatches: GT.groupMatches,
+    prelimMatches: GT.prelimMatches || [],
+    prelimDirect:  GT.prelimDirect || [],
+    elimDirect:    GT.elimDirect || [],
     elimRounds:   GT.elimRounds,
     podio:        GT.podio || null,
   });
@@ -95,6 +98,9 @@ function storageLoad(snap) {
   GT.seededMode   = snap.seededMode === true;
   GT.phase        = snap.phase;
   GT.groupMatches = snap.groupMatches;
+  GT.prelimMatches = snap.prelimMatches || [];
+  GT.prelimDirect = snap.prelimDirect || [];
+  GT.elimDirect = snap.elimDirect || [];
   GT.elimRounds   = snap.elimRounds || [];
   GT.currentGroupTab = 0;
   GT.podio        = snap.podio || null;

@@ -162,6 +162,35 @@ function nextPow2(n) {
   return s;
 }
 
+/** Compara clasificados por rendimiento para la siembra (el menor resultado es mejor). */
+function compareSeeds(a, b) {
+  const A = a.stats || {}, B = b.stats || {};
+  return (B.pts || 0) - (A.pts || 0)
+    || (B.won || 0) - (A.won || 0)
+    || ((B.setW || 0) - (B.setL || 0)) - ((A.setW || 0) - (A.setL || 0))
+    || ((B.ptW || 0) - (B.ptL || 0)) - ((A.ptW || 0) - (A.ptL || 0))
+    || a.group - b.group;
+}
+
+/**
+ * Forma la llave previa entre los clasificados marcados con P.
+ * El mejor pasa directo si la cantidad es impar; el resto juega siempre
+ * contra alguien de otro grupo, priorizando cruces fuerte vs. débil.
+ */
+function buildPreliminaryRound(players) {
+  const pool = [...players].sort(compareSeeds);
+  const direct = pool.length % 2 ? [pool.shift()] : [];
+  const matches = [];
+  while (pool.length) {
+    const a = pool.shift();
+    let i = pool.length - 1;
+    while (i >= 0 && pool[i].group === a.group) i--;
+    if (i < 0) i = pool.length - 1;
+    matches.push([a, pool.splice(i, 1)[0]]);
+  }
+  return { direct, matches };
+}
+
 /**
  * Arma la primera ronda a partir de los clasificados de grupos.
  * Completa el cuadro a potencia de 2 con BYEs (pase directo) para los mejores
@@ -172,18 +201,10 @@ function nextPow2(n) {
  * @returns {Array<[object, object|null]>} pares; null = BYE
  */
 function buildFirstRound(classified, seededMode = false) {
-  const seedCompare = (a, b) => {
-    const A = a.stats || {}, B = b.stats || {};
-    return (B.pts || 0) - (A.pts || 0)
-      || (B.won || 0) - (A.won || 0)
-      || ((B.setW || 0) - (B.setL || 0)) - ((A.setW || 0) - (A.setL || 0))
-      || ((B.ptW || 0) - (B.ptL || 0)) - ((A.ptW || 0) - (A.ptL || 0))
-      || a.group - b.group;
-  };
   // Primeros en orden de grupo (A, B, C…): el emparejamiento clásico depende de ese orden.
   const firstsByGroup = classified.filter(c => c.pos === 0);
   // Primeros ordenados por rendimiento si hay cabezas de serie: decide quién recibe los BYE.
-  const firsts  = seededMode ? [...firstsByGroup].sort(seedCompare) : firstsByGroup;
+  const firsts  = seededMode ? [...firstsByGroup].sort(compareSeeds) : firstsByGroup;
   const seconds = classified.filter(c => c.pos === 1);
   const n = classified.length;
   if (n < 2) return n ? [[classified[0], null]] : [];
@@ -210,7 +231,7 @@ function buildFirstRound(classified, seededMode = false) {
   }
 
   // Con cabezas de serie: ranking completo (todos los 1.° por rendimiento, luego los 2.°, luego los 3.°…).
-  if (seededMode) return _cuadroSembrado([...classified].sort((a, b) => a.pos - b.pos || seedCompare(a, b)), size);
+  if (seededMode) return _cuadroSembrado([...classified].sort((a, b) => a.pos - b.pos || compareSeeds(a, b)), size);
 
   // Caso general: los mejores sembrados reciben BYE; el resto se empareja
   // prefiriendo 1° vs 2° de grupos distintos.
@@ -356,6 +377,6 @@ function elimReabrirDependientes(rounds, deps) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     serverFor, isSetWon, isDeuce, setsNeededFor, validateMatchScores,
-    rankPlayers, cuposGrupo, nextPow2, buildFirstRound, bracketSeedOrder, elimDependientesJugados, elimReabrirDependientes,
+    rankPlayers, cuposGrupo, nextPow2, compareSeeds, buildPreliminaryRound, buildFirstRound, bracketSeedOrder, elimDependientesJugados, elimReabrirDependientes,
   };
 }

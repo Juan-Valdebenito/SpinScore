@@ -5,14 +5,37 @@
 const ROUND_NAMES = ['Dieciseisavos', 'Octavos de Final', 'Cuartos de Final', 'Semifinal', 'Final'];
 
 function iniciarEliminacion() {
-  const classified = [];
+  const directos = [], previa = [];
   GT.groups.forEach((_, gi) => {
-    const { directos, previa } = cuposDeGrupo(gi);
+    const cupos = cuposDeGrupo(gi);
     // Por ahora quienes van a la llave previa entran directo al cuadro, como los últimos sembrados.
-    calcGroupStats(gi).slice(0, directos + previa).forEach((s, pos) =>
-      classified.push({ id: s.idx, group: gi, pos, stats: s, previa: pos >= directos }));
+    calcGroupStats(gi).slice(0, cupos.directos + cupos.previa).forEach((s, pos) => {
+      const p = { id: s.idx, group: gi, pos, stats: s };
+      (pos < cupos.directos ? directos : previa).push(p);
+    });
   });
 
+  const rondaPrevia = buildPreliminaryRound(previa);
+  GT.elimDirect = [...directos, ...rondaPrevia.direct];
+  GT.prelimDirect = rondaPrevia.direct;
+  GT.prelimMatches = rondaPrevia.matches.map(([a, b]) =>
+    Object.assign(_nm(a.id, GT.players[a.id], b.id, GT.players[b.id]), { p1Seed: a, p2Seed: b }));
+  GT.elimRounds = [];
+  if (GT.prelimMatches.length) {
+    GT.phase = 'elimination';
+    storageSnapshot();
+    goTo('screen-elimination');
+    return;
+  }
+  _generarCuadroDesdePrevia();
+  goTo('screen-elimination');
+}
+
+/** Construye el cuadro principal una vez resuelta la llave previa. */
+function _generarCuadroDesdePrevia() {
+  const ganadores = GT.prelimMatches.filter(m => m.done).map(m =>
+    (m.winner === m.p1 ? m.p1Seed : m.p2Seed));
+  const classified = [...GT.elimDirect, ...ganadores];
   const firstRound = buildFirstRound(classified, GT.seededMode).map(([a, b]) => {
     if (!b) {
       // BYE: pasa directo a la siguiente ronda
@@ -31,7 +54,6 @@ function iniciarEliminacion() {
   }
   firstRound.forEach((m, mi) => { if (m.bye) propagateElimWinner(0, mi); });
   storageSnapshot();
-  goTo('screen-elimination');
 }
 
 function _nm(p1, p1name, p2, p2name) {
@@ -67,10 +89,28 @@ function renderElimination() {
   const total = GT.elimRounds.length;
   const container = document.getElementById('elim-content');
   document.getElementById('elim-header-name').textContent = GT.name;
+  if (!total && GT.prelimMatches.length) { _renderPreliminary(container); return; }
   if (!total) { container.innerHTML = ''; return; }
   window.innerWidth >= 768 ? _renderDesktop(container, total) : _renderMobile(container, total);
   if (GT.elimRounds.flat().some(m => m.done && !m.bye))
     container.insertAdjacentHTML('beforeend', '<div class="standings-footer">Toca un partido jugado para corregir su resultado</div>');
+}
+
+/** Pantalla que antecede al cuadro: los clasificados P juegan entre sí. */
+function _renderPreliminary(container) {
+  const directo = (GT.prelimDirect || []).map(p => esc(GT.players[p.id])).join(', ');
+  let html = '<div class="elim-round-title">Ronda previa</div><div class="prelim-note">Los ganadores entran al cuadro eliminatorio.</div>';
+  if (directo) html += `<div class="prelim-note"><b>${directo}</b> pasa directo por ser el mejor clasificado.</div>`;
+  GT.prelimMatches.forEach((m, mi) => {
+    const n1 = _slotName(m.p1name), n2 = _slotName(m.p2name);
+    if (m.done) {
+      const w1 = m.winner === m.p1, detail = m.setScores.map(([a, b]) => `${a}-${b}`).join(' | ');
+      html += `<div class="elim-match"><div class="elim-player"><div class="elim-player-name${w1 ? ' winner' : ''}">${n1.html}</div><div class="elim-player-sets${w1 ? ' winner' : ''}">${m.sets1}</div></div><div class="elim-player"><div class="elim-player-name${!w1 ? ' winner' : ''}">${n2.html}</div><div class="elim-player-sets${!w1 ? ' winner' : ''}">${m.sets2}</div></div>${detail ? `<div class="elim-result-detail">${detail}</div>` : ''}</div>`;
+    } else {
+      html += `<button class="elim-match clickable" onclick="abrirResultadoPrevia(${mi})" aria-label="Ingresar resultado ${n1.html} contra ${n2.html}"><div class="elim-player"><div class="elim-player-name">${n1.html}</div><div class="elim-player-sets">–</div></div><div class="elim-player"><div class="elim-player-name">${n2.html}</div><div class="elim-player-sets">–</div></div><div class="elim-result-detail accent">Toca para ingresar resultado</div></button>`;
+    }
+  });
+  container.innerHTML = html;
 }
 
 function _renderMobile(container, total) {
@@ -191,3 +231,4 @@ function _conn(matchCount) {
 }
 
 function abrirResultadoElim(ri, mi) { abrirResultado({ ri, mi }, 'elim'); }
+function abrirResultadoPrevia(mi) { abrirResultado(mi, 'previa'); }

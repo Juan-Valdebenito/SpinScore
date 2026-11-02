@@ -644,6 +644,7 @@ button.elim-match, button.b-match { display:block; width:100%; }
 .bracket-final-vs { display:flex; flex-direction:column; align-items:center; gap:2px; font-size:12px; font-weight:700; text-align:center; }
 .bracket-final-vs span { color:var(--ss-muted); font-weight:400; font-size:12px; }
 .elim-result-detail, .b-detail { color:var(--ss-muted); }
+.prelim-note { color:var(--ss-muted); font-size:13px; text-align:center; margin:-4px 0 12px; }
 
 /* ── Contacto ── */
 .contact-icon { font-size:28px; margin-bottom:12px; }
