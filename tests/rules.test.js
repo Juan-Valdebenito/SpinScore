@@ -214,6 +214,44 @@ test('sin cabeza de serie el cuadro no cambia', () => {
   assert.deepEqual(buildFirstRound(pl, false).map(([a, b]) => [a.id, b && b.id]), [[0, 11], [20, 31], [10, 1], [30, 21]]);
 });
 
+test('cabeza de serie con BYE: los 2 mejores 1.° enfrentan en la ronda 2 al ganador de un 2.° contra 2.° de otros grupos', () => {
+  const perms = a => a.length <= 1 ? [a] : a.flatMap((x, i) => perms([...a.slice(0, i), ...a.slice(i + 1)]).map(p => [x, ...p]));
+  for (const ranking of perms([0, 1, 2, 3, 4, 5])) {
+    const pl = classify(6).map(p => ({ ...p, stats: { pts: p.pos === 0 ? 100 - ranking.indexOf(p.group) : 50 - p.group } }));
+    const r = buildFirstRound(pl, true);
+    for (const g of ranking.slice(0, 2)) {
+      const i = r.findIndex(([a, b]) => b === null && a.group === g && a.pos === 0);
+      assert.ok(i >= 0, `el 1.° del grupo ${g} tiene BYE`);
+      const rival = r[i % 2 === 0 ? i + 1 : i - 1];   // partido que define su rival de ronda 2
+      assert.ok(rival.every(p => p && p.pos === 1), `ranking ${ranking}: el rival del 1.° del grupo ${g} sale de un 2.° contra 2.°`);
+      assert.ok(rival.every(p => p.group !== g), `ranking ${ranking}: el rival del 1.° del grupo ${g} no es de su grupo`);
+    }
+  }
+});
+
+test('cabeza de serie con BYE: reglas generales con 3, 5, 6 y 7 grupos', () => {
+  for (const n of [3, 5, 6, 7]) {
+    for (let k = 0; k < 200; k++) {
+      const ranking = [...Array(n).keys()].sort(() => Math.random() - .5);
+      const pl = classify(n).map(p => ({ ...p, stats: { pts: p.pos === 0 ? 100 - ranking.indexOf(p.group) : Math.random() * 50 } }));
+      const r = buildFirstRound(pl, true);
+      const flat = r.flat().filter(Boolean);
+      assert.equal(r.length, nextPow2(2 * n) / 2, `${n} grupos: tamaño del cuadro`);
+      assert.deepEqual(flat.map(p => p.id).sort((a, b) => a - b), pl.map(p => p.id).sort((a, b) => a - b), `${n} grupos: cada clasificado aparece una vez`);
+      for (const [a, b] of r) if (b) assert.notEqual(a.group, b.group, `${n} grupos: mismo grupo en primera ronda`);
+      // Los BYE van a los mejores 1.° (y si sobran BYE, después a los mejores 2.°)
+      const byes = r.filter(([, b]) => b === null).map(([a]) => a);
+      const primerosConBye = byes.filter(p => p.pos === 0).map(p => p.group).sort();
+      assert.deepEqual(primerosConBye, ranking.slice(0, primerosConBye.length).sort(), `${n} grupos: BYE a los mejores 1.°`);
+      if (byes.some(p => p.pos === 1)) assert.equal(primerosConBye.length, n, `${n} grupos: un 2.° solo tiene BYE si todos los 1.° lo tienen`);
+      // Sembrados 1 y 2 en mitades opuestas
+      const half = r.length / 2;
+      const mitad = g => r.findIndex(([a]) => a.group === g && a.pos === 0) < half;
+      assert.notEqual(mitad(ranking[0]), mitad(ranking[1]), `${n} grupos: sembrados 1 y 2 en la misma mitad`);
+    }
+  }
+});
+
 // ── Utilidades ─────────────────────────────
 test('esc escapa HTML', () => {
   assert.equal(esc(`<img src=x onerror="alert('x')">`), '&lt;img src=x onerror=&quot;alert(&#39;x&#39;)&quot;&gt;');
