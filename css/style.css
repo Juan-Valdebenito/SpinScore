@@ -138,9 +138,11 @@ button:active { transform:scale(.94); opacity:.85; }
 .seed-mode-row { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:13px 14px; background:var(--ss-surface); border:1px solid var(--ss-border); border-radius:12px; }
 .seed-mode-title { color:var(--ss-text); font-size:14px; font-weight:700; }
 .seed-mode-help { color:var(--ss-muted); font-size:12px; line-height:1.35; margin-top:2px; }
-.seed-mode-toggle { width:46px; height:27px; padding:3px; flex:0 0 auto; border:0; border-radius:99px; background:var(--ss-border); cursor:pointer; transition:background .15s; }
-.seed-mode-toggle.active { background:var(--ss-accent); }
-.seed-mode-knob { display:block; width:21px; height:21px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.28); transition:transform .15s; }
+/* Área táctil de 52×44 px; el interruptor se dibuja adentro con el mismo tamaño de siempre (46×27). */
+.seed-mode-toggle { position:relative; width:52px; height:44px; padding:0; flex:0 0 auto; border:0; background:transparent; cursor:pointer; }
+.seed-mode-toggle::before { content:""; position:absolute; left:3px; top:8.5px; width:46px; height:27px; border-radius:99px; background:var(--ss-border); transition:background .15s; }
+.seed-mode-toggle.active::before { background:var(--ss-accent); }
+.seed-mode-knob { position:absolute; left:6px; top:11.5px; display:block; width:21px; height:21px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.28); transition:transform .15s; }
 .seed-mode-toggle.active .seed-mode-knob { transform:translateX(19px); }
 
 /* ── CHIPS DE GRUPOS CON COLOR ── */

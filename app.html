@@ -395,10 +395,10 @@
       </div>
       <div class="seed-mode-row mb-3">
         <div>
-          <div class="seed-mode-title">Modo cabeza de serie</div>
-          <div class="seed-mode-help">Los ganadores de grupo tienen prioridad para los BYE de la eliminatoria.</div>
+          <div class="seed-mode-title" id="seed-mode-title">Modo cabeza de serie</div>
+          <div class="seed-mode-help" id="seed-mode-help">Los ganadores de grupo tienen prioridad para los BYE de la eliminatoria.</div>
         </div>
-        <button type="button" id="seed-mode-toggle" class="seed-mode-toggle" role="switch" aria-checked="false" onclick="toggleSeedMode()">
+        <button type="button" id="seed-mode-toggle" class="seed-mode-toggle" role="switch" aria-checked="false" aria-labelledby="seed-mode-title" aria-describedby="seed-mode-help" onclick="toggleSeedMode()">
           <span class="seed-mode-knob"></span>
         </button>
       </div>
