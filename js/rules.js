@@ -264,10 +264,105 @@ function buildFirstRound(classified, seededMode = false) {
  *     que no tenga jugadores de su grupo (así el sembrado 1 recibe, por ejemplo, un 2.° que le
  *     ganó a otro 2.°).
  *  4. Los bloques [BYE, partido] se ubican en el orden estándar del cuadro (1 y 2 en mitades opuestas).
- * @param {Array<{group:number}>} ranked de mejor a peor
+ * Si ese armado deja un hueco o un cruce del mismo grupo que se podía evitar, se usa un
+ * emparejamiento exacto y, si hace falta, se cambia un BYE por otro jugador del mismo puesto.
+ * @param {Array<{group:number, pos:number}>} ranked de mejor a peor
  * @param {number} size tamaño del cuadro (potencia de 2)
  */
 function _cuadroSembrado(ranked, size) {
+  const byes = size - ranked.length;
+  let orden = ranked;
+  if (!_emparejable(ranked.slice(byes))) orden = _ajustarByes(ranked, byes) || ranked;
+  let units = _cuadroSembradoGreedy(orden, size);
+  if (!_cuadroValido(units, size) && _emparejable(orden.slice(byes))) units = _cuadroDesdeEmparejamiento(orden, size);
+  // Imposible evitar todo cruce (p. ej. 3 de 4 jugadores del mismo grupo): se acepta, pero nunca un hueco.
+  if (units.length !== size / 2 || units.some(u => !u)) units = _cuadroDesdeEmparejamiento(orden, size);
+  return units;
+}
+
+/** ¿Se pueden emparejar todos sin cruces del mismo grupo? (ningún grupo puede tener más de la mitad) */
+function _emparejable(pool) {
+  if (pool.length % 2) return false;
+  const n = {};
+  for (const p of pool) n[p.group] = (n[p.group] || 0) + 1;
+  return Object.values(n).every(c => c <= pool.length / 2);
+}
+
+/** ¿Cuadro completo, sin huecos y sin cruces del mismo grupo? */
+function _cuadroValido(units, size) {
+  return units.length === size / 2 && units.every(u => u && u[0] && (!u[1] || u[0].group !== u[1].group));
+}
+
+/**
+ * Cambia un BYE (del más débil al más fuerte) por un jugador sin BYE (del mejor al peor), primero
+ * del mismo puesto, para que el resto pueda emparejarse sin cruces del mismo grupo.
+ * @returns ranking reordenado (los BYE primero) o null si ningún cambio sirve
+ */
+function _ajustarByes(ranked, byes) {
+  const conBye = ranked.slice(0, byes), resto = ranked.slice(byes);
+  for (const mismoPuesto of [true, false]) {
+    for (let i = conBye.length - 1; i >= 0; i--) {
+      for (let j = 0; j < resto.length; j++) {
+        if (mismoPuesto && conBye[i].pos !== resto[j].pos) continue;
+        const b = [...conBye], r = [...resto];
+        [b[i], r[j]] = [r[j], b[i]];
+        if (_emparejable(r)) return [...b, ...r];
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Empareja de mejor a peor, cada uno con el más débil posible de otro grupo, cuidando que el resto
+ * siga siendo emparejable. Si no hay forma de evitar todo cruce, empareja igual (mejor contra peor).
+ */
+function _emparejar(pool) {
+  const resto = [...pool], out = [];
+  while (resto.length) {
+    const a = resto.shift();
+    let j = -1;
+    for (let q = resto.length - 1; q >= 0; q--) {
+      if (resto[q].group === a.group) continue;
+      if (_emparejable([...resto.slice(0, q), ...resto.slice(q + 1)])) { j = q; break; }
+    }
+    if (j < 0) for (let q = resto.length - 1; q >= 0; q--) if (resto[q].group !== a.group) { j = q; break; }
+    if (j < 0) j = resto.length - 1;
+    out.push([a, j >= 0 ? resto.splice(j, 1)[0] : null]);
+  }
+  return out;
+}
+
+/** Respaldo: emparejamiento exacto del resto y luego BYE ↔ partido más débil sin su grupo. */
+function _cuadroDesdeEmparejamiento(orden, size) {
+  const byes = size - orden.length;
+  const matches = _emparejar(orden.slice(byes));
+  const blocks = [], singles = [];
+  _asignarByes(orden.slice(0, byes), matches, blocks, singles);
+  return _ordenarBloques(blocks, singles, matches);
+}
+
+/** Cada BYE (del mejor al peor) toma el partido más débil sin jugadores de su grupo. */
+function _asignarByes(byeHolders, matches, blocks, singles) {
+  for (const p of byeHolders) {
+    let j = -1;
+    for (let q = matches.length - 1; q >= 0; q--) if (!matches[q].some(x => x && x.group === p.group)) { j = q; break; }
+    if (j < 0) j = matches.length - 1;
+    if (j < 0) singles.push([p, null]);                    // más BYE que partidos
+    else blocks.push([[p, null], matches.splice(j, 1)[0]]);
+  }
+}
+
+/** Sobrantes (BYE con BYE, partido con partido) y orden estándar del cuadro. */
+function _ordenarBloques(blocks, singles, matches) {
+  for (let i = 0; i < singles.length; i += 2) blocks.push([singles[i], singles[i + 1]]);
+  for (let i = 0; i < matches.length; i += 2) blocks.push([matches[i], matches[i + 1]]);
+  if (blocks.length < 2) return blocks.flat();
+  return bracketSeedOrder(blocks.length).flatMap(seed => blocks[seed - 1]);
+}
+
+/** Armado principal (ver _cuadroSembrado). Puede dejar huecos o cruces: lo valida quien lo llama. */
+function _cuadroSembradoGreedy(ranked, size) {
   const byes = size - ranked.length;
   const byeHolders = ranked.slice(0, byes);
   const pool = ranked.slice(byes);
@@ -306,14 +401,7 @@ function _cuadroSembrado(ranked, size) {
     if (j < 0) j = resto.length - 1;
     matches.push([a, j >= 0 ? resto.splice(j, 1)[0] : null]);
   }
-  // Cada BYE que queda (del mejor al peor) toma el partido más débil sin jugadores de su grupo.
-  for (const p of byeHolders.slice(k)) {
-    let j = -1;
-    for (let q = matches.length - 1; q >= 0; q--) if (!matches[q].some(x => x && x.group === p.group)) { j = q; break; }
-    if (j < 0) j = matches.length - 1;
-    if (j < 0) singles.push([p, null]);                    // más BYE que partidos
-    else blocks.push([[p, null], matches.splice(j, 1)[0]]);
-  }
+  _asignarByes(byeHolders.slice(k), matches, blocks, singles);
 
   // 3) Si quedó algún cruce del mismo grupo en primera ronda, intercambiar rivales entre partidos.
   const partidos = [...blocks.map(b => b[1]), ...matches].filter(m => m && m[1]);
@@ -322,11 +410,7 @@ function _cuadroSembrado(ranked, size) {
     const otro = partidos.find(o => o !== m && o[1].group !== m[0].group && o[0].group !== m[1].group);
     if (otro) [m[1], otro[1]] = [otro[1], m[1]];
   }
-  // Sobrantes: los BYE más débiles se cruzan entre sí; los partidos sin BYE, entre ellos.
-  for (let i = 0; i < singles.length; i += 2) blocks.push([singles[i], singles[i + 1]]);
-  for (let i = 0; i < matches.length; i += 2) blocks.push([matches[i], matches[i + 1]]);
-  if (blocks.length < 2) return blocks.flat();
-  return bracketSeedOrder(blocks.length).flatMap(seed => blocks[seed - 1]);
+  return _ordenarBloques(blocks, singles, matches);
 }
 
 /**

@@ -287,6 +287,51 @@ test('cabeza de serie con 3.° en el cuadro (p. ej. 4 grupos de 4): todos entran
   }
 });
 
+test('cabeza de serie: con 2 grupos de 2, el ganador de la previa no repite cruce con el 1.° de su grupo', () => {
+  // El mejor 1.° es el del grupo B (recibe BYE); el ganador de la previa es el 2.° del grupo A
+  const r = buildFirstRound([
+    { id: 0, group: 0, pos: 0, stats: { pts: 5 } },
+    { id: 10, group: 1, pos: 0, stats: { pts: 10 } },
+    { id: 1, group: 0, pos: 1, stats: { pts: 0 } },
+  ], true);
+  assert.equal(r.length, 2);
+  for (const [a, b] of r) if (b) assert.notEqual(a.group, b.group, 'mismo grupo en primera ronda');
+  assert.equal(r.filter(([, b]) => b === null).length, 1, 'hay un solo BYE');
+});
+
+test('cabeza de serie con ronda previa: cuadro completo y sin cruces evitables (torneos al azar)', () => {
+  // ¿Existe alguna elección de jugadores sin BYE (m = n − byes) en la que ningún grupo tenga más de la mitad?
+  const evitable = (players, size) => {
+    const m = 2 * players.length - size;          // jugadores que juegan la ronda 1
+    if (m <= 0) return true;
+    const porGrupo = {};
+    for (const p of players) porGrupo[p.group] = (porGrupo[p.group] || 0) + 1;
+    return Object.values(porGrupo).reduce((s, c) => s + Math.min(c, m / 2), 0) >= m;
+  };
+  for (let k = 0; k < 4000; k++) {
+    const nGrupos = [2, 4, 6, 8][k % 4];
+    const directos = [], previa = [];
+    for (let g = 0; g < nGrupos; g++) {
+      const tam = 2 + Math.floor(Math.random() * 4);           // grupos de 2 a 5
+      const { directos: d, previa: p } = cuposGrupo(tam);
+      for (let pos = 0; pos < d + p; pos++)
+        (pos < d ? directos : previa).push({ id: g * 10 + pos, group: g, pos, stats: { pts: Math.random() * 10 } });
+    }
+    // Ronda previa: el mejor pasa si son impares; de cada partido gana uno al azar
+    const { direct, matches } = buildPreliminaryRound(previa);
+    const ganadores = matches.map(([a, b]) => (Math.random() < .5 ? a : b));
+    const clasificados = [...directos, ...direct, ...ganadores];
+    const r = buildFirstRound(clasificados, true);
+    const size = nextPow2(clasificados.length);
+    assert.equal(r.length, size / 2, `${nGrupos} grupos: el cuadro tiene ${r.length} cupos en vez de ${size / 2}`);
+    assert.ok(r.every(u => u && u[0]), `${nGrupos} grupos: el cuadro tiene huecos`);
+    assert.deepEqual(r.flat().filter(Boolean).map(p => p.id).sort((a, b) => a - b), clasificados.map(p => p.id).sort((a, b) => a - b),
+      `${nGrupos} grupos: cada clasificado aparece una vez`);
+    if (evitable(clasificados, size))
+      for (const [a, b] of r) if (b) assert.notEqual(a.group, b.group, `${nGrupos} grupos: cruce del mismo grupo evitable (${a.id} vs ${b.id})`);
+  }
+});
+
 // ── Utilidades ─────────────────────────────
 test('esc escapa HTML', () => {
   assert.equal(esc(`<img src=x onerror="alert('x')">`), '&lt;img src=x onerror=&quot;alert(&#39;x&#39;)&quot;&gt;');
