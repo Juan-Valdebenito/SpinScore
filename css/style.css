@@ -827,3 +827,7 @@ html, body { font-size:16px; }
 /* Cabeza de serie: puesto que va a la llave previa */
 .group-player.previa { background:color-mix(in srgb,var(--ss-accent) 8%,transparent); }
 .group-player.previa .group-player-num { color:var(--ss-accent); }
+
+/* Ronda previa arriba del cuadro (escritorio): separada del cuadro */
+.previa-section { margin-bottom:20px; }
+@media(min-width:768px) { .previa-section { max-width:520px; } }

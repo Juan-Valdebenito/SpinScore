@@ -410,12 +410,31 @@ async function guardarResultado() {
     goTo('screen-groups-main');
   } else if (_rmc === 'previa') {
     const m = GT.prelimMatches[_crm];
+    const eraJugado = m.done;
+    const cambiaGanador = eraJugado && (sets1 > sets2 ? m.p1 : m.p2) !== m.winner;
+    const cuadroArmado = GT.elimRounds.length > 0;
+    if (cambiaGanador && cuadroArmado) {
+      // El ganador de la previa ya está en el cuadro: hay que rearmarlo (y borrar lo jugado, si lo hay).
+      const jugados = GT.elimRounds.flat().filter(x => x.done && !x.bye).length;
+      if (jugados) {
+        const ok = await ssConfirm(`Cambiar el ganador de la ronda previa rearma el cuadro eliminatorio y borra sus ${jugados} resultado${jugados === 1 ? '' : 's'}.`,
+          { title: '¿Cambiar el ganador?', okText: 'Rearmar cuadro', danger: true });
+        if (!ok) return;
+      }
+    }
     Object.assign(m, { sets1, sets2, setScores, done: true });
     m.winner = sets1 > sets2 ? m.p1 : m.p2;
     m.winnername = sets1 > sets2 ? m.p1name : m.p2name;
-    if (GT.prelimMatches.every(x => x.done)) _generarCuadroDesdePrevia();
-    else storageSnapshot();
+    if (GT.prelimMatches.every(x => x.done) && (!cuadroArmado || cambiaGanador)) {
+      // Se arma el cuadro (al terminar la previa) o se rearma con el ganador corregido
+      GT.podio = null; GT.finishedAt = null;
+      _generarCuadroDesdePrevia();
+    } else storageSnapshot();
     goTo('screen-elimination');
+    if (!eraJugado) {
+      if (!cuadroArmado && GT.elimRounds.length) showToast('Ronda previa terminada · se armó el cuadro');
+    } else if (!cambiaGanador) showToast('Resultado corregido');
+    else showToast(cuadroArmado ? 'Ganador corregido · se rearmó el cuadro' : 'Ganador corregido');
   } else {
     const { ri, mi } = _crm, m = GT.elimRounds[ri][mi];
     const total = GT.elimRounds.length;

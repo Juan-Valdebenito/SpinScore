@@ -297,9 +297,13 @@ function renderMisTorneos() {
 
 function _torneoProgress(t) {
   const real = m => m.p1name !== 'BYE' && m.p2name !== 'BYE' && !m.bye;
+  const grupos = t.groupMatches || [], previa = t.prelimMatches || [];
   const elim = (t.elimRounds || []).flat().filter(real);
-  const total = (t.groupMatches || []).length + elim.length;
-  const done  = (t.groupMatches || []).filter(m => m.done).length + elim.filter(m => m.done).length;
+  // Si el cuadro aún no se arma (previa pendiente), se cuenta igual: en eliminación directa
+  // siempre se juegan (participantes − 1) partidos.
+  const elimTotal = elim.length || (previa.length ? (t.elimDirect || []).length + previa.length - 1 : 0);
+  const total = grupos.length + previa.length + elimTotal;
+  const done  = grupos.filter(m => m.done).length + previa.filter(m => m.done).length + elim.filter(m => m.done).length;
   return total === 0 ? 0 : Math.round((done / total) * 100);
 }
 

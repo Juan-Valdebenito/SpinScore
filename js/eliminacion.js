@@ -89,28 +89,32 @@ function renderElimination() {
   const total = GT.elimRounds.length;
   const container = document.getElementById('elim-content');
   document.getElementById('elim-header-name').textContent = GT.name;
-  if (!total && GT.prelimMatches.length) { _renderPreliminary(container); return; }
-  if (!total) { container.innerHTML = ''; return; }
+  const previa = (GT.prelimMatches || []).length ? _previaHTML(total > 0) : '';
+  if (!total) { container.innerHTML = previa; return; }
   window.innerWidth >= 768 ? _renderDesktop(container, total) : _renderMobile(container, total);
-  if (GT.elimRounds.flat().some(m => m.done && !m.bye))
+  // La ronda previa sigue visible arriba del cuadro (resultados y corrección)
+  if (previa) container.insertAdjacentHTML('afterbegin', previa);
+  if (GT.elimRounds.flat().some(m => m.done && !m.bye) || (GT.prelimMatches || []).some(m => m.done))
     container.insertAdjacentHTML('beforeend', '<div class="standings-footer">Toca un partido jugado para corregir su resultado</div>');
 }
 
-/** Pantalla que antecede al cuadro: los clasificados P juegan entre sí. */
-function _renderPreliminary(container) {
+/** Ronda previa: los clasificados P juegan entre sí. Se muestra antes y después de armar el cuadro. */
+function _previaHTML(cuadroArmado) {
   const directo = (GT.prelimDirect || []).map(p => esc(GT.players[p.id])).join(', ');
-  let html = '<div class="elim-round-title">Ronda previa</div><div class="prelim-note">Los ganadores entran al cuadro eliminatorio.</div>';
+  let html = `<div class="elim-round-title">Ronda previa</div><div class="prelim-note">${cuadroArmado
+    ? 'Sus ganadores ya están en el cuadro eliminatorio.'
+    : 'Los ganadores entran al cuadro eliminatorio, que se arma al terminar esta ronda.'}</div>`;
   if (directo) html += `<div class="prelim-note"><b>${directo}</b> pasa directo por ser el mejor clasificado.</div>`;
   GT.prelimMatches.forEach((m, mi) => {
     const n1 = _slotName(m.p1name), n2 = _slotName(m.p2name);
     if (m.done) {
       const w1 = m.winner === m.p1, detail = m.setScores.map(([a, b]) => `${a}-${b}`).join(' | ');
-      html += `<div class="elim-match"><div class="elim-player"><div class="elim-player-name${w1 ? ' winner' : ''}">${n1.html}</div><div class="elim-player-sets${w1 ? ' winner' : ''}">${m.sets1}</div></div><div class="elim-player"><div class="elim-player-name${!w1 ? ' winner' : ''}">${n2.html}</div><div class="elim-player-sets${!w1 ? ' winner' : ''}">${m.sets2}</div></div>${detail ? `<div class="elim-result-detail">${detail}</div>` : ''}</div>`;
+      html += `<button class="elim-match editable" onclick="abrirResultadoPrevia(${mi})" aria-label="Corregir resultado ${n1.html} contra ${n2.html}"><div class="elim-player"><div class="elim-player-name${w1 ? ' winner' : ''}">${n1.html}</div><div class="elim-player-sets${w1 ? ' winner' : ''}">${m.sets1}</div></div><div class="elim-player"><div class="elim-player-name${!w1 ? ' winner' : ''}">${n2.html}</div><div class="elim-player-sets${!w1 ? ' winner' : ''}">${m.sets2}</div></div>${detail ? `<div class="elim-result-detail">${detail}</div>` : ''}</button>`;
     } else {
       html += `<button class="elim-match clickable" onclick="abrirResultadoPrevia(${mi})" aria-label="Ingresar resultado ${n1.html} contra ${n2.html}"><div class="elim-player"><div class="elim-player-name">${n1.html}</div><div class="elim-player-sets">–</div></div><div class="elim-player"><div class="elim-player-name">${n2.html}</div><div class="elim-player-sets">–</div></div><div class="elim-result-detail accent">Toca para ingresar resultado</div></button>`;
     }
   });
-  container.innerHTML = html;
+  return `<div class="previa-section">${html}</div>`;
 }
 
 function _renderMobile(container, total) {
