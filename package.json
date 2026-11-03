@@ -5,9 +5,14 @@
   "description": "Marcador y gestión de torneos de Tenis de Mesa (PWA, sin backend).",
   "scripts": {
     "start": "npx --yes serve -l 5173 .",
-    "test": "node --test \"tests/**/*.test.js\""
+    "test": "node --test \"tests/**/*.test.js\"",
+    "test:e2e": "playwright test",
+    "test:all": "npm test && npm run test:e2e"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1"
   }
 }

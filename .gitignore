@@ -1,0 +1,6 @@
+# Dependencias (se instalan con npm install)
+node_modules/
+
+# Resultados de las pruebas en el navegador (npm run test:e2e)
+test-results/
+playwright-report/

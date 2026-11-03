@@ -45,9 +45,16 @@ tests/            Tests de rules.js y utils.js (node:test, sin dependencias)
 Requiere Node 20 o superior solo para los tests y el servidor local; la app no tiene paso de build.
 
 ```bash
-npm start      # sirve la carpeta en http://localhost:5173
-npm test       # corre los tests
+npm install        # una sola vez: instala las herramientas de prueba
+npm start          # sirve la carpeta en http://localhost:5173
+npm test           # tests rápidos de la lógica (reglas, cuadro, almacenamiento)
+npm run test:e2e   # pruebas de la app en Chrome (partidos, ligas, torneos, cabeza de serie…)
+npm run test:all   # ambas
 ```
+
+Las pruebas en el navegador (`tests/e2e/*.spec.js`) usan el **Google Chrome instalado**. Si no lo tienes, instala el
+navegador de Playwright con `npx playwright install chromium` y córrelas con `PW_CHANNEL=chromium npm run test:e2e`.
+Si una falla, `npx playwright show-report` abre un reporte con el paso a paso.
 
 > El service worker necesita `http://` (o `https://`); abrir los archivos con `file://` funciona, pero sin modo offline.
 

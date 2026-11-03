@@ -100,8 +100,9 @@ async function startTournament() {
   }
   // El partido a medias de la liga anterior ya no tendría dónde guardarse
   if (enVivo) liveMatchClear();
-  // La liga anterior queda en el historial; si no tenía ningún resultado, no vale la pena guardarla.
-  if (LIGA.id && !LIGA.matches.some(m => m.done)) ligaHistDelete(LIGA.id);
+  // La liga anterior queda en el historial; si no tenía ningún resultado ni un partido en curso
+  // (p. ej. se creó por error), no vale la pena guardarla.
+  if (LIGA.id && !LIGA.matches.some(m => m.done) && !enVivo) ligaHistDelete(LIGA.id);
   Object.assign(LIGA, {
     id: 'L' + Date.now(),
     createdAt: Date.now(),
