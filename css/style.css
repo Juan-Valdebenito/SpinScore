@@ -831,3 +831,13 @@ html, body { font-size:16px; }
 /* Ronda previa arriba del cuadro (escritorio): separada del cuadro */
 .previa-section { margin-bottom:20px; }
 @media(min-width:768px) { .previa-section { max-width:520px; } }
+
+/* ══ Accesibilidad: casos detectados por la auditoría automática ══ */
+/* Tema claro: los colores de grupo y de medalla no se leen como texto sobre fondo claro */
+[data-theme="light"] { --ss-green:#166534; }
+[data-theme="light"] #chips-groups .ss-chip,
+[data-theme="light"] #chips-groups .ss-chip:hover,
+[data-theme="light"] #chips-groups .ss-chip.active { color:var(--ss-text); }
+[data-theme="light"] .podio-label { color:var(--ss-muted) !important; }
+/* Enlaces sueltos de Contacto (los que van dentro de una oración quedan como texto) */
+.contact-card > .contact-link { display:inline-flex; align-items:center; min-height:44px; }
