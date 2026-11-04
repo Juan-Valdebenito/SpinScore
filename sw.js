@@ -2,7 +2,7 @@
    Permite usar la app sin conexión una vez abierta por primera vez.
    Cambia CACHE en cada versión para que los clientes reciban los archivos nuevos.
 */
-const CACHE = 'spinscore-2.5.0';
+const CACHE = 'spinscore-2.5.1';
 
 const CORE = [
   './',
@@ -37,7 +37,6 @@ self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
       .then(c => c.addAll(CORE.map(u => new Request(u, { cache: 'reload' }))))
-      .then(() => self.skipWaiting())
   );
 });
 
@@ -46,13 +45,12 @@ self.addEventListener('activate', e => {
     const old = (await caches.keys()).filter(k => k !== CACHE);
     await Promise.all(old.map(k => caches.delete(k)));
     await self.clients.claim();
-    // Si es una actualización (había una versión anterior), recargar las pestañas abiertas una vez:
-    // así nunca se muestra el HTML nuevo con CSS/JS de la versión anterior.
-    if (old.length) {
-      const wins = await self.clients.matchAll({ type: 'window' });
-      wins.forEach(w => w.navigate(w.url).catch(() => {}));
-    }
   })());
+});
+
+// La app decide cuándo activar una versión nueva para no interrumpir un partido.
+self.addEventListener('message', e => {
+  if (e.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', e => {

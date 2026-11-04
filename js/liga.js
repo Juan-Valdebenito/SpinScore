@@ -52,6 +52,8 @@ function ligaFecha(l) {
 function nuevaLiga() {
   _ligaDraft = [];
   document.getElementById('t-name').value = 'Liga';
+  const category = document.getElementById('t-category');
+  category.innerHTML = '<option value="">Sin categoría</option>' + catsGetAll().map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
   document.getElementById('t-player-input').value = '';
   renderTPlayerList();
   goTo('screen-tournament-setup');
@@ -108,6 +110,7 @@ async function startTournament() {
     createdAt: Date.now(),
     finishedAt: null,
     name: document.getElementById('t-name').value.trim() || 'Liga',
+    catId: document.getElementById('t-category').value || null,
     players: [..._ligaDraft],
     matches: _rr(_ligaDraft),
     cfg: { ...STATE.cfg },

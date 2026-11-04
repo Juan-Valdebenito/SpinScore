@@ -23,6 +23,8 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;500;600;700&family=Chakra+Petch:wght@600;700&family=Orbitron:wght@700;900&display=swap');
     :root { --bg:#0D2818;--surface:#163524;--card:#1E4A30;--accent:#F5C518;--red:#E63946;--blue:#4FC3F7;--green:#22C55E;--text:#F0F4F0;--muted:#9DBFA5;--red-text:#FF8F97;--border:#2A5C3A;--win:#3DDC79; }
+    [data-theme="dark"] { --bg:#050A0F;--surface:#0D1520;--card:#162030;--accent:#C4B5FD;--red:#F87171;--blue:#38BDF8;--green:#34D399;--text:#F1F5F9;--muted:#94A3B8;--red-text:#FB8A8A;--border:#1E3A5F;--win:#34D399; }
+    [data-theme="light"] { --bg:#F4F7F4;--surface:#FFF;--card:#EEF4EE;--accent:#176F37;--red:#DC2626;--blue:#0369A1;--green:#16A34A;--text:#1A2E1A;--muted:#4B6B4B;--red-text:#C81E1E;--border:#C8DEC8;--win:#166534; }
     *,*::before,*::after { box-sizing:border-box; }
     body { margin:0; background:var(--bg);color:var(--text);font-family:'Barlow',system-ui,sans-serif;min-height:100vh; }
     .orb { font-family:'Orbitron',monospace;font-weight:900; }
@@ -144,6 +146,8 @@
 <div class="content" id="pub-content"></div>
 <div class="refresh-bar" id="pub-refresh"></div>
 
+<script src="js/theme.js"></script>
+<script>themeInit();</script>
 <script src="js/utils.js"></script>
 <script src="js/rules.js"></script>
 <script>

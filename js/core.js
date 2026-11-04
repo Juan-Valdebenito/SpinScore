@@ -286,8 +286,8 @@ function _misTorneosItems() {
     return {
       kind: 'liga', id: l.id, name: l.name, status: l.status, podio: l.podio,
       fecha: ligaFecha(l), finishedAt: l.finishedAt,
-      meta: `Liga · ${l.players.length} jugadores · ${done}/${l.matches.length} partidos`,
-      metaFin: `Liga · ${l.players.length} jugadores`,
+      meta: `Liga · ${l.players.length} jugadores · ${done}/${l.matches.length} partidos` + (l.catId && cats.has(l.catId) ? ` · ${cats.get(l.catId)}` : ''),
+      metaFin: `Liga · ${l.players.length} jugadores` + (l.catId && cats.has(l.catId) ? ` · ${cats.get(l.catId)}` : ''),
       pct: l.matches.length ? Math.round(done / l.matches.length * 100) : 0,
       abrir: `ligaAbrir('${esc(l.id)}')`, eliminar: `ligaEliminar('${esc(l.id)}')`,
     };

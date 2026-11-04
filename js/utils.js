@@ -2,7 +2,7 @@
    Utilidades compartidas por app.html, public.html y multimesa.html.
 */
 
-const APP_VERSION = '2.5.0';
+const APP_VERSION = '2.5.1';
 
 // ── HTML SEGURO ────────────────────────────
 
@@ -139,8 +139,24 @@ function ssPrompt(title, defaultValue = '') {
 
 function registerServiceWorker() {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  navigator.serviceWorker.register('./sw.js').catch(err =>
-    console.warn('[SpinScore] Service worker no registrado:', err));
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!reloading) return;
+    location.reload();
+  });
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    const offerUpdate = worker => {
+      if (!worker || !navigator.serviceWorker.controller) return;
+      worker.addEventListener('statechange', () => {
+        if (worker.state !== 'installed') return;
+        ssConfirm('Hay una versión nueva disponible. Puedes actualizar ahora o continuar con esta versión.', {
+          title: 'Actualización disponible', okText: 'Actualizar', cancelText: 'Más tarde',
+        }).then(ok => { if (ok) { reloading = true; worker.postMessage({ type: 'SKIP_WAITING' }); } });
+      }, { once: true });
+    };
+    offerUpdate(reg.installing);
+    reg.addEventListener('updatefound', () => offerUpdate(reg.installing));
+  }).catch(err => console.warn('[SpinScore] Service worker no registrado:', err));
 }
 
 function applyVersionLabels() {
