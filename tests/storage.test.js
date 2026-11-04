@@ -66,3 +66,30 @@ test('historial dañado o ausente se trata como vacío', () => {
   data.set('spinscore_ligas', '{"id":"x"}');
   assert.deepEqual(plain(ctx.ligasGetAll()), []);
 });
+
+test('respaldo conserva todos los datos de SpinScore y se puede restaurar', () => {
+  const { ctx, data } = loadStorage();
+  ctx.storageSave({ id: 'T1', name: 'Copa', players: ['Ana'], status: 'active' });
+  ctx.catSave({ id: 'C1', name: 'Sub-18' });
+  ctx.ligaSave(liga('L1'));
+  ctx.liveMatchSave({ p: ['Ana', 'Beto'], pts: [4, 3] });
+  ctx.cfgSave({ sets: 5, pts: 21 });
+  data.set('spinscore_theme', 'dark');
+  const backup = ctx.storageCreateBackup();
+
+  data.clear();
+  assert.equal(ctx.storageRestoreBackup(backup), true);
+  assert.equal(ctx.storageGetAll()[0].name, 'Copa');
+  assert.equal(ctx.catsGetAll()[0].name, 'Sub-18');
+  assert.equal(ctx.ligaGet().id, 'L1');
+  assert.deepEqual(plain(ctx.liveMatchGet().pts), [4, 3]);
+  assert.deepEqual(plain(ctx.cfgGet()), { sets: 5, pts: 21 });
+  assert.equal(data.get('spinscore_theme'), 'dark');
+});
+
+test('un respaldo inválido no modifica los datos actuales', () => {
+  const { ctx } = loadStorage();
+  ctx.storageSave({ id: 'T1', name: 'Copa', players: [], status: 'active' });
+  assert.equal(ctx.storageRestoreBackup({ format: 'spinscore-backup', version: 1, data: {} }), false);
+  assert.equal(ctx.storageGetAll()[0].id, 'T1');
+});

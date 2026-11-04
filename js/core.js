@@ -111,6 +111,41 @@ function exportarPDF() {
   window.print();
 }
 
+// ── RESPALDO DE DATOS ─────────────────────
+function exportarRespaldo() {
+  const backup = storageCreateBackup();
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  const date = new Date().toISOString().slice(0, 10);
+  link.href = url;
+  link.download = `spinscore-respaldo-${date}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+  showToast('Respaldo descargado');
+}
+
+async function importarRespaldo(input) {
+  const file = input?.files?.[0];
+  if (!file) return;
+  try {
+    const backup = JSON.parse(await file.text());
+    if (!storageValidateBackup(backup)) throw new Error('invalid backup');
+    const ok = await ssConfirm('Se reemplazarán los torneos, ligas, categorías y configuración guardados en este dispositivo.', {
+      title: '¿Restaurar respaldo?', okText: 'Restaurar', danger: true,
+    });
+    if (!ok) return;
+    if (!storageRestoreBackup(backup)) throw new Error('storage unavailable');
+    location.reload();
+  } catch {
+    showToast('El archivo no es un respaldo válido de SpinScore');
+  } finally {
+    input.value = '';
+  }
+}
+
 // ── VISTA PUBLICA / COMPARTIR ─────────────
 function abrirVistaPublica() {
   const GT = getGT();

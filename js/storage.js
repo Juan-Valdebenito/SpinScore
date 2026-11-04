@@ -9,6 +9,8 @@ const LIGA_KEY   = 'spinscore_liga';
 const LIGAS_KEY  = 'spinscore_ligas';
 const LIVE_KEY   = 'spinscore_live_match';
 const CFG_KEY    = 'spinscore_cfg';
+const BACKUP_THEME_KEY = 'spinscore_theme';
+const BACKUP_VERSION = 1;
 
 // ── CRUD DE TORNEOS ────────────────────────
 
@@ -182,3 +184,59 @@ function cfgGet() {
   return c && [1, 3, 5, 7].includes(c.sets) && c.pts > 0 ? c : { sets: 3, pts: 11 };
 }
 function cfgSave(cfg) { writeJSON(CFG_KEY, cfg); }
+
+// ── RESPALDO ──────────────────────────────────────────────────────────────
+
+/** Crea un respaldo portable de todos los datos que administra SpinScore. */
+function storageCreateBackup() {
+  return {
+    format: 'spinscore-backup',
+    version: BACKUP_VERSION,
+    createdAt: new Date().toISOString(),
+    data: {
+      torneos: storageGetAll(),
+      categorias: catsGetAll(),
+      ligaAbierta: ligaGet(),
+      ligas: ligasGetAll(),
+      partidoEnVivo: liveMatchGet(),
+      configuracion: cfgGet(),
+      tema: (() => {
+        try { return localStorage.getItem(BACKUP_THEME_KEY) || 'standard'; }
+        catch { return 'standard'; }
+      })(),
+    },
+  };
+}
+
+function _isBackupRecord(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+/** Valida la estructura antes de modificar el almacenamiento actual. */
+function storageValidateBackup(backup) {
+  if (!_isBackupRecord(backup) || backup.format !== 'spinscore-backup' || backup.version !== BACKUP_VERSION) return false;
+  const d = backup.data;
+  if (!_isBackupRecord(d) || !Array.isArray(d.torneos) || !Array.isArray(d.categorias) || !Array.isArray(d.ligas)) return false;
+  if (d.ligaAbierta !== null && !_isBackupRecord(d.ligaAbierta)) return false;
+  if (d.partidoEnVivo !== null && !_isBackupRecord(d.partidoEnVivo)) return false;
+  if (!_isBackupRecord(d.configuracion) || ![1, 3, 5, 7].includes(d.configuracion.sets) || !(d.configuracion.pts > 0)) return false;
+  if (!['standard', 'dark', 'light'].includes(d.tema)) return false;
+  return true;
+}
+
+/** Restaura un respaldo válido. Devuelve false si no se pudo validar o guardar. */
+function storageRestoreBackup(backup) {
+  if (!storageValidateBackup(backup)) return false;
+  const d = backup.data;
+  const saved = [
+    writeJSON(SS_KEY, d.torneos),
+    writeJSON(CAT_KEY, d.categorias),
+    writeJSON(LIGA_KEY, d.ligaAbierta),
+    writeJSON(LIGAS_KEY, d.ligas),
+    writeJSON(LIVE_KEY, d.partidoEnVivo),
+    writeJSON(CFG_KEY, d.configuracion),
+  ].every(Boolean);
+  try { localStorage.setItem(BACKUP_THEME_KEY, d.tema); }
+  catch { return false; }
+  return saved;
+}

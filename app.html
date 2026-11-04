@@ -291,6 +291,12 @@
         <div class="text-bold">Al mejor de <span id="cfg-display-sets" class="text-accent">3</span> sets · <span id="cfg-display-pts" class="text-accent">11</span> pts por set</div>
         <div class="infobox-note">Gana el set quien llega primero con 2 de diferencia (ITTF). Los torneos y ligas ya creados mantienen el formato con que se iniciaron.</div>
       </div>
+
+      <div class="ss-section-label">Respaldo de datos</div>
+      <div class="ss-infobox mb-3">Guarda una copia de tus torneos, ligas, categorías y configuración. Al restaurar, los datos actuales de este dispositivo se reemplazarán.</div>
+      <button class="btn-secondary w-100" onclick="exportarRespaldo()">Descargar respaldo</button>
+      <input id="backup-file-input" type="file" accept="application/json,.json" class="d-none" onchange="importarRespaldo(this)">
+      <button class="btn-ghost mt-2" onclick="document.getElementById('backup-file-input').click()">Restaurar respaldo</button>
     </div>
   </div>
 
