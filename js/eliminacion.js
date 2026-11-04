@@ -89,6 +89,7 @@ function renderElimination() {
   const total = GT.elimRounds.length;
   const container = document.getElementById('elim-content');
   document.getElementById('elim-header-name').textContent = GT.name;
+  document.getElementById('print-elim-torneo-name').textContent = GT.name;
   const previa = (GT.prelimMatches || []).length ? _previaHTML(total > 0) : '';
   if (!total) { container.innerHTML = previa; return; }
   window.innerWidth >= 768 ? _renderDesktop(container, total) : _renderMobile(container, total);
