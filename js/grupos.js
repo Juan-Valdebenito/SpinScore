@@ -258,7 +258,13 @@ function _renderSingleGroupTab(content, idx) {
       </div>
     </div>`;
   });
-  html += `</div><div class="section-label mt-2">Partidos</div><div class="match-grid">`;
+  html += `</div>`;
+  if (!locked) {
+    html += `<div class="section-label mt-3">Gestionar jugadores</div><div class="group-player-manager">` +
+      GT.groups[idx].map(playerId => `<div class="group-player-manager-row"><span>${esc(GT.players[playerId])}</span><div class="group-player-actions"><button class="btn-player-action" onclick="renombrarJugadorGrupo(${idx},${playerId})" aria-label="Renombrar ${esc(GT.players[playerId])}">Renombrar</button><button class="btn-player-action danger" onclick="retirarJugadorGrupo(${idx},${playerId})" aria-label="Retirar ${esc(GT.players[playerId])}">Retirar</button></div></div>`).join('') +
+      `</div>`;
+  }
+  html += `<div class="section-label mt-2">Partidos</div><div class="match-grid">`;
 
   let displayedRound = null;
   matches.forEach(m => {
@@ -301,6 +307,43 @@ function _renderSingleGroupTab(content, idx) {
       (aPrevia.length ? `<br>Llave previa: <b>${aPrevia.join(', ')}</b>` : '') + `</div>`;
   }
   content.innerHTML = html;
+}
+
+/** Renombra un jugador sin alterar su posición ni los cruces ya sorteados. */
+async function renombrarJugadorGrupo(groupIdx, playerId) {
+  if (GT.phase !== 'groups' || !GT.groups[groupIdx]?.includes(playerId)) return;
+  const previous = GT.players[playerId];
+  const name = (await ssPrompt('Renombrar jugador', previous))?.trim();
+  if (!name || name === previous) return;
+  if (GT.players.some((p, i) => i !== playerId && p.toLowerCase() === name.toLowerCase())) {
+    showToast('Ya existe un jugador con ese nombre'); return;
+  }
+  GT.players[playerId] = name;
+  storageSnapshot();
+  renderGroupsMain();
+}
+
+/**
+ * Retira un jugador antes de que su grupo inicie partidos y rehace solamente
+ * ese calendario. Así no quedan cruces inválidos ni resultados alterados.
+ */
+async function retirarJugadorGrupo(groupIdx, playerId) {
+  const group = GT.groups[groupIdx];
+  if (GT.phase !== 'groups' || !group?.includes(playerId)) return;
+  if (group.length <= 2) { showToast('Cada grupo debe conservar al menos 2 jugadores'); return; }
+  if (GT.groupMatches.some(m => m.groupIdx === groupIdx && m.done)) {
+    showToast('No se puede retirar después de iniciar partidos del grupo'); return;
+  }
+  const name = GT.players[playerId];
+  if (!await ssConfirm(`${name} se quitará del grupo y se reordenarán sus partidos pendientes.`, {
+    title: '¿Retirar jugador?', okText: 'Retirar', danger: true,
+  })) return;
+  GT.groups[groupIdx] = group.filter(id => id !== playerId);
+  GT.groupMatches = GT.groups.flatMap((players, gi) => gi === groupIdx
+    ? generarCalendarioGrupo(players, gi)
+    : GT.groupMatches.filter(m => m.groupIdx === gi));
+  storageSnapshot();
+  renderGroupsMain();
 }
 
 function _renderGeneralTab(content) {
