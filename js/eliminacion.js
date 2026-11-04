@@ -108,7 +108,7 @@ function _previaHTML(cuadroArmado) {
   GT.prelimMatches.forEach((m, mi) => {
     const n1 = _slotName(m.p1name), n2 = _slotName(m.p2name);
     if (m.done) {
-      const w1 = m.winner === m.p1, detail = m.setScores.map(([a, b]) => `${a}-${b}`).join(' | ');
+      const w1 = m.winner === m.p1, detail = [m.setScores.map(([a, b]) => `${a}-${b}`).join(' | '), resultadoEspecialTexto(m)].filter(Boolean).join(' · ');
       html += `<button class="elim-match editable" onclick="abrirResultadoPrevia(${mi})" aria-label="Corregir resultado ${n1.html} contra ${n2.html}"><div class="elim-player"><div class="elim-player-name${w1 ? ' winner' : ''}">${n1.html}</div><div class="elim-player-sets${w1 ? ' winner' : ''}">${m.sets1}</div></div><div class="elim-player"><div class="elim-player-name${!w1 ? ' winner' : ''}">${n2.html}</div><div class="elim-player-sets${!w1 ? ' winner' : ''}">${m.sets2}</div></div>${detail ? `<div class="elim-result-detail">${detail}</div>` : ''}</button>`;
     } else {
       html += `<button class="elim-match clickable" onclick="abrirResultadoPrevia(${mi})" aria-label="Ingresar resultado ${n1.html} contra ${n2.html}"><div class="elim-player"><div class="elim-player-name">${n1.html}</div><div class="elim-player-sets">–</div></div><div class="elim-player"><div class="elim-player-name">${n2.html}</div><div class="elim-player-sets">–</div></div><div class="elim-result-detail accent">Toca para ingresar resultado</div></button>`;
@@ -129,7 +129,7 @@ function _renderMobile(container, total) {
           <div class="elim-result-detail">Pasa directo (BYE)</div>
         </div>`;
       } else if (m.done) {
-        const w1 = m.sets1 > m.sets2, detail = m.setScores.map(([a, b]) => `${a}-${b}`).join(' | ');
+        const w1 = m.sets1 > m.sets2, detail = [m.setScores.map(([a, b]) => `${a}-${b}`).join(' | '), resultadoEspecialTexto(m)].filter(Boolean).join(' · ');
         html += `<button class="elim-match editable" onclick="abrirResultadoElim(${ri},${mi})" aria-label="Corregir resultado ${n1.html} contra ${n2.html}">
           <div class="elim-player"><div class="elim-player-name${w1 ? ' winner' : ''}">${n1.html}</div><div class="elim-player-sets${w1 ? ' winner' : ''}">${m.sets1}</div></div>
           <div class="elim-player"><div class="elim-player-name${!w1 ? ' winner' : ''}">${n2.html}</div><div class="elim-player-sets${!w1 ? ' winner' : ''}">${m.sets2}</div></div>
@@ -216,7 +216,7 @@ function _bcard(m, ri, mi) {
   }
   const can = _canPlay(m);
   const w1 = m.done && m.sets1 > m.sets2, w2 = m.done && m.sets2 > m.sets1;
-  const detail = m.done ? m.setScores.map(([a, b]) => `${a}-${b}`).join(' | ') : '';
+  const detail = m.done ? [m.setScores.map(([a, b]) => `${a}-${b}`).join(' | '), resultadoEspecialTexto(m)].filter(Boolean).join(' · ') : '';
   // Jugable (ingresar) o ya jugado (corregir): ambos abren "Ingresar resultado"
   const tag = can || m.done ? 'button' : 'div';
   const accion = can ? 'Ingresar' : 'Corregir';

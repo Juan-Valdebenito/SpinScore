@@ -246,7 +246,7 @@ function _renderSingleGroupTab(content, idx) {
   matches.forEach(m => {
     const ri = GT.groupMatches.indexOf(m), p1 = esc(GT.players[m.p1]), p2 = esc(GT.players[m.p2]);
     if (m.done) {
-      const w1 = m.sets1 > m.sets2, detail = m.setScores.map(([a, b]) => `${a}-${b}`).join(' | ');
+      const w1 = m.sets1 > m.sets2, detail = [m.setScores.map(([a, b]) => `${a}-${b}`).join(' | '), resultadoEspecialTexto(m)].filter(Boolean).join(' · ');
       const edit = locked ? '' : ` onclick="abrirResultado(${ri},'group')" aria-label="Editar resultado ${p1} contra ${p2}"`;
       html += `<${locked ? 'div' : 'button'} class="match-row done match-row-stack${locked ? '' : ' editable'}"${edit}>
         <div class="match-row-line">
@@ -356,12 +356,45 @@ function abrirResultado(matchIdx, context) {
 
   const liveBtn = document.getElementById('result-live-btn');
   if (liveBtn) liveBtn.classList.toggle('d-none', existing.length > 0);
+  _renderSpecialResultActions(p1name, p2name, existing.length === 0);
 
   const btn = document.getElementById('result-back-btn');
   const volver = { elim: 'screen-elimination', previa: 'screen-elimination', liga: 'screen-tournament-bracket' }[context] || 'screen-groups-main';
   if (btn) btn.onclick = () => goTo(volver);
   goTo('screen-result-entry');
   document.querySelector('#result-sets-container .set-input')?.focus();
+}
+
+function _renderSpecialResultActions(p1, p2, pending) {
+  const el = document.getElementById('result-special-actions');
+  if (!el) return;
+  el.classList.toggle('d-none', !pending);
+  if (!pending) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="ss-section-label mt-4">Resultado especial</div>
+    <div class="btn-row"><button class="btn-secondary flex-1" onclick="declararResultadoEspecial('walkover',0)">W.O. ${esc(p1)}</button><button class="btn-secondary flex-1" onclick="declararResultadoEspecial('walkover',1)">W.O. ${esc(p2)}</button></div>
+    <div class="btn-row mt-2"><button class="btn-ghost flex-1" onclick="declararResultadoEspecial('retired',0)">Retiro ${esc(p1)}</button><button class="btn-ghost flex-1" onclick="declararResultadoEspecial('retired',1)">Retiro ${esc(p2)}</button></div>`;
+}
+
+function _specialScores(loser, cfg) {
+  const winner = 1 - loser;
+  return Array.from({ length: setsNeededFor(cfg.sets) }, () => winner === 0 ? [cfg.pts, 0] : [0, cfg.pts]);
+}
+
+async function declararResultadoEspecial(type, loser) {
+  let p;
+  if (_rmc === 'group') { const m = GT.groupMatches[_crm]; p = [GT.players[m?.p1], GT.players[m?.p2]]; }
+  else if (_rmc === 'previa') { const m = GT.prelimMatches[_crm]; p = [m?.p1name, m?.p2name]; }
+  else if (_rmc === 'elim') { const m = GT.elimRounds[_crm?.ri]?.[_crm?.mi]; p = [m?.p1name, m?.p2name]; }
+  else return;
+  if (!p[0] || !p[1]) return;
+  const label = type === 'walkover' ? 'W.O.' : 'retiro';
+  if (!await ssConfirm(`${p[loser]} queda registrado por ${label}. Ganará ${p[1 - loser]}.`, { title: '¿Confirmar resultado?', okText: 'Confirmar', danger: true })) return;
+  await guardarResultado(_specialScores(loser, _resultCfg()), { resultType: type, specialLoser: p[loser] });
+}
+
+function resultadoEspecialTexto(m) {
+  if (!m?.resultType) return '';
+  return m.resultType === 'walkover' ? `W.O. · ${m.specialLoser} no se presentó` : `Retiro · ${m.specialLoser}`;
 }
 
 /** Inicia el marcador en vivo para el partido pendiente abierto en el formulario. */
@@ -450,7 +483,7 @@ function _renumberSets() {
   });
 }
 
-async function guardarResultado(setScoresOverride = null) {
+async function guardarResultado(setScoresOverride = null, special = null) {
   const setScores = setScoresOverride ? setScoresOverride.map(([a, b]) => [a, b]) : [];
   if (!setScoresOverride) {
     for (const row of document.querySelectorAll('#result-sets-container .set-row')) {
@@ -469,7 +502,7 @@ async function guardarResultado(setScoresOverride = null) {
     ligaCorregirResultado(_crm, sets1, sets2, setScores);
   } else if (_rmc === 'group') {
     const m = GT.groupMatches[_crm];
-    Object.assign(m, { sets1, sets2, setScores, done: true });
+    Object.assign(m, { sets1, sets2, setScores, done: true, ...(special || {}) });
     storageSnapshot();
     goTo('screen-groups-main');
   } else if (_rmc === 'previa') {
@@ -486,7 +519,7 @@ async function guardarResultado(setScoresOverride = null) {
         if (!ok) return;
       }
     }
-    Object.assign(m, { sets1, sets2, setScores, done: true });
+    Object.assign(m, { sets1, sets2, setScores, done: true, ...(special || {}) });
     m.winner = sets1 > sets2 ? m.p1 : m.p2;
     m.winnername = sets1 > sets2 ? m.p1name : m.p2name;
     if (GT.prelimMatches.every(x => x.done) && (!cuadroArmado || cambiaGanador)) {
@@ -519,7 +552,7 @@ async function guardarResultado(setScoresOverride = null) {
       }
       elimReabrirDependientes(GT.elimRounds, deps);
     }
-    Object.assign(m, { sets1, sets2, setScores, done: true });
+    Object.assign(m, { sets1, sets2, setScores, done: true, ...(special || {}) });
     m.winner     = sets1 > sets2 ? m.p1 : m.p2;
     m.winnername = sets1 > sets2 ? m.p1name : m.p2name;
     propagateElimWinner(ri, mi);
