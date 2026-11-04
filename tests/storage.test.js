@@ -93,3 +93,12 @@ test('un respaldo inválido no modifica los datos actuales', () => {
   assert.equal(ctx.storageRestoreBackup({ format: 'spinscore-backup', version: 1, data: {} }), false);
   assert.equal(ctx.storageGetAll()[0].id, 'T1');
 });
+
+test('historial rápido conserva los partidos más recientes', () => {
+  const { ctx } = loadStorage();
+  ctx.quickHistorySave({ id: 'Q1', p: ['Ana', 'Beto'] });
+  ctx.quickHistorySave({ id: 'Q2', p: ['Cami', 'Dani'] });
+  assert.deepEqual(plain(ctx.quickHistoryGetAll().map(m => m.id)), ['Q2', 'Q1']);
+  ctx.quickHistoryClear();
+  assert.deepEqual(plain(ctx.quickHistoryGetAll()), []);
+});

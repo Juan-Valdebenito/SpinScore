@@ -9,6 +9,7 @@ const LIGA_KEY   = 'spinscore_liga';
 const LIGAS_KEY  = 'spinscore_ligas';
 const LIVE_KEY   = 'spinscore_live_match';
 const CFG_KEY    = 'spinscore_cfg';
+const QUICK_HISTORY_KEY = 'spinscore_quick_history';
 const BACKUP_THEME_KEY = 'spinscore_theme';
 const BACKUP_VERSION = 1;
 
@@ -185,6 +186,16 @@ function cfgGet() {
 }
 function cfgSave(cfg) { writeJSON(CFG_KEY, cfg); }
 
+// ── HISTORIAL DE PARTIDOS RÁPIDOS ─────────────────────────────────────────
+function quickHistoryGetAll() {
+  const all = readJSON(QUICK_HISTORY_KEY, []);
+  return Array.isArray(all) ? all : [];
+}
+function quickHistorySave(match) {
+  writeJSON(QUICK_HISTORY_KEY, [match, ...quickHistoryGetAll()].slice(0, 100));
+}
+function quickHistoryClear() { removeKey(QUICK_HISTORY_KEY); }
+
 // ── RESPALDO ──────────────────────────────────────────────────────────────
 
 /** Crea un respaldo portable de todos los datos que administra SpinScore. */
@@ -200,6 +211,7 @@ function storageCreateBackup() {
       ligas: ligasGetAll(),
       partidoEnVivo: liveMatchGet(),
       configuracion: cfgGet(),
+      historialRapido: quickHistoryGetAll(),
       tema: (() => {
         try { return localStorage.getItem(BACKUP_THEME_KEY) || 'standard'; }
         catch { return 'standard'; }
@@ -217,6 +229,7 @@ function storageValidateBackup(backup) {
   if (!_isBackupRecord(backup) || backup.format !== 'spinscore-backup' || backup.version !== BACKUP_VERSION) return false;
   const d = backup.data;
   if (!_isBackupRecord(d) || !Array.isArray(d.torneos) || !Array.isArray(d.categorias) || !Array.isArray(d.ligas)) return false;
+  if (d.historialRapido !== undefined && !Array.isArray(d.historialRapido)) return false;
   if (d.ligaAbierta !== null && !_isBackupRecord(d.ligaAbierta)) return false;
   if (d.partidoEnVivo !== null && !_isBackupRecord(d.partidoEnVivo)) return false;
   if (!_isBackupRecord(d.configuracion) || ![1, 3, 5, 7].includes(d.configuracion.sets) || !(d.configuracion.pts > 0)) return false;
@@ -235,6 +248,7 @@ function storageRestoreBackup(backup) {
     writeJSON(LIGAS_KEY, d.ligas),
     writeJSON(LIVE_KEY, d.partidoEnVivo),
     writeJSON(CFG_KEY, d.configuracion),
+    writeJSON(QUICK_HISTORY_KEY, d.historialRapido || []),
   ].every(Boolean);
   try { localStorage.setItem(BACKUP_THEME_KEY, d.tema); }
   catch { return false; }

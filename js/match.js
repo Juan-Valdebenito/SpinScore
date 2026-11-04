@@ -344,6 +344,11 @@ async function finishMatch() {
   } else if (MATCH.source === 'torneo') {
     await registrarResultadoTorneoEnVivo(MATCH);
   } else {
+    quickHistorySave({
+      id: `Q${Date.now()}`, playedAt: Date.now(), p: [...MATCH.p], cfg: { ...MATCH.cfg },
+      sets: [...MATCH.sets], setHistory: MATCH.setHistory.map(s => [...s]),
+      winner: MATCH.p[MATCH.sets[0] > MATCH.sets[1] ? 0 : 1],
+    });
     goTo('screen-home');
   }
 }

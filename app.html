@@ -92,6 +92,11 @@
           <span class="home-row-text"><span class="home-row-title">Mis torneos</span><span class="home-row-sub">En curso e historial con podios</span></span>
           <span class="home-row-chev" aria-hidden="true">›</span>
         </button>
+        <button class="home-row" onclick="goTo('screen-quick-history')">
+          <span class="home-row-icon" style="--c:var(--ss-blue)" aria-hidden="true">◷</span>
+          <span class="home-row-text"><span class="home-row-title">Partidos rápidos</span><span class="home-row-sub">Historial de resultados</span></span>
+          <span class="home-row-chev" aria-hidden="true">›</span>
+        </button>
         <button class="home-row" onclick="goTo('screen-categorias')">
           <span class="home-row-icon" style="--c:var(--ss-red-text)" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
           <span class="home-row-text"><span class="home-row-title">Categorías</span><span class="home-row-sub">Organiza por nivel o edad</span></span>
@@ -120,6 +125,11 @@
       <div class="header-spacer"></div>
     </div>
     <div class="scroll-body" id="mis-torneos-content"></div>
+  </div>
+
+  <div id="screen-quick-history" class="screen">
+    <div class="ss-header"><button class="btn-back" aria-label="Volver" onclick="goTo('screen-home')">←</button><div class="ss-header-title">Partidos rápidos</div><div class="header-spacer"></div></div>
+    <div class="scroll-body" id="quick-history-content"></div>
   </div>
 
   <!-- ══ QUICK SETUP ══ -->

@@ -16,6 +16,7 @@ function goTo(id) {
   if (id === 'screen-groups-main')        { renderGroupsMain(); setPageTitle(getGT().name || 'Torneo'); }
   if (id === 'screen-elimination')        { renderElimination(); setPageTitle((getGT().name || 'Torneo') + ' · Eliminatoria'); }
   if (id === 'screen-mis-torneos')        { renderMisTorneos(); setPageTitle('Mis Torneos'); }
+  if (id === 'screen-quick-history')      { renderQuickHistory(); setPageTitle('Historial rápido'); }
   if (id === 'screen-categorias')         { renderCategorias(); setPageTitle('Categorías'); }
   if (id === 'screen-settings')           setPageTitle('Configuración');
   if (id === 'screen-contact')            setPageTitle('Contacto');
@@ -48,6 +49,27 @@ function _syncChips() {
 
 function formatLabel(cfg) {
   return `${cfg.sets} set${cfg.sets > 1 ? 's' : ''} · ${cfg.pts} pts`;
+}
+
+// ── HISTORIAL RÁPIDO ──────────────────────
+function renderQuickHistory() {
+  const records = quickHistoryGetAll();
+  const container = document.getElementById('quick-history-content');
+  if (!records.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-title">Aún no hay partidos</div><div class="empty-text">Los partidos rápidos terminados aparecerán aquí.</div></div>';
+    return;
+  }
+  container.innerHTML = records.map(m => {
+    const winner = m.winner || m.p?.[m.sets?.[0] > m.sets?.[1] ? 0 : 1] || '';
+    const date = m.playedAt ? new Date(m.playedAt).toLocaleString('es-CL', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+    const detail = (m.setHistory || []).map(s => `${s[0]}-${s[1]}`).join(' · ');
+    return `<div class="torneo-card quick-history-card"><div class="match-row-line"><div class="match-p ${winner === m.p?.[0] ? 'is-winner' : ''}">${esc(m.p?.[0] || 'Jugador 1')}</div><div class="match-score"><span class="orb score-blue">${m.sets?.[0] ?? 0}</span><span class="muted">–</span><span class="orb score-red">${m.sets?.[1] ?? 0}</span></div><div class="match-p text-right ${winner === m.p?.[1] ? 'is-winner' : ''}">${esc(m.p?.[1] || 'Jugador 2')}</div></div><div class="match-detail">${esc(detail)}${detail && date ? ' · ' : ''}${esc(date)} · ${esc(formatLabel(m.cfg || { sets: 3, pts: 11 }))}</div></div>`;
+  }).join('') + '<button class="btn-secondary mt-3 w-100" onclick="limpiarHistorialRapido()">Limpiar historial</button>';
+}
+
+async function limpiarHistorialRapido() {
+  if (!await ssConfirm('Se eliminarán todos los partidos rápidos guardados.', { title: '¿Limpiar historial?', okText: 'Limpiar', danger: true })) return;
+  quickHistoryClear(); renderQuickHistory();
 }
 
 // ── EN CURSO (HOME) ────────────────────────
