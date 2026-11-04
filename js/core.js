@@ -344,6 +344,8 @@ function _torneoProgress(t) {
 
 async function eliminarTorneo(id) {
   if (!await ssConfirm('Se borrarán todos sus resultados.', { title: '¿Eliminar este torneo?', okText: 'Eliminar', danger: true })) return;
+  const live = liveMatchGet();
+  if (live?.source === 'torneo' && live.tournamentId === id) liveMatchClear();
   storageDelete(id);
   renderMisTorneos(); renderHomeButtons();
 }

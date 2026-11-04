@@ -11,9 +11,12 @@ const MATCH = {
   setHistory: [],
   setsNeeded: 2,
   firstServer: 0,
-  source: 'quick',       // 'quick' | 'liga'
+  source: 'quick',       // 'quick' | 'liga' | 'torneo'
   matchId: null,         // id del partido de liga
   ligaId: null,          // liga a la que pertenece el partido (evita guardarlo en otra liga)
+  tournamentId: null,    // id del torneo por grupos al que pertenece
+  tournamentContext: null, // 'group' | 'previa' | 'elim'
+  tournamentMatch: null, // índice del partido o { ri, mi } en eliminatoria
   cards: [{ yellow: 0, red: 0 }, { yellow: 0, red: 0 }],
   undo: [],              // pila de estados previos
 };
@@ -55,7 +58,7 @@ async function _confirmReplaceLive() {
 /**
  * @param {string} p1
  * @param {string} p2
- * @param {{source?:'quick'|'liga', matchId?:string, ligaId?:string, cfg?:{sets:number,pts:number}, firstServer?:0|1}} opts
+ * @param {{source?:'quick'|'liga'|'torneo', matchId?:string, ligaId?:string, tournamentId?:string, tournamentContext?:string, tournamentMatch?:number|{ri:number,mi:number}, cfg?:{sets:number,pts:number}, firstServer?:0|1}} opts
  */
 function initMatch(p1, p2, opts = {}) {
   const cfg = { ...(opts.cfg || STATE.cfg) };
@@ -69,6 +72,9 @@ function initMatch(p1, p2, opts = {}) {
     source: opts.source || 'quick',
     matchId: opts.matchId ?? null,
     ligaId: opts.ligaId ?? null,
+    tournamentId: opts.tournamentId ?? null,
+    tournamentContext: opts.tournamentContext ?? null,
+    tournamentMatch: opts.tournamentMatch ?? null,
     cards: [{ yellow: 0, red: 0 }, { yellow: 0, red: 0 }],
     undo: [],
   });
@@ -97,6 +103,11 @@ function _showScoreScreen() {
 function resumeLiveMatch() {
   const live = liveMatchGet();
   if (!live || !live.p) return;
+  if (live.source === 'torneo' && !restaurarPartidoTorneoEnVivo(live)) {
+    liveMatchClear();
+    showToast('El torneo de este partido ya no está disponible');
+    return;
+  }
   // ligaId: null primero, para que un partido guardado por una versión anterior no herede el de otro partido
   Object.assign(MATCH, { ligaId: null }, live);
   _showScoreScreen();
@@ -325,11 +336,13 @@ function showWinScreen() {
   document.getElementById('win-screen').classList.add('show');
 }
 
-function finishMatch() {
+async function finishMatch() {
   document.getElementById('win-screen').classList.remove('show');
   liveMatchClear();
   if (MATCH.source === 'liga') {
     ligaRegistrarResultado(MATCH.matchId, MATCH.sets, MATCH.setHistory, MATCH.ligaId, MATCH.p);
+  } else if (MATCH.source === 'torneo') {
+    await registrarResultadoTorneoEnVivo(MATCH);
   } else {
     goTo('screen-home');
   }
@@ -341,7 +354,9 @@ async function confirmBack() {
   liveMatchClear();
   clearTimeout(_winTimer);
   document.getElementById('win-screen').classList.remove('show');
-  goTo(MATCH.source === 'liga' ? 'screen-tournament-bracket' : 'screen-quicksetup');
+  if (MATCH.source === 'liga') goTo('screen-tournament-bracket');
+  else if (MATCH.source === 'torneo') goTo(pantallaPartidoTorneoEnVivo(MATCH.tournamentContext));
+  else goTo('screen-quicksetup');
 }
 
 

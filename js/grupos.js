@@ -354,11 +354,73 @@ function abrirResultado(matchIdx, context) {
   if (existing.length > 0) existing.forEach(([a, b]) => addSetRow(a, b));
   else for (let i = 0; i < setsNeededFor(cfg.sets); i++) addSetRow();
 
+  const liveBtn = document.getElementById('result-live-btn');
+  if (liveBtn) liveBtn.classList.toggle('d-none', existing.length > 0);
+
   const btn = document.getElementById('result-back-btn');
   const volver = { elim: 'screen-elimination', previa: 'screen-elimination', liga: 'screen-tournament-bracket' }[context] || 'screen-groups-main';
   if (btn) btn.onclick = () => goTo(volver);
   goTo('screen-result-entry');
   document.querySelector('#result-sets-container .set-input')?.focus();
+}
+
+/** Inicia el marcador en vivo para el partido pendiente abierto en el formulario. */
+async function iniciarPartidoTorneoEnVivo() {
+  let m, p1name, p2name;
+  if (_rmc === 'group') {
+    m = GT.groupMatches[_crm];
+    p1name = GT.players[m?.p1]; p2name = GT.players[m?.p2];
+  } else if (_rmc === 'previa') {
+    m = GT.prelimMatches[_crm];
+    p1name = m?.p1name; p2name = m?.p2name;
+  } else if (_rmc === 'elim') {
+    m = GT.elimRounds[_crm?.ri]?.[_crm?.mi];
+    p1name = m?.p1name; p2name = m?.p2name;
+  } else return;
+  if (!m || m.done || !p1name || !p2name || isPendingName(p1name) || isPendingName(p2name)) return;
+  if (!await _confirmReplaceLive()) return;
+  initMatch(p1name, p2name, {
+    source: 'torneo', tournamentId: GT.id, tournamentContext: _rmc,
+    tournamentMatch: _crm, cfg: _resultCfg(),
+  });
+}
+
+/** Devuelve la pantalla de origen de un partido en vivo de torneo. */
+function pantallaPartidoTorneoEnVivo(context) {
+  return context === 'group' ? 'screen-groups-main' : 'screen-elimination';
+}
+
+/** Carga y verifica el torneo vinculado a un partido en vivo antes de reanudarlo. */
+function restaurarPartidoTorneoEnVivo(live) {
+  const snap = storageGetAll().find(t => t.id === live.tournamentId);
+  if (!snap) return false;
+  storageLoad(snap);
+  let m, p1name, p2name;
+  if (live.tournamentContext === 'group') {
+    m = GT.groupMatches[live.tournamentMatch];
+    p1name = GT.players[m?.p1]; p2name = GT.players[m?.p2];
+  } else if (live.tournamentContext === 'previa') {
+    m = GT.prelimMatches[live.tournamentMatch];
+    p1name = m?.p1name; p2name = m?.p2name;
+  } else if (live.tournamentContext === 'elim') {
+    const ref = live.tournamentMatch;
+    m = GT.elimRounds[ref?.ri]?.[ref?.mi];
+    p1name = m?.p1name; p2name = m?.p2name;
+  }
+  return !!m && !m.done && p1name === live.p[0] && p2name === live.p[1];
+}
+
+/** Guarda en el torneo el resultado que acaba de finalizar en el marcador en vivo. */
+async function registrarResultadoTorneoEnVivo(live) {
+  if (!restaurarPartidoTorneoEnVivo(live)) {
+    goTo('screen-home');
+    await ssConfirm('El torneo de este partido ya no existe o fue modificado. El resultado no se guardó.',
+      { title: 'Partido sin torneo', okText: 'Entendido' });
+    return;
+  }
+  _crm = live.tournamentMatch;
+  _rmc = live.tournamentContext;
+  await guardarResultado(live.setHistory);
 }
 
 function addSetRow(valA = null, valB = null) {
@@ -388,14 +450,16 @@ function _renumberSets() {
   });
 }
 
-async function guardarResultado() {
-  const setScores = [];
-  for (const row of document.querySelectorAll('#result-sets-container .set-row')) {
-    const [ia, ib] = row.querySelectorAll('.set-input');
-    const rawA = ia.value.trim(), rawB = ib.value.trim();
-    if (rawA === '' && rawB === '') continue; // fila vacía: se ignora
-    if (rawA === '' || rawB === '') { showToast('Completa ambos puntajes de cada set'); return; }
-    setScores.push([Number(rawA), Number(rawB)]);
+async function guardarResultado(setScoresOverride = null) {
+  const setScores = setScoresOverride ? setScoresOverride.map(([a, b]) => [a, b]) : [];
+  if (!setScoresOverride) {
+    for (const row of document.querySelectorAll('#result-sets-container .set-row')) {
+      const [ia, ib] = row.querySelectorAll('.set-input');
+      const rawA = ia.value.trim(), rawB = ib.value.trim();
+      if (rawA === '' && rawB === '') continue; // fila vacía: se ignora
+      if (rawA === '' || rawB === '') { showToast('Completa ambos puntajes de cada set'); return; }
+      setScores.push([Number(rawA), Number(rawB)]);
+    }
   }
   const res = validateMatchScores(setScores, _resultCfg());
   if (!res.ok) { showToast(res.error); return; }
