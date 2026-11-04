@@ -381,9 +381,25 @@ function nuevoCatTorneo(catId) {
 
 // ── INSTALACIÓN PWA ──
 let _installPrompt = null;
+const INSTALL_PROMPT_DISMISSED_KEY = 'spinscore_install_prompt_dismissed';
+
+function installPromptWasDismissed() {
+  return readJSON(INSTALL_PROMPT_DISMISSED_KEY, false) === true;
+}
+
+function hideInstallBanner() {
+  document.getElementById('install-banner')?.classList.add('d-none');
+}
+
+function cerrarAvisoInstalacion() {
+  writeJSON(INSTALL_PROMPT_DISMISSED_KEY, true);
+  hideInstallBanner();
+}
+
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   _installPrompt = e;
+  if (installPromptWasDismissed()) return;
   const btn = document.getElementById('install-btn');
   const txt = document.getElementById('install-text');
   if (btn) btn.classList.remove('d-none');
@@ -396,8 +412,10 @@ async function instalarApp() {
   _installPrompt.prompt();
   await _installPrompt.userChoice;
   _installPrompt = null;
-  document.getElementById('install-banner').classList.add('d-none');
+  cerrarAvisoInstalacion();
 }
+
+window.addEventListener('appinstalled', cerrarAvisoInstalacion);
 
 // ── ARRANQUE ──
 registerServiceWorker();
@@ -409,7 +427,7 @@ window.addEventListener('load', () => {
   updateHomeLabel();
   renderHomeButtons();
   const installed = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-  if (!installed)
+  if (!installed && !installPromptWasDismissed())
     setTimeout(() => document.getElementById('install-banner').classList.remove('d-none'), 1500);
 });
 
