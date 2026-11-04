@@ -163,12 +163,29 @@ function confirmarGrupos() {
   GT.elimDirect = [];
   GT.elimRounds = [];
   GT.groups.forEach((group, gi) => {
-    for (let i = 0; i < group.length; i++)
-      for (let j = i + 1; j < group.length; j++)
-        GT.groupMatches.push({ groupIdx: gi, p1: group[i], p2: group[j], sets1: 0, sets2: 0, setScores: [], done: false });
+    GT.groupMatches.push(...generarCalendarioGrupo(group, gi));
   });
   storageSnapshot();
   goTo('screen-groups-main');
+}
+
+/**
+ * Calendario round-robin por método del círculo (Berger): cada fecha deja a
+ * cada jugador con un único partido; con número impar hay un descanso rotativo.
+ */
+function generarCalendarioGrupo(players, groupIdx) {
+  const rotation = [...players];
+  if (rotation.length % 2) rotation.push(null);
+  const matches = [], total = rotation.length;
+  for (let round = 1; round < total; round++) {
+    for (let i = 0; i < total / 2; i++) {
+      const p1 = rotation[i], p2 = rotation[total - 1 - i];
+      if (p1 !== null && p2 !== null)
+        matches.push({ groupIdx, round, p1, p2, sets1: 0, sets2: 0, setScores: [], done: false });
+    }
+    rotation.splice(1, 0, rotation.pop());
+  }
+  return matches;
 }
 
 function _tournamentCfg() {
@@ -243,7 +260,12 @@ function _renderSingleGroupTab(content, idx) {
   });
   html += `</div><div class="section-label mt-2">Partidos</div><div class="match-grid">`;
 
+  let displayedRound = null;
   matches.forEach(m => {
+    if (m.round && m.round !== displayedRound) {
+      html += `<div class="section-label match-round-label">Fecha ${m.round}</div>`;
+      displayedRound = m.round;
+    }
     const ri = GT.groupMatches.indexOf(m), p1 = esc(GT.players[m.p1]), p2 = esc(GT.players[m.p2]);
     if (m.done) {
       const w1 = m.sets1 > m.sets2, detail = [m.setScores.map(([a, b]) => `${a}-${b}`).join(' | '), resultadoEspecialTexto(m)].filter(Boolean).join(' · ');
