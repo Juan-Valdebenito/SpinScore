@@ -170,8 +170,10 @@ async function loadData() {
   if (hash) {
     fromLink = true;
     try { data = await decodeShare(hash); } catch { data = null; }
+    if (!torneoPublicoValido(data)) data = null;
   } else {
-    const all = readJSON('spinscore_torneos', []);
+    const guardados = readJSON('spinscore_torneos', []);
+    const all = Array.isArray(guardados) ? guardados.filter(torneoPublicoValido) : [];
     const id = new URLSearchParams(location.search).get('id');
     data = (id ? all.find(t => t.id === id) : all.find(t => t.status === 'active')) || null;
   }

@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   serverFor, isSetWon, isDeuce, validateMatchScores,
-  rankPlayers, cuposGrupo, nextPow2, buildPreliminaryRound, buildFirstRound, bracketSeedOrder, elimDependientesJugados, elimReabrirDependientes,
+  rankPlayers, cuposGrupo, nextPow2, buildPreliminaryRound, buildFirstRound, bracketSeedOrder, elimDependientesJugados, elimReabrirDependientes, torneoPublicoValido,
 } = require('../js/rules.js');
 const { esc, encodeShare, decodeShare } = require('../js/utils.js');
 
@@ -395,4 +395,45 @@ test('reabrir: borra resultados y vacía solo el cupo que ocupaba cada ganador',
   // Lo que no depende del cambio queda igual
   assert.equal(r[1][1].done, true);
   assert.equal(r[0][2].done, true);
+});
+
+// ── Validación de la vista pública ─────────
+const torneoOk = () => ({
+  name: 'Copa', players: ['Ana', 'Beto'], groups: [[0, 1]], cfg: { sets: 3, pts: 11 },
+  groupMatches: [{ groupIdx: 0, p1: 0, p2: 1, sets1: 2, sets2: 0, setScores: [[11, 5], [11, 5]], done: true }],
+  prelimMatches: [], prelimDirect: [{ id: 0 }],
+  elimRounds: [[{ p1: 0, p1name: 'Ana', p2: null, p2name: 'BYE', sets1: 0, sets2: 0, setScores: [], bye: true, done: true }]],
+  podio: ['Ana'],
+});
+
+test('vista pública: acepta un torneo válido y los formatos antiguos', () => {
+  assert.equal(torneoPublicoValido(torneoOk()), true);
+  assert.equal(torneoPublicoValido({ name: 'Copa', players: ['Ana'], groups: [] }), true);
+  const conHistorial = torneoOk();
+  delete conHistorial.groupMatches[0].setScores;
+  conHistorial.groupMatches[0].setHistory = [[11, 5]];
+  assert.equal(torneoPublicoValido(conHistorial), true);
+  const pendiente = torneoOk();
+  pendiente.groupMatches = [{ groupIdx: 0, p1: 0, p2: 1, done: false }];
+  assert.equal(torneoPublicoValido(pendiente), true);
+});
+
+test('vista pública: rechaza datos que la app no genera', () => {
+  const con = cambio => { const t = torneoOk(); cambio(t); return torneoPublicoValido(t); };
+  for (const v of [null, undefined, 'x', 7, []]) assert.equal(torneoPublicoValido(v), false);
+  assert.equal(con(t => { delete t.players; }), false);
+  assert.equal(con(t => { t.players = [{}]; }), false);
+  assert.equal(con(t => { t.name = 5; }), false);
+  assert.equal(con(t => { delete t.groups; }), false);
+  assert.equal(con(t => { t.groups = [[0, 5]]; }), false);
+  assert.equal(con(t => { t.cfg = { sets: '<b>', pts: 11 }; }), false);
+  assert.equal(con(t => { t.groupMatches = [null]; }), false);
+  assert.equal(con(t => { t.groupMatches[0].p2 = 9; }), false);
+  assert.equal(con(t => { t.groupMatches[0].sets1 = '<img>'; }), false);
+  assert.equal(con(t => { t.groupMatches[0].setScores = [[11, '<img>']]; }), false);
+  assert.equal(con(t => { t.groupMatches[0].setScores = [null]; }), false);
+  assert.equal(con(t => { t.prelimDirect = [{ id: 9 }]; }), false);
+  assert.equal(con(t => { t.elimRounds = [null]; }), false);
+  assert.equal(con(t => { t.elimRounds[0][0].p1name = {}; }), false);
+  assert.equal(con(t => { t.podio = 'Ana'; }), false);
 });

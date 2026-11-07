@@ -458,9 +458,43 @@ function elimReabrirDependientes(rounds, deps) {
   }
 }
 
+// ── VISTA PÚBLICA ──────────────────────────
+
+const _esEntero = n => Number.isInteger(n) && n >= 0;
+const _esRegistro = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+const _esLista = (v, ok) => v == null || (Array.isArray(v) && v.every(ok));
+const _esTextoOVacio = v => v == null || typeof v === 'string';
+
+/** Un partido sin jugar no necesita resultado; uno terminado debe traerlo completo. */
+function _resultadoValido(m) {
+  if (!_esRegistro(m)) return false;
+  if (!m.done) return true;
+  const sets = m.setScores || m.setHistory || [];
+  return _esEntero(m.sets1) && _esEntero(m.sets2) &&
+    Array.isArray(sets) && sets.every(s => Array.isArray(s) && s.length === 2 && s.every(_esEntero));
+}
+
+/**
+ * Revisa los datos que dibuja public.html. Pueden venir de un link armado a mano,
+ * así que no se asume nada. Lo opcional queda opcional para aceptar links antiguos.
+ */
+function torneoPublicoValido(t) {
+  if (!_esRegistro(t) || typeof t.name !== 'string') return false;
+  if (!Array.isArray(t.players) || !t.players.every(p => typeof p === 'string')) return false;
+  const esJugador = i => _esEntero(i) && i < t.players.length;
+  const esLlave = m => _resultadoValido(m) && _esTextoOVacio(m.p1name) && _esTextoOVacio(m.p2name);
+  return (t.cfg == null || (_esRegistro(t.cfg) && _esEntero(t.cfg.sets) && _esEntero(t.cfg.pts))) &&
+    Array.isArray(t.groups) && t.groups.every(g => Array.isArray(g) && g.every(esJugador)) &&
+    _esLista(t.groupMatches, m => _resultadoValido(m) && _esEntero(m.groupIdx) && esJugador(m.p1) && esJugador(m.p2)) &&
+    _esLista(t.prelimMatches, esLlave) &&
+    _esLista(t.prelimDirect, p => _esRegistro(p) && esJugador(p.id)) &&
+    _esLista(t.elimRounds, r => Array.isArray(r) && r.every(esLlave)) &&
+    _esLista(t.podio, _esTextoOVacio);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     serverFor, isSetWon, isDeuce, setsNeededFor, validateMatchScores,
-    rankPlayers, cuposGrupo, nextPow2, compareSeeds, buildPreliminaryRound, buildFirstRound, bracketSeedOrder, elimDependientesJugados, elimReabrirDependientes,
+    rankPlayers, cuposGrupo, nextPow2, compareSeeds, buildPreliminaryRound, buildFirstRound, bracketSeedOrder, elimDependientesJugados, elimReabrirDependientes, torneoPublicoValido,
   };
 }
