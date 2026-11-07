@@ -633,11 +633,11 @@ button.elim-match, button.b-match { display:block; width:100%; }
 .group-player-name.top { font-weight:600; }
 .group-player-name.small { font-size:13px; }
 .group-player-manager { border:1px solid var(--ss-border); border-radius:12px; overflow:hidden; background:var(--ss-surface); }
-.group-player-manager-row { display:flex; align-items:center; gap:10px; padding:9px 12px; border-bottom:1px solid var(--ss-border); font-size:14px; }
+.group-player-manager-row { display:flex; align-items:center; gap:10px; padding:4px 12px; border-bottom:1px solid var(--ss-border); font-size:14px; }
 .group-player-manager-row:last-child { border-bottom:0; }
 .group-player-manager-row > span { flex:1; min-width:0; overflow-wrap:anywhere; }
 .group-player-actions { display:flex; gap:6px; flex-shrink:0; }
-.btn-player-action { border:1px solid var(--ss-border); background:transparent; color:var(--ss-text); border-radius:8px; padding:6px 8px; font:inherit; font-size:12px; font-weight:700; cursor:pointer; }
+.btn-player-action { border:1px solid var(--ss-border); background:transparent; color:var(--ss-text); border-radius:8px; min-height:44px; padding:0 10px; font:inherit; font-size:12px; font-weight:700; cursor:pointer; }
 .btn-player-action.danger { color:var(--ss-red-text); border-color:color-mix(in srgb,var(--ss-red) 45%,var(--ss-border)); }
 .groups-grid { display:grid; grid-template-columns:1fr; gap:0 16px; }
 @media(min-width:768px) { .groups-grid { grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); } }
