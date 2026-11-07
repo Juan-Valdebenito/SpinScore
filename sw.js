@@ -16,6 +16,7 @@ const CORE = [
   './css/dialog.css',
   './js/utils.js',
   './js/rules.js',
+  './js/public.js',
   './js/theme.js',
   './js/storage.js',
   './js/core.js',

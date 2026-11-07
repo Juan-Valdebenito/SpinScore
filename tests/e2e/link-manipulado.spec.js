@@ -119,5 +119,12 @@ test.describe('Link compartido manipulado', () => {
     await page.click('.gtab:has-text("Eliminatoria")');
     await expect(page.locator('.elim-sets').first()).toHaveText('2');
     await expect(page.locator('.elim-detail').first()).toHaveText('11-5 | 11-5');
+
+    // El botón de la pestaña General también lleva al cuadro.
+    await page.click('.gtab:has-text("General")');
+    await page.click('.btn-elim');
+    await expect(page.locator('.gtab:has-text("Eliminatoria")')).toHaveClass(/active/);
+    await expect(page.locator('.elim-sets').first()).toHaveText('2');
+    await expect(page.locator('[onclick]')).toHaveCount(0);
   });
 });
