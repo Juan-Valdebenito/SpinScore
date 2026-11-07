@@ -419,9 +419,15 @@ function abrirResultado(matchIdx, context) {
   if (existing.length > 0) existing.forEach(([a, b]) => addSetRow(a, b));
   else for (let i = 0; i < setsNeededFor(cfg.sets); i++) addSetRow();
 
+  // Al corregir no hay marcador en vivo, así que guardar pasa a ser la acción principal.
+  const corrigiendo = existing.length > 0;
   const liveBtn = document.getElementById('result-live-btn');
-  if (liveBtn) liveBtn.classList.toggle('d-none', existing.length > 0);
-  _renderSpecialResultActions(p1name, p2name, existing.length === 0);
+  if (liveBtn) liveBtn.classList.toggle('d-none', corrigiendo);
+  const saveBtn = document.getElementById('result-save-btn');
+  saveBtn.textContent = corrigiendo ? 'Guardar corrección' : 'Ingresar resultado manualmente';
+  saveBtn.classList.toggle('btn-primary', corrigiendo);
+  saveBtn.classList.toggle('btn-ghost', !corrigiendo);
+  _renderSpecialResultActions(p1name, p2name, !corrigiendo);
 
   const btn = document.getElementById('result-back-btn');
   const volver = { elim: 'screen-elimination', previa: 'screen-elimination', liga: 'screen-tournament-bracket' }[context] || 'screen-groups-main';

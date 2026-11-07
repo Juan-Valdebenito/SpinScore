@@ -2,6 +2,29 @@ const { test, expect } = require('@playwright/test');
 const { abrirApp, capturarErrores, armarTorneo, cargarResultado, jugarEliminatoria, crucesMismoGrupoEnPrimeraRonda } = require('./helpers');
 
 test.describe('Torneo por grupos + eliminatoria', () => {
+  test('el botón del resultado cambia según si el partido es nuevo o se está corrigiendo', async ({ page }) => {
+    await abrirApp(page);
+    await armarTorneo(page, { jugadores: 4, grupos: 2 });
+    const guardar = page.locator('#result-save-btn');
+
+    // Corregir: ya no se ofrece el marcador en vivo y guardar es la acción principal.
+    await page.evaluate(() => abrirResultado(0, 'group'));
+    await expect(guardar).toHaveText('Guardar corrección');
+    await expect(guardar).toHaveClass(/btn-primary/);
+    await expect(page.locator('#result-live-btn')).toBeHidden();
+    await page.evaluate(() => document.querySelectorAll('#result-sets-container .set-input').forEach(el => {
+      if (el.value === '5') el.value = '7';
+    }));
+    await guardar.click();
+    await expect.poll(() => page.evaluate(() => GT.groupMatches[0].setScores.flat().includes(7))).toBe(true);
+
+    // Partido nuevo: el marcador en vivo es lo principal y el ingreso manual, la alternativa.
+    await page.evaluate(() => { iniciarEliminacion(); abrirResultadoElim(0, 0); });
+    await expect(guardar).toHaveText('Ingresar resultado manualmente');
+    await expect(guardar).toHaveClass(/btn-ghost/);
+    await expect(page.locator('#result-live-btn')).toBeVisible();
+  });
+
   let errores;
   test.beforeEach(async ({ page }) => { errores = capturarErrores(page); await abrirApp(page); });
   test.afterEach(() => expect(errores).toEqual([]));
