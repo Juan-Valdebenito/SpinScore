@@ -10,6 +10,9 @@ module.exports = defineConfig({
   testMatch: '**/*.spec.js',
   timeout: 60_000,
   fullyParallel: true,
+  // Cada worker abre un Chrome: con más de 3 un equipo de 8 GB se queda sin memoria y las pruebas
+  // se congelan al azar (y además tardan el doble). Se puede cambiar con --workers=N.
+  workers: 3,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: `http://localhost:${PORT}`,

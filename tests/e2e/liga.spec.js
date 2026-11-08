@@ -92,7 +92,7 @@ test.describe('Liga (todos contra todos)', () => {
       localStorage.setItem('spinscore_live_match', JSON.stringify(live));
       resumeLiveMatch();
     });
-    for (let i = 0; i < 22; i++) await page.click('#score-p1-btn');
+    for (let i = 0; i < 21; i++) await page.click('#score-p1-btn');   // ya tenía 1 punto: 21 más cierran 2 sets a 11
     await page.click('#win-screen >> text=Continuar');
     await expect(page.locator('.ss-dialog-msg')).toContainText('El resultado no se guardó');
     expect(await page.evaluate(() => LIGA.matches.some(m => m.done))).toBe(false);
