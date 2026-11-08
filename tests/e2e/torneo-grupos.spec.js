@@ -81,7 +81,8 @@ test.describe('Torneo por grupos + eliminatoria', () => {
     await page.click('.ss-dialog-cancel');                                       // cancelar no cambia nada
     expect(await page.evaluate(() => GT.elimRounds[2][0].done)).toBe(true);
 
-    await page.click('text=Guardar Resultado');
+    await expect(page.locator('#result-save-btn')).toHaveText('Guardar corrección');
+    await page.click('#result-save-btn');                                     // ahora sí guarda la corrección
     await page.click('.ss-dialog-ok');
     await expect(page.locator('#toast')).toHaveText('Ganador corregido · el torneo vuelve a estar en curso');
     const estado = await page.evaluate(() => ({ semi: GT.elimRounds[1][0].done, final: GT.elimRounds[2][0].done, status: storageGetAll()[0].status }));
